@@ -1,0 +1,63 @@
+@startuml Login Sequence Diagram
+
+actor Client
+participant "AuthController" as AC
+participant "AuthService" as AS
+participant "UserManager\n<ApplicationUser>" as UM
+participant "SignInManager\n<ApplicationUser>" as SIM
+participant "SmtpEmailService" as ES
+database "Database" as DB
+
+Client -> AC: POST /api/auth/login\n(LoginDto)
+
+activate AC
+AC -> AS: LoginAsync(model)
+activate AS
+
+AS -> UM: FindByEmailAsync(email)
+activate UM
+UM -> DB: SELECT user WHERE email
+DB --> UM: user
+UM --> AS: ApplicationUser
+
+alt user == null
+    AS --> AC: throw InvalidOperationException\n("User not found")
+    AC --> Client: 401 Unauthorized\n"User not found"
+else user found
+    AS -> SIM: PasswordSignInAsync(username,\npassword, false, true)
+    activate SIM
+    SIM -> DB: Validate credentials
+    DB --> SIM: result
+    SIM --> AS: SignInResult
+
+    alt result.Succeeded
+        AS -> UM: GetRolesAsync(user)
+        UM -> DB: SELECT roles
+        DB --> UM: user roles
+        UM --> AS: roles list
+
+        AS -> AS: GenerateJwtToken(user)
+        note right: Creates JWT with:\n- User claims\n- Roles\n- Expiration time
+
+        AS --> AC: JWT token
+        AC --> Client: 200 OK\n{token: "jwt-token"}
+    else result.IsLockedOut
+        AS -> ES: SendAdminLockoutNotification(email)
+        activate ES
+        ES --> AS: notification sent
+        deactivate ES
+        AS --> AC: throw InvalidOperationException\n("Account locked")
+        AC --> Client: 401 Unauthorized\n"Account locked"
+    else invalid credentials
+        AS --> AC: throw InvalidOperationException\n("Invalid login")
+        AC --> Client: 401 Unauthorized\n"Invalid login attempt"
+    end
+end
+
+deactivate SIM
+deactivate UM
+deactivate AS
+deactivate AC
+
+@enduml
+

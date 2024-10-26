@@ -1,0 +1,47 @@
+@startuml
+class UserController {
+  -IUserService _userService
+  -ILogger<UserController> _logger
+  +Register(CreateUserDto): Task<IActionResult>
+  +GetUser(string): Task<IActionResult>
+  +GetAllUsers(): Task<IActionResult>
+  +UpdateUser(string, UpdateUserDto): Task<IActionResult>
+  +DeleteUser(string): Task<IActionResult>
+}
+
+class UserService {
+  -UserManager<ApplicationUser> _userManager
+  -RoleManager<IdentityRole> _roleManager
+  -IEmailService _emailService
+  +RegisterUserAsync(CreateUserDto): Task<UserDto>
+  +GetUserByIdAsync(string): Task<UserDto>
+  +GetAllUsersAsync(): Task<IEnumerable<UserDto>>
+  +UpdateUserAsync(string, UpdateUserDto): Task<UserDto>
+  +DeleteUserAsync(string): Task<bool>
+}
+
+class ApplicationUser {
+  +Id: string
+  +UserName: string
+  +Email: string
+}
+
+class CreateUserDto {
+  +UserName: string
+  +Email: string
+  +Password: string
+  +Role: string
+}
+
+class UserDto {
+  +Id: string
+  +UserName: string
+  +Email: string
+  +Role: string
+}
+
+UserController --> UserService
+UserService --> ApplicationUser
+UserService --> CreateUserDto
+UserService --> UserDto
+@enduml

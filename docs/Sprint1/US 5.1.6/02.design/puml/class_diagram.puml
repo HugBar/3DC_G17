@@ -1,0 +1,56 @@
+@startuml 
+
+class AuthController {
+  -_userManager: UserManager<ApplicationUser>
+  -_signInManager: SignInManager<ApplicationUser>
+  -_logger: ILogger<AuthController>
+  -_configuration: IConfiguration
+  -_emailService: IEmailService
+  +Login(model: LoginDto): Task<IActionResult>
+  -GenerateJwtToken(user: ApplicationUser): Task<string>
+}
+
+class LoginDto {
+  +Email: string
+  +Password: string
+}
+
+interface IEmailService {
+  +SendAdminLockoutNotification(userEmail: string): Task
+}
+
+class SmtpEmailService {
+  +SendAdminLockoutNotification(userEmail: string): Task
+}
+
+class ApplicationUser {
+}
+
+class UserManager<ApplicationUser> {
+  +FindByEmailAsync(email: string): Task<ApplicationUser>
+  +GetRolesAsync(user: ApplicationUser): Task<IList<string>>
+}
+
+class SignInManager<ApplicationUser> {
+  +CheckPasswordSignInAsync(user: ApplicationUser, password: string, lockoutOnFailure: bool): Task<SignInResult>
+}
+
+interface ILogger<AuthController> {
+  +LogWarning(message: string)
+}
+
+interface IConfiguration {
+  +[]: string
+}
+
+AuthController --> LoginDto: uses
+AuthController --> IEmailService: uses
+AuthController --> UserManager: uses
+AuthController --> SignInManager: uses
+AuthController --> ILogger: uses
+AuthController --> IConfiguration: uses
+SmtpEmailService ..|> IEmailService
+UserManager --> ApplicationUser: manages
+SignInManager --> ApplicationUser: manages
+
+@enduml

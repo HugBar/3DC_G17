@@ -1,0 +1,55 @@
+@startuml
+autonumber
+
+actor "Patient" as patient
+participant "PatientController" as controller
+participant "PatientService" as service
+participant "IPatientRepository" as repo
+participant "External IAM Service" as iam
+participant "IEmailService" as email
+participant "IUnitOfWork" as unitOfWork
+
+activate patient
+
+patient -> controller: POST /api/Patient/Register(RegisterPatientDto)
+activate controller
+
+controller -> service: AddAsync(RegisterPatientDto)
+activate service
+
+service -> repo: IsEmailUniqueAsync(dto.Email)
+repo --> service: isUnique
+
+alt Email is not unique
+    service --> controller: throw InvalidOperationException
+    controller --> patient: 400 Bad Request (Email already exists)
+else Email is unique
+    service -> repo: IsPhoneNumberUniqueAsync(dto.PhoneNumber)
+    repo --> service: isUnique
+    
+    alt Phone number is not unique
+        service --> controller: throw InvalidOperationException
+        controller --> patient: 400 Bad Request (Phone number already exists)
+    else Phone number is unique
+        service -> iam: RegisterInIAM(RegisterPatientDto)
+        iam --> service: userId
+        
+        service -> service: Create new Patient object
+        service -> repo: AddAsync(Patient)
+        repo --> service: Patient
+        
+        service -> unitOfWork: CommitAsync()
+        unitOfWork --> service: Task completed
+
+        service -> email: SendEmailAsync(to, subject, body)
+        email --> service: Task completed
+
+        service --> controller: PatientDto
+        controller --> patient: 200 OK (PatientDto)
+    end
+end
+
+deactivate service
+deactivate controller
+deactivate patient
+@enduml

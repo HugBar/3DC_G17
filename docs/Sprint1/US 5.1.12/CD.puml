@@ -1,0 +1,94 @@
+@startuml
+class StaffController {
+  -IStaffService _staffService
+  -ILogger<StaffController> _logger
+  +CreateStaffProfile(CreateStaffDto): Task<IActionResult>
+  +UpdateStaffProfile(string, JsonPatchDocument<UpdateStaffDto>): Task<IActionResult>
+  +Deactivate(string): Task<ActionResult>
+}
+
+interface IStaffService {
+  +AddAsync(CreateStaffDto): Task<StaffDto>
+  +UpdateStaffAsync(string, UpdateStaffDto): Task<StaffDto>
+  +DeactivateAsync(string): Task<bool>
+}
+
+class StaffService {
+  -IStaffRepository _repository
+  -UserManager<ApplicationUser> _userManager
+  -IUnitOfWork _unitOfWork
+  -IEmailService _emailService
+  +AddAsync(CreateStaffDto): Task<StaffDto>
+  +UpdateStaffAsync(string, UpdateStaffDto): Task<StaffDto>
+  +DeactivateAsync(string): Task<bool>
+  -GenerateUniqueLicenseNumber(): string
+}
+
+interface IStaffRepository {
+  +AddAsync(Staff): Task<Staff>
+  +GetByIdAsync(string): Task<Staff>
+  +GetByUserIdAsync(string): Task<Staff>
+  +UpdateAsync(Staff): Task<Staff>
+  +IsEmailUnique(string): Task<bool>
+  +IsPhoneNumberUnique(string): Task<bool>
+}
+
+class Staff {
+  +Id: string
+  +UserId: string
+  +FirstName: string
+  +LastName: string
+  +Email: string
+  +PhoneNumber: string
+  +Specialization: string
+  +LicenseNumber: string
+  +Active: bool
+  +AvailabilitySlots: List<AvailabilitySlot>
+}
+
+class CreateStaffDto {
+  +FirstName: string
+  +LastName: string
+  +Email: string
+  +PhoneNumber: string
+  +Specialization: string
+  +AvailabilitySlots: List<AvailabilitySlot>
+}
+
+class StaffDto {
+  +Id: string
+  +FirstName: string
+  +LastName: string
+  +Email: string
+  +PhoneNumber: string
+  +Specialization: string
+  +LicenseNumber: string
+  +Active: bool
+  +AvailabilitySlots: List<AvailabilitySlot>
+}
+
+class ApplicationUser {
+  +Id: string
+  +UserName: string
+  +Email: string
+}
+
+interface IUnitOfWork {
+  +CommitAsync(): Task<int>
+}
+
+interface IEmailService {
+  +SendEmailAsync(string, string, string): Task
+}
+
+StaffController --> IStaffService
+IStaffService <|.. StaffService
+StaffService --> IStaffRepository
+StaffService --> UserManager
+StaffService --> IUnitOfWork
+StaffService --> IEmailService
+Staff --|> ApplicationUser
+StaffService --> Staff
+StaffService --> CreateStaffDto
+StaffService --> StaffDto
+@enduml

@@ -1,0 +1,25 @@
+@startuml name system sequence diagram us 5.1.3
+actor Patient as User
+participant System
+
+activate User
+User -> System : Register for healthcare application
+activate System
+System -> User : Request personal details
+deactivate System
+User -> System : Provide personal details (RegisterPatientDto)
+activate System
+System -> User : Validate and process registration
+System -> User : Check if patient already exists
+alt Patient Already Exists
+    System -> User : Inform patient already exists
+else Patient Does Not Exist
+    System -> User : Register patient in IAM
+    System -> User : Create patient profile
+    System -> User : Send verification email
+end
+System -> User : Confirm registration status
+deactivate System
+
+deactivate User
+@enduml

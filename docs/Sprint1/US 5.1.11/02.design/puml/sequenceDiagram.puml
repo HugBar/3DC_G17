@@ -1,0 +1,52 @@
+@startuml sequence diagram
+actor "Admin" as A
+participant Controller as C
+participant PatientService as PS
+participant PatientRepository as PR
+
+participant PatientDTO as P
+database "DB" as db
+
+A -> C : GET api/patients/filter
+C -> PS : GetFilterPatients(filterDTO, pageNumber, pageSize)
+PS -> PR : GetFilterAsync(filterDTO, pageNumber, pageSize)
+
+PR -> db : SELECT * FROM Patients
+
+    db --> PR : Patients
+    PR --> PS : Patients
+    
+alt Patients found
+
+    loop for each patient in Patients
+        PS -> P : creat()
+        P -> PS : PatientDTO
+    end
+
+    PS --> C : Patients
+    C --> A : 200 OK (Patients)
+else No patients found
+    db --> PR : No patients
+    PR --> C : No patients
+    C --> A : 404 Not Found (No patients)
+end
+
+
+A -> C: GET api/patients/{id/licenseNumber}
+C -> PS : GetPatientById(id)
+PS -> PR : GetByIdAsync(id)
+PR -> db : SELECT * FROM Patients WHERE Id = id
+db --> PR : Patient
+PR --> PS : Patient
+alt Patient found
+    PS --> C : Patient
+    C --> A : 200 OK (Patient)
+else No patient found
+    db --> PR : No patient
+    PR --> C : No patient
+    C --> A : 404 Not Found (No patient)
+end
+
+
+@enduml
+

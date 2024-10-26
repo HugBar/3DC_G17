@@ -1,0 +1,20 @@
+@startuml
+actor Admin as User
+participant System
+
+activate User
+User -> System: Create new staff profile
+activate System
+System -> User: Request staff details
+deactivate System
+User -> System: Provide staff details (CreateStaffDto)
+activate System
+System -> System: Validate unique email and phone
+System -> System: Generate license number
+System -> System: Create staff profile
+System -> System: Send confirmation email
+System -> User: Confirm staff profile created successfully
+deactivate System
+deactivate User
+@enduml
+

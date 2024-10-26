@@ -1,0 +1,42 @@
+@startuml
+actor Admin
+participant "StaffController" as SC
+participant "StaffService" as SS
+participant "IStaffRepository" as SR
+participant "Staff" as S
+participant "IUnitOfWork" as UOW
+participant "IEmailService" as ES
+
+Admin -> SC: POST /api/Staff/create-staff-profile (CreateStaffDto)
+activate SC
+
+SC -> SS: AddAsync(CreateStaffDto)
+activate SS
+
+SS -> SR: IsEmailUniqueAsync(dto.Email)
+SR --> SS: isUnique
+
+SS -> SR: IsPhoneNumberUniqueAsync(dto.PhoneNumber)
+SR --> SS: isUnique
+
+SS -> S: <<create>>
+activate S
+S --> SS: staff
+deactivate S
+
+SS -> SR: AddAsync(staff)
+SR --> SS: staff
+
+SS -> UOW: CommitAsync()
+UOW --> SS: Task completed
+
+SS -> ES: SendEmailAsync(to, subject, body)
+ES --> SS: Task completed
+
+SS --> SC: StaffDto
+deactivate SS
+
+SC --> Admin: 200 OK (StaffDto)
+deactivate SC
+
+@enduml

@@ -1,0 +1,46 @@
+@startuml
+class OperationRequestController {
+  - OperationRequestService _service
+  - ILogger<OperationRequestController> _logger
+  + DeleteOperationRequest(string id): Task<IActionResult>
+}
+
+class OperationRequestService {
+  - IOperationRequestRepository _repository
+  - IUnitOfWork _unitOfWork
+  - IStaffRepository _staffRepo
+  - ILoggingService _loggingService
+  + DeleteOperationRequestAsync(string id, string doctorEmail): Task<bool>
+}
+
+interface IOperationRequestRepository {
+  + GetByIdAsync(string id): Task<OperationRequest>
+  + RemoveAsync(OperationRequest operationRequest): Task
+}
+
+interface IStaffRepository {
+  + GetByEmailAsync(string email): Task<Staff>
+}
+
+class OperationRequest {
+  + Id: string
+  + DoctorId: string
+  + IsScheduled: bool
+}
+
+interface IUnitOfWork {
+  + CommitAsync(): Task
+}
+
+interface ILoggingService {
+  + LogChangeAsync(string action, string userId, string details, object changeData): Task
+}
+
+OperationRequestController --> OperationRequestService
+OperationRequestService --> IOperationRequestRepository
+OperationRequestService --> IStaffRepository
+OperationRequestService --> IUnitOfWork
+OperationRequestService --> ILoggingService
+IOperationRequestRepository --> OperationRequest
+
+@enduml

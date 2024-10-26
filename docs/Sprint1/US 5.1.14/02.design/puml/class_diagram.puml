@@ -1,0 +1,39 @@
+@startuml
+class StaffController {
+    - _staffService: StaffService
+    + DeactivateAsync(id: string): Task<ActionResult>
+}
+
+class StaffService {
+    - _staffRepo: IStaffRepository
+    - _unitOfWork: IUnitOfWork
+    + DeactivateAsync(id: string): Task<bool>
+}
+
+interface IStaffRepository {
+    + GetByIdAsync(id: string): Task<Staff>
+    + UpdateAsync(staff: Staff): Task<Staff>
+}
+
+class Staff {
+    + Id: string
+    + Active: bool
+    + Deactivate(): void
+}
+
+interface IUnitOfWork {
+    + CommitAsync(): Task
+}
+
+class AuditService {
+    + LogDeactivation(id: string): Task
+}
+
+StaffController --> StaffService: uses
+StaffService --> IStaffRepository: uses
+StaffService --> IUnitOfWork: uses
+StaffService --> AuditService: uses
+IStaffRepository --> Staff: manages
+Staff --> Staff: modifies
+
+@enduml

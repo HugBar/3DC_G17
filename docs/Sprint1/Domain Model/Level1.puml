@@ -1,0 +1,15 @@
+@startuml
+actor Doctor
+actor Patient
+actor Admin
+
+package "Healthcare Management System" {
+  [Web Application] --> [Database]
+  [Web Application] --> [Email Service]
+  [Web Application] --> [Authentication Service]
+}
+
+Doctor --> [Web Application]
+Patient --> [Web Application]
+Admin --> [Web Application]
+@enduml

@@ -1,0 +1,80 @@
+@startuml
+
+
+actor "Admin" as admin
+participant "OperationTypeController" as controller
+participant "OperationTypeService" as service
+participant "IOperationTypeRepository" as repo
+participant "UnitOfWork" as uow
+participant "LoggingService" as logger
+
+database "Database" as db
+
+admin -> controller : PATCH /api/operationtype/edit-operation-type/{id}
+activate controller
+
+controller -> controller : Validate ModelState
+alt ModelState is not valid
+    controller --> admin : 400 Bad Request (Invalid input)
+else ModelState is valid
+    controller -> service : UpdateOperationType(id, patchDoc)
+    activate service
+
+    service -> repo : GetByIdAsync(id)
+    activate repo
+    repo -> db : Query
+    db --> repo : OperationType
+    repo --> service : OperationType
+    deactivate repo
+
+    alt OperationType not found
+        service --> controller : throw BusinessRuleValidationException
+        controller --> admin : 400 Bad Request (Operation type not found)
+    else OperationType found
+        service -> service : ConvertToDto(OperationType)
+        
+        service -> service : Apply patchDoc to Dto
+        service -> repo : ExistsByNameAsync(dto.Name)
+        activate repo
+        repo -> db : Query
+        db --> repo : bool
+        repo --> service : bool
+        deactivate repo
+
+        alt Name already exists
+            service --> controller : throw BusinessRuleValidationException
+            controller --> admin : 400 Bad Request (Name already exists)
+        else Name is unique
+            service -> operationType : SetName(dto.Name)
+            service -> operationType : SetRequiredStaffBySpecialization(dto.RequiredStaffBySpecialization)
+            service -> operationType : SetEstimatedDuration(dto.AnesthesiaPreparation, dto.Surgery, dto.Cleaning)
+            
+            service -> repo : UpdateAsync(operationType)
+            activate repo
+            repo -> db : Update
+            db --> repo : Confirmation
+            repo --> service : Updated OperationType
+            deactivate repo
+
+            service -> uow : CommitAsync()
+            activate uow
+            uow -> db : Commit Transaction
+            db --> uow : Confirmation
+            uow --> service : 
+            deactivate uow
+
+            service -> logger : LogInformation("Operation type updated: {id}")
+            activate logger
+            logger --> service
+            deactivate logger
+
+            service --> controller : OperationTypeDto
+            deactivate service
+
+            controller --> admin : 200 OK (OperationTypeDto)
+        end
+    end
+end
+deactivate controller
+
+@enduml

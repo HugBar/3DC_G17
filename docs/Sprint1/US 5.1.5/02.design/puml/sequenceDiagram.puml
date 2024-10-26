@@ -1,0 +1,203 @@
+@startuml namespace US 5.1.5 sequence diagram
+title "US 5.1.5 sequence diagram: Account Deletion Request and Confirmation"
+
+actor Patient
+participant "PatientController" as PC
+participant "PatientService" as PS
+participant "PatientRepository" as PR
+participant "IUnitOfWork" as UOW
+participant "Patient" as P
+participant "IEmailService" as ES
+participant "ILoggingService" as LS
+participant "UserManager" as UM
+database "Database" as DB
+
+/' Fluxo Principal - Parte 1: Requisição de deleção '/
+Patient -> PC: POST /api/patient/account-deletion-request
+activate PC
+
+PC -> PC: ValidateUserRole("Patient")
+alt User not in Patient role
+    PC --> Patient: 401 Unauthorized
+end
+
+PC -> PC: GetUserEmail()
+alt Email not found in token
+    PC --> Patient: 401 Unauthorized "User email not found"
+end
+
+PC -> PS: RequestAccountDeletionAsync(email)
+activate PS
+
+PS -> PR: GetByEmailAsync(email)
+activate PR
+PR -> DB: Query
+DB --> PR: Patient Data
+alt Patient not found
+    PR --> PS: null
+    PS --> PC: Exception "Patient not found"
+    PC --> Patient: 404 Not Found
+end
+PR --> PS: Patient
+deactivate PR
+
+PS -> PS: GenerateToken(email)
+PS -> ES: SendEmailAsync(email, subject, body)
+activate ES
+alt Email sending fails
+    ES --> PS: Exception
+    PS --> PC: Exception "Failed to send email"
+    PC --> Patient: 500 Internal Server Error
+end
+ES --> PS: Email Sent
+deactivate ES
+PS --> PC: Success
+deactivate PS
+PC --> Patient: 200 OK "Check email for confirmation"
+deactivate PS
+deactivate PC
+
+/' Fluxo Principal - Parte 2: Confirmação de deleção '/
+Patient -> PC: DELETE /api/patient/confirm-account-deletion
+activate PC
+
+PC -> PC: ValidateUserRole("Patient")
+alt User not in Patient role
+    PC --> Patient: 401 Unauthorized
+end
+
+PC -> PC: GetUserEmail()
+alt Email not found in token
+    PC --> Patient: 401 Unauthorized "User email not found"
+end
+
+alt Token is empty
+    PC --> Patient: 400 Bad Request "Token is required"
+end
+
+PC -> PS: ValidateTokenAndGetEmail(token)
+activate PS
+alt Invalid token format
+    PS --> PC: SecurityTokenException "Invalid token"
+    PC --> Patient: 400 Bad Request
+end
+alt Token expired
+    PS --> PC: SecurityTokenException "Token expired"
+    PC --> Patient: 400 Bad Request
+end
+alt Invalid token purpose
+    PS --> PC: SecurityTokenException "Invalid token purpose"
+    PC --> Patient: 400 Bad Request
+end
+PS --> PC: Email from token
+
+alt Token email doesn't match user email
+    PC --> Patient: 401 Unauthorized "Invalid token or email mismatch"
+end
+
+PC -> PS: ConfirmAccountDeletionAsync(email)
+PS -> PR: GetByEmailAsync(email)
+activate PR
+PR -> DB: Query
+alt Patient not found
+    DB --> PR: null
+    PR --> PS: null
+    PS --> PC: false
+    PC --> Patient: 404 Not Found "Patient not found"
+end
+DB --> PR: Patient Data
+PR --> PS: Patient
+deactivate PR
+
+PS -> UOW: BeginTransactionAsync()
+activate UOW
+alt Transaction start fails
+    UOW --> PS: Exception
+    PS -> LS: LogError("Transaction failed to start")
+    PS --> PC: Exception
+    PC --> Patient: 500 Internal Server Error
+end
+UOW --> PS: Transaction Started
+
+PS -> P: Anonymize()
+activate P
+alt Anonymization fails
+    P --> PS: Exception
+    PS -> UOW: RollbackTransactionAsync()
+    PS -> LS: LogError("Anonymization failed")
+    PS --> PC: Exception
+    PC --> Patient: 500 Internal Server Error
+end
+P --> PS: Anonymized Patient
+deactivate P
+
+PS -> PR: UpdateAsync(patient)
+activate PR
+alt Update fails
+    PR --> PS: Exception
+    PS -> UOW: RollbackTransactionAsync()
+    PS -> LS: LogError("Failed to update anonymized data")
+    PS --> PC: Exception
+    PC --> Patient: 500 Internal Server Error
+end
+PR --> PS: Success
+deactivate PR
+
+PS -> LS: LogChangeAsync("Patient data anonymized", userId, details)
+activate LS
+LS --> PS: Logged
+deactivate LS
+
+PS -> UM: FindByEmailAsync(email)
+activate UM
+alt User not found in AspNetUsers
+    UM --> PS: null
+    PS -> LS: LogWarning("User account not found")
+end
+UM --> PS: User
+
+PS -> UM: GetRolesAsync(user)
+UM --> PS: Roles
+PS -> UM: RemoveFromRolesAsync(user, roles)
+alt Role removal fails
+    UM --> PS: Exception
+    PS -> UOW: RollbackTransactionAsync()
+    PS -> LS: LogError("Failed to remove user roles")
+    PS --> PC: Exception
+    PC --> Patient: 500 Internal Server Error
+end
+
+PS -> UM: DeleteAsync(user)
+alt User deletion fails
+    UM --> PS: Exception
+    PS -> UOW: RollbackTransactionAsync()
+    PS -> LS: LogError("Failed to delete user account")
+    PS --> PC: Exception
+    PC --> Patient: 500 Internal Server Error
+end
+UM --> PS: Success
+deactivate UM
+
+PS -> UOW: CommitTransactionAsync()
+alt Transaction commit fails
+    UOW --> PS: Exception
+    PS -> UOW: RollbackTransactionAsync()
+    PS -> LS: LogError("Transaction commit failed")
+    PS --> PC: Exception
+    PC --> Patient: 500 Internal Server Error
+end
+UOW --> PS: Committed
+deactivate UOW
+
+PS -> ES: SendEmailAsync(finalEmail)
+activate ES
+
+ES --> PS: Email Sent
+deactivate ES
+
+PS --> PC: Success
+deactivate PS
+PC --> Patient: 200 OK "Account deletion confirmed"
+deactivate PS
+deactivate PC
+@enduml

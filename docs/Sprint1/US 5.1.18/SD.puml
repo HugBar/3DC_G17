@@ -1,0 +1,66 @@
+@startuml
+actor Doctor
+participant "OperationRequestController" as ORC
+participant "OperationRequestService" as ORS
+participant "IStaffRepository" as SR
+participant "IOperationRequestRepository" as ORR
+participant "IUnitOfWork" as UOW
+participant "ILoggingService" as LS
+database "Database" as DB
+
+Doctor -> ORC: DELETE /api/operation-request/delete-operation-request/{id}
+activate ORC
+
+ORC -> ORC: Extract doctorEmail from User claims
+ORC -> ORS: DeleteOperationRequestAsync(id, doctorEmail)
+activate ORS
+
+ORS -> SR: GetByEmailAsync(doctorEmail)
+activate SR
+SR -> DB: Query
+DB --> SR: Doctor
+SR --> ORS: Doctor
+deactivate SR
+
+ORS -> ORR: GetByIdAsync(id)
+activate ORR
+ORR -> DB: Query
+DB --> ORR: OperationRequest
+ORR --> ORS: OperationRequest
+deactivate ORR
+
+ORS -> ORS: Validate doctor's permission and operation status
+
+alt Operation is scheduled or doctor doesn't have permission
+    ORS --> ORC: throw BusinessRuleValidationException
+    ORC --> Doctor: 400 Bad Request (Cannot delete)
+else Operation can be deleted
+    ORS -> ORR: RemoveAsync(operationRequest)
+    activate ORR
+    ORR -> DB: Delete
+    DB --> ORR: Confirmation
+    ORR --> ORS: Confirmation
+    deactivate ORR
+
+    ORS -> UOW: CommitAsync()
+    activate UOW
+    UOW -> DB: Commit Transaction
+    DB --> UOW: Confirmation
+    UOW --> ORS: Confirmation
+    deactivate UOW
+
+    ORS -> LS: LogChangeAsync(...)
+    activate LS
+    LS -> DB: Log
+    DB --> LS: Confirmation
+    LS --> ORS: Confirmation
+    deactivate LS
+
+    ORS --> ORC: true
+    ORC --> Doctor: 200 OK (Operation request deleted successfully)
+end
+
+deactivate ORS
+deactivate ORC
+
+@enduml

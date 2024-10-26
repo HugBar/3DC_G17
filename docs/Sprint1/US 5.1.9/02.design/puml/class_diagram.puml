@@ -1,0 +1,51 @@
+@startuml class diagram us 5.1.9
+class PatientController {
+  - _service: PatientService
+  + DeletePatient(id: string, deleteDto: DeletePatientDto): Task<IActionResult>
+}
+
+class PatientService {
+  - _repository: IPatientRepository
+  - _unitOfWork: IUnitOfWork
+  - _loggingService: ILoggingService
+  + DeletePatientAsync(id: string): Task<bool>
+}
+
+interface IPatientRepository {
+  + GetByUserIdAsync(userId: string): Task<Patient>
+  + RemoveAsync(patient: Patient): Task<Patient>
+}
+
+class Patient {
+  + UserId: string
+  + FirstName: string
+  + LastName: string
+  + Email: string
+  + PhoneNumber: string
+  + DateofBirth: DateTime
+  + ContactInfo: string
+  + EmergencyContact: string
+  + AppointmentHistory: string
+  + MedicalHistory: string
+  + MedicalNr: string
+}
+
+class DeletePatientDto {
+  + ConfirmDeletion: bool
+}
+
+interface IUnitOfWork {
+  + CommitAsync(): Task
+}
+
+interface ILoggingService {
+  + LogChangeAsync(action: string, userId: string, patientName: string, changeData: object): Task
+}
+
+PatientController --> PatientService : uses
+PatientService --> IPatientRepository : uses
+PatientService --> IUnitOfWork : uses
+PatientService --> ILoggingService : uses
+PatientController --> DeletePatientDto : uses
+IPatientRepository --> Patient : manages
+@enduml

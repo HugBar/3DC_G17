@@ -1,0 +1,51 @@
+@startuml sequence diagram us 5.1.9
+actor Admin
+participant "PatientController" as PC
+participant "PatientService" as PS
+participant "IPatientRepository" as IPR
+participant "Patient" as P
+participant "IUnitOfWork" as UOW
+participant "ILoggingService" as LS
+
+Admin -> PC: DELETE /api/Patient/delete-patient/{id}
+activate PC
+
+PC -> PS: DeletePatientAsync(id)
+activate PS
+
+PS -> IPR: GetByUserIdAsync(id)
+activate IPR
+IPR --> PS: Patient
+deactivate IPR
+
+alt Patient not found
+    PS --> PC: false
+    PC --> Admin: 404 Not Found (Patient not found)
+else Patient found
+    PS -> P: Deactivate()
+    activate P
+    P --> PS: void
+    deactivate P
+
+    PS -> IPR: RemoveAsync(patient)
+    activate IPR
+    IPR --> PS: Patient
+    deactivate IPR
+
+    PS -> UOW: CommitAsync()
+    activate UOW
+    UOW --> PS: void
+    deactivate UOW
+
+    PS -> LS: LogChangeAsync("Patient deleted", id, patientName, null)
+    activate LS
+    LS --> PS: Task completed
+    deactivate LS
+
+    PS --> PC: true
+    PC --> Admin: 200 OK (Patient successfully deleted)
+end
+
+deactivate PS
+deactivate PC
+@enduml

@@ -1,0 +1,65 @@
+@startuml namespace US 5.1.10 sequence diagram
+title US 5.1.10 Delete Patient sequence diagram
+
+actor Admin
+participant "PatientController" as PC
+participant "PatientService" as PS
+participant "IPatientRepository" as PR
+participant "IUnitOfWork" as UOW
+participant "ILoggingService" as LS
+database "Database" as DB
+
+Admin -> PC: DELETE /api/patient/delete-patient/{id}
+activate Admin
+activate PC
+
+PC -> PC: Check Admin Role
+alt Not Admin
+    PC --> Admin: 401 Unauthorized
+end
+
+PC -> PS: DeletePatientAsync(id)
+activate PS
+
+PS -> PR: GetByUserIdAsync(id)
+activate PR
+PR -> DB: Query Patient
+DB --> PR: Patient Data
+alt Patient Not Found
+    PR --> PS: null
+    PS --> PC: false
+    PC --> Admin: 404 Not Found "Patient not found."
+end
+PR --> PS: Patient
+deactivate PR
+
+PS -> LS: LogChangeAsync("Patient deleted", id, patientName, null)
+activate LS
+LS --> PS: Log Success
+deactivate LS
+
+PS -> PR: RemoveAsync(patient)
+activate PR
+PR -> DB: Delete Patient
+DB --> PR: Success
+PR --> PS: Success
+deactivate PR
+
+alt Deletion Confirmation Not True
+    PS --> PC: false
+    PC --> Admin: 400 Bad Request "Deletion confirmation failed."
+
+end
+
+PS -> UOW: CommitAsync()
+activate UOW
+UOW --> PS: Commit Success
+deactivate UOW
+
+PS --> PC: true
+deactivate PS
+
+PC --> Admin: 200 OK "Patient successfully deleted."
+deactivate PC
+deactivate Admin
+@enduml

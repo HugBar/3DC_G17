@@ -1,0 +1,64 @@
+@startuml
+
+class OperationTypeController {
+    - OperationTypeService _service
+    + CreateOperationType(dto: CreateOperationTypeDto): Task<ActionResult<OperationTypeDto>>
+    + UpdateOperationType(id: Guid, patchDoc: JsonPatchDocument<UpdateOperationTypeDto>): Task<IActionResult>
+}
+
+class OperationTypeService {
+    - IOperationTypeRepository _repo
+    - IUnitOfWork _unitOfWork
+    - ILoggingService _loggingService
+    + AddAsync(dto: CreateOperationTypeDto): Task<OperationTypeDto>
+    + GetAllAsync(): Task<IEnumerable<OperationTypeDto>>
+    + UpdateOperationType(id: OperationTypeId, patchDoc: JsonPatchDocument<UpdateOperationTypeDto>): Task<OperationTypeDto>
+    - ConvertToDto(operationType: OperationType): UpdateOperationTypeDto
+}
+
+interface IOperationTypeRepository {
+    + AddAsync(operationType: OperationType): Task<OperationType>
+    + GetByNameAsync(name: string): Task<OperationType>
+    + ExistsByNameAsync(name: string): Task<bool>
+    + UpdateAsync(operationType: OperationType): Task<OperationType>
+    + GetByIdAsync(id: OperationTypeId): Task<OperationType>
+}
+
+class OperationType {
+    + Id: OperationTypeId
+    + Name: string
+    + RequiredStaffBySpecialization: Dictionary<String, int>
+    + Duration: OperationPhases
+    + SetName(name: string)
+    + SetRequiredStaffBySpecialization(requiredStaff: Dictionary<String, int>)
+    + SetEstimatedDuration(duration: OperationPhases)
+}
+
+class OperationTypeDto {
+    + Id: OperationTypeId
+    + Name: string
+    + RequiredStaffBySpecialization: Dictionary<String, int>
+    + Duration: OperationPhases
+}
+
+class UpdateOperationTypeDto {
+    + Name: string
+    + RequiredStaffBySpecialization: Dictionary<String, int>
+    + AnesthesiaPreparation: TimeSpan
+    + Surgery: TimeSpan
+    + Cleaning: TimeSpan
+}
+
+class OperationPhases {
+    + AnesthesiaPreparation: TimeSpan
+    + Surgery: TimeSpan
+    + Cleaning: TimeSpan
+}
+
+OperationTypeController --> OperationTypeService : uses
+OperationTypeService --> IOperationTypeRepository : interacts
+OperationTypeService --> OperationType : manipulates
+OperationTypeService --> OperationTypeDto : converts to
+OperationTypeService --> UpdateOperationTypeDto : converts to
+
+@enduml

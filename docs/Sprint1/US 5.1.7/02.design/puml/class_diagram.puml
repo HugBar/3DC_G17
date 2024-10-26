@@ -1,0 +1,60 @@
+@startuml
+class StaffController {
+  +CreateStaffProfile(CreateStaffDto): Task<IActionResult>
+}
+
+class StaffService {
+  -IStaffRepository _staffRepo
+  -IUnitOfWork _unitOfWork
+  -IEmailService _emailService
+  +AddAsync(CreateStaffDto): Task<StaffDto>
+  -GenerateUniqueLicenseNumber(): string
+}
+
+class Staff {
+  +Id: string
+  +FirstName: string
+  +LastName: string
+  +Email: string
+  +PhoneNumber: string
+  +Specialization: string
+  +LicenseNumber: string
+  +Active: bool
+  +AvailabilitySlots: List<AvailabilitySlot>
+  +AddAvailabilitySlot(DateTime, DateTime): void
+}
+
+interface IStaffRepository {
+  +AddAsync(Staff): Task<Staff>
+  +IsEmailUniqueAsync(string): Task<bool>
+  +IsPhoneNumberUniqueAsync(string): Task<bool>
+}
+
+class CreateStaffDto {
+  +FirstName: string
+  +LastName: string
+  +Email: string
+  +PhoneNumber: string
+  +Specialization: string
+  +AvailabilitySlots: List<AvailabilitySlotDto>
+}
+
+class StaffDto {
+  +Id: string
+  +FirstName: string
+  +LastName: string
+  +Email: string
+  +PhoneNumber: string
+  +Specialization: string
+  +LicenseNumber: string
+  +Active: bool
+  +AvailabilitySlots: List<AvailabilitySlotDto>
+}
+
+StaffController --> StaffService
+StaffService --> IStaffRepository
+StaffService --> Staff
+IStaffRepository --> Staff
+StaffService ..> CreateStaffDto
+StaffService ..> StaffDto
+@enduml

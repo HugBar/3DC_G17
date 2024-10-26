@@ -1,0 +1,68 @@
+@startuml namespace US 5.1.5 class diagram
+title "US 5.1.5 class diagram: Account Deletion Request and Confirmation"
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class PatientController {
+  - _service: PatientService
+  + RequestAccountDeletion(): Task<IActionResult>
+  + ConfirmAccountDeletion(DeleteConfirmationDto): Task<IActionResult>
+}
+
+class PatientService {
+  - _repository: IPatientRepository
+  - _userManager: UserManager<ApplicationUser>
+  - _unitOfWork: IUnitOfWork
+  - _emailService: IEmailService
+  - _loggingService: ILoggingService
+  + RequestAccountDeletionAsync(string email): Task
+  + ConfirmAccountDeletionAsync(string email): Task<bool>
+  + ValidateTokenAndGetEmail(string token): string
+  - GenerateToken(string email): string
+}
+
+interface IPatientRepository {
+  + GetByEmailAsync(string email): Task<Patient>
+  + UpdateAsync(Patient patient): Task<Patient>
+  + AnonymizeAsync(Patient patient): Task<Patient>
+}
+
+interface IEmailService {
+  + SendEmailAsync(string to, string subject, string body): Task
+}
+
+interface ILoggingService {
+  + LogInformation(string message): void
+  + LogWarning(string message): void
+  + LogError(string message, Exception ex): void
+  + LogChangeAsync(string action, string userId, string patientName, object changeData): Task
+}
+
+class LoggingService {
+  - _logger: ILogger<LoggingService>
+  + LogInformation(string message): void
+  + LogWarning(string message): void
+  + LogError(string message, Exception ex): void
+  + LogChangeAsync(string action, string userId, string patientName, object changeData): Task
+}
+
+class DeleteConfirmationDto {
+  + Token: string
+}
+
+interface IUnitOfWork {
+  + BeginTransactionAsync(): Task
+  + CommitTransactionAsync(): Task
+  + RollbackTransactionAsync(): Task
+}
+
+PatientController --> PatientService : "Uses\n(Dependency Injection)"
+PatientController ..> DeleteConfirmationDto : "Uses for\nconfirmation request"
+
+PatientService --> IPatientRepository : "Uses for data\npersistence"
+PatientService --> IEmailService : "Uses for sending\nnotifications"
+PatientService --> ILoggingService : "Uses for audit\nlogging"
+PatientService --> IUnitOfWork : "Uses for transaction\nmanagement"
+
+ILoggingService <|.. LoggingService : "Implements"
+@enduml

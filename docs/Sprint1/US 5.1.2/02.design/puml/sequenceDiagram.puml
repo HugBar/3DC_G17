@@ -1,0 +1,146 @@
+@startuml namespace US 5.1.2 sequence diagram
+title US 5.1.2 Password Reset sequence diagram
+
+actor "Backoffice User" as user
+participant "AuthController" as controller
+participant "AuthService" as service
+participant "UserManager" as userManager
+participant "EmailService" as emailService
+participant "LoggingService" as logger
+participant "PasswordValidator" as validator
+
+== Password Reset Request ==
+
+
+user -> controller : POST /api/auth/reset-password\n(ResetPasswordDto)
+activate user
+activate controller
+
+controller -> controller : Validate Email Format
+alt Invalid Email Format
+    controller --> user : BadRequest("Invalid email format")
+end
+
+controller -> service : ResetPasswordAsync(email)
+activate service
+
+service -> userManager : FindByEmailAsync(email)
+activate userManager
+userManager --> service : user
+deactivate userManager
+
+alt User Not Found
+    service --> controller : throw InvalidOperationException
+    controller --> user : BadRequest("User not found")
+end
+
+service -> userManager : IsInRoleAsync(user, roles)
+activate userManager
+userManager --> service : isBackofficeUser
+deactivate userManager
+
+alt Not Backoffice User
+    service --> controller : throw InvalidOperationException
+    controller --> user : BadRequest("Not authorized")
+end
+
+service -> userManager : IsLockedOutAsync(user)
+activate userManager
+userManager --> service : isLocked
+deactivate userManager
+
+alt Account Locked
+    service --> controller : throw InvalidOperationException
+    controller --> user : BadRequest("Account locked")
+end
+
+service -> userManager : RemoveAuthenticationTokenAsync(user)
+service -> userManager : GeneratePasswordResetTokenAsync(user)
+activate userManager
+userManager --> service : resetToken
+deactivate userManager
+
+service -> emailService : SendEmailAsync(email, subject, resetLink)
+activate emailService
+emailService --> service : Task.Complete
+deactivate emailService
+
+service --> controller : true
+deactivate service
+
+controller -> logger : LogInformation("Reset email sent")
+controller --> user : Ok("Password reset email sent")
+deactivate 
+== Password Reset Confirmation ==
+
+user -> controller : POST /api/auth/confirm-reset-password\n(ConfirmResetPasswordDto)
+activate controller
+
+controller -> controller : Validate Model State
+alt Invalid Model State
+    controller --> user : BadRequest(ModelState)
+end
+
+alt Empty Password
+    controller --> user : BadRequest("New password is required")
+end
+
+alt Empty Token
+    controller --> user : BadRequest("Reset token is required")
+end
+
+controller -> userManager : FindByEmailAsync(email)
+activate userManager
+userManager --> controller : user
+deactivate userManager
+
+alt User Not Found
+    controller --> user : BadRequest("User not found")
+end
+
+controller -> service : ConfirmResetPasswordAsync(email, token, newPassword)
+activate service
+
+service -> userManager : CheckPasswordAsync(user, newPassword)
+activate userManager
+userManager --> service : isSamePassword
+deactivate userManager
+
+alt Same as Old Password
+    service --> controller : throw InvalidOperationException
+    controller --> user : BadRequest("Cannot use old password")
+end
+
+loop For Each Password Validator
+    service -> validator : ValidateAsync(user, newPassword)
+    activate validator
+    validator --> service : validationResult
+    deactivate validator
+    
+    alt Validation Failed
+        service --> controller : throw InvalidOperationException
+        controller --> user : BadRequest("Password validation failed")
+    end
+end
+
+
+
+service -> service : Decode Token
+service -> userManager : ResetPasswordAsync(user, decodedToken, newPassword)
+activate userManager
+userManager --> service : resetResult
+deactivate userManager
+
+alt Reset Failed
+    service --> controller : throw Exception
+    controller --> user : BadRequest("Invalid token")
+end
+
+service --> controller : true
+deactivate service
+
+controller -> logger : LogInformation("Password reset successful")
+controller --> user : Ok("Password reset successful")
+deactivate controller
+deactivate user
+@enduml

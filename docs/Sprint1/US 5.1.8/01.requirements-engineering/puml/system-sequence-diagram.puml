@@ -1,0 +1,20 @@
+@startuml name system sequence diagram us 5.1.8
+actor Admin as User
+participant System
+
+activate User
+User -> System : Create new patient profile
+activate System
+System -> User : Request patient details
+deactivate System
+User -> System : Provide patient details (CreatePatientDto)
+activate System
+System -> User : Validate unique email and phone
+System -> User : Generate unique Patient ID
+System -> User : Create patient profile
+System -> User : Confirm patient profile created successfully
+deactivate System
+
+deactivate User
+@enduml
+

@@ -1,0 +1,32 @@
+@startuml
+actor Admin
+participant "PatientController" as PC
+participant "PatientService" as PS
+participant "IPatientRepository" as IPR
+participant "Patient" as P
+participant "IUnitOfWork" as UOW
+participant "IEmailService" as ES
+
+Admin -> PC : POST /api/Patient/Register(CreatePatientDto)
+activate PC
+
+PC -> PS : AddAsync(CreatePatientDto)
+activate PS
+
+PS -> IPR : IsEmailUniqueAsync(dto.Email)
+PS -> IPR : IsPhoneNumberUniqueAsync(dto.PhoneNumber)
+
+PS -> PS : GenerateUniqueMedicalNumber()
+PS -> P : new Patient(...)
+
+PS -> IPR : AddAsync(Patient)
+PS -> UOW : CommitAsync()
+
+PS -> ES : SendEmailAsync(...)
+
+PS --> PC : PatientDto
+deactivate PS
+
+PC --> Admin : 200 OK (PatientDto)
+deactivate PC
+@enduml

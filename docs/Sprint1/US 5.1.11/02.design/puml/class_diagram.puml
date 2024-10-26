@@ -1,0 +1,94 @@
+@startuml
+
+class PatientController {
+  - _service: PatientService
+  + GetPatients(filter: PatientFilterDTO): ActionResult<IEnumerable<PatientDto>>
+}
+
+class PatientService {
+  - _repository: IPatientRepository
+  + GetFilteredPatient(filter: PatientFilterDTO): IEnumerable<PatientDto>
+}
+
+interface IPatientRepository {
+  + GetFilteredPatientAsync(filter: PatientFilterDTO): IEnumerable<Patient>
+}
+
+class PatientRepository {
+  - _context: DDDSample1DbContext
+  + GetFilteredPatientAsync(filter: PatientFilterDTO): IEnumerable<Patient>
+}
+
+class DDDSample1DbContext {
+  + Patients: DbSet<Patient>
+}
+
+class Patient {
+  + UserId: string
+  + FirstName: string
+  + LastName: string
+  + Email: string
+  + PhoneNumber: string
+  + DateofBirth: DateTime
+  + ContactInfo: string
+  + EmergencyContact: string
+  + AppointmentHistory: string
+  + MedicalHistory: string
+  + MedicalNr: string
+}
+
+class PatientFilterDTO {
+  + FirstName: string
+  + LastName: string
+  + Email: string
+}
+
+class PatientDto {
+  + Id: string
+  + FirstName: string
+  + LastName: string
+  + Email: string
+  + PhoneNumber: string
+  + DateofBirth: DateTime
+  + ContactInfo: string
+  + EmergencyContact: string
+  + AppointmentHistory: string
+  + MedicalHistory: string
+  + MedicalNr: string
+}
+
+PatientController --> PatientService : uses
+PatientService --> IPatientRepository : uses
+PatientRepository ..|> IPatientRepository : implements
+PatientRepository --> DDDSample1DbContext : uses
+DDDSample1DbContext --> Patient : contains
+
+PatientController ..> PatientFilterDTO : uses
+PatientController ..> PatientDto : returns
+PatientService ..> PatientFilterDTO : uses
+PatientService ..> PatientDto : returns
+PatientService ..> Patient : transforms to PatientDto
+IPatientRepository ..> PatientFilterDTO : uses
+IPatientRepository ..> Patient : returns
+PatientRepository ..> PatientFilterDTO : uses
+PatientRepository ..> Patient : returns
+
+note right of PatientController::GetPatients
+  1. Receives PatientFilterDTO
+  2. Calls _service.GetFilteredPatient()
+  3. Checks if patients found
+  4. Returns NotFound or Ok with patients
+end note
+
+note right of PatientService::GetFilteredPatient
+  1. Calls _repository.GetFilteredPatientAsync()
+  2. Transforms Patient to PatientDto
+  3. Returns IEnumerable<PatientDto>
+end note
+
+note right of PatientRepository::GetFilteredPatientAsync
+  1. Queries _context.Patients
+  2. Applies filters from PatientFilterDTO
+  3. Returns filtered IEnumerable<Patient>
+end note
+@enduml

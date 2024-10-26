@@ -1,0 +1,52 @@
+@startuml
+package "Web Application" {
+  component "PatientController" {
+    [RegisterPatient]
+    [UpdatePatientProfile]
+    [DeletePatient]
+  }
+
+  component "OperationRequestController" {
+    [CreateOperationRequest]
+    [DeleteOperationRequest]
+    [SearchOperationRequests]
+  }
+
+  component "StaffController" {
+    [CreateStaffProfile]
+    [UpdateStaffProfile]
+    [Deactivate]
+  }
+
+  component "UserController" {
+    [Register]
+    [GetUser]
+    [UpdateUser]
+    [DeleteUser]
+  }
+}
+
+package "Services" {
+  [PatientService]
+  [OperationRequestService]
+  [StaffService]
+  [UserService]
+}
+
+package "Repositories" {
+  [IPatientRepository]
+  [IOperationRequestRepository]
+  [IStaffRepository]
+  [IUserRepository]
+}
+
+[PatientController] --> [PatientService]
+[OperationRequestController] --> [OperationRequestService]
+[StaffController] --> [StaffService]
+[UserController] --> [UserService]
+
+[PatientService] --> [IPatientRepository]
+[OperationRequestService] --> [IOperationRequestRepository]
+[StaffService] --> [IStaffRepository]
+[UserService] --> [IUserRepository]
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+actor Admin
+participant System
+
+Admin -> System: DeactivateStaff(staffId)
+activate System
+
+System --> Admin: Confirmation
+deactivate System
+
+
+@enduml

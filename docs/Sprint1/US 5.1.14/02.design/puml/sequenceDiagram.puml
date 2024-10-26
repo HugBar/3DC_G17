@@ -1,0 +1,68 @@
+@startuml namespace US 5.1.14 sequence diagram
+title "Admin Deactivate Staff Sequence Diagram"
+
+actor Admin
+participant "StaffController" as SC
+participant "StaffService" as SS
+participant "IStaffRepository" as SR
+participant "IUnitOfWork" as UOW
+participant "ILoggingService" as LS
+database "Database" as DB
+
+Admin -> SC: PATCH /api/staff/deactivate/{id}
+activate Admin
+activate SC
+
+SC -> SC: Check Admin Role
+alt Not Admin
+    SC --> Admin: 401 Unauthorized
+end
+
+SC -> SS: DeactivateAsync(id)
+activate SS
+
+SS -> SR: GetByIdAsync(id)
+activate SR
+SR -> DB: Query Staff
+DB --> SR: Staff Data
+alt Staff Not Found
+    SR --> SS: null
+    SS --> SC: false
+    SC --> Admin: 404 Not Found "Staff not found."
+end
+SR --> SS: Staff
+deactivate SR
+
+SS -> SS: staff.Deactivate()
+alt Deactivation Fails
+    SS --> SC: Exception
+    SC --> Admin: 500 Internal Server Error
+   
+end
+
+SS -> SR: UpdateAsync(staff)
+activate SR
+alt Update Fails
+    SR --> SS: Exception
+    SS -> UOW: RollbackTransactionAsync()
+    SS -> LS: LogError("Failed to update staff data")
+    SS --> SC: Exception
+    SC --> Admin: 500 Internal Server Error
+end
+SR --> SS: Success
+deactivate SR
+
+SS -> LS: LogChangeAsync("Staff deactivated", id, staffName, null)
+activate LS
+LS --> SS: Log Success
+deactivate LS
+
+
+
+SS --> SC: true
+deactivate SS
+
+SC --> Admin: 200 OK "Staff successfully deactivated."
+deactivate SC
+deactivate Admin
+@enduml

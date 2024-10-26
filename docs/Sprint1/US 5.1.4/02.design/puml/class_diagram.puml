@@ -1,0 +1,116 @@
+@startuml namespace User story 5.1.4 class diagram
+skinparam classFontSize 14
+skinparam classFontName Arial
+skinparam classAttributeFontSize 12
+skinparam classAttributeFontName Arial
+skinparam linetype ortho
+
+class PatientController {
+  - _service: PatientService
+  + UpdatePatientProfile(email: string, patchDoc: JsonPatchDocument<UpdatePatientDto>): Task<IActionResult>
+}
+
+class PatientService {
+  - _repository: IPatientRepository
+  - _unitOfWork: IUnitOfWork
+  - _loggingService: ILoggingService
+  - _emailService: IEmailService
+  + UpdatePatientProfileAsync(email: string, dto: UpdatePatientDto): Task<PatientDto>
+  - SendContactInfoUpdateEmail(patient: Patient): Task
+}
+
+class PatientDto {
+  + Id: string
+  + FirstName: string
+  + LastName: string
+  + Email: string
+  + PhoneNumber: string
+  + DateofBirth: string
+  + Gender: string
+  + ContactInfo: string
+  + EmergencyContact: string
+  + AppointmentHistory: string
+  + MedicalHistory: string
+  + MedicalNr: string
+}
+
+class UpdatePatientDto {
+  + UserId: string
+  + FirstName: string
+  + LastName: string
+  + Email: string
+  + PhoneNumber: string
+  + DateOfBirth: string
+  + Gender: string
+  + ContactInfo: string
+  + EmergencyContact: string
+  + MedicalHistory: string
+  + MedicalNr: string
+}
+
+interface IPatientRepository {
+  + GetByEmailAsync(email: string): Task<Patient>
+  + UpdateAsync(patient: Patient): Task<Patient>
+  + IsEmailUniqueAsync(email: string): Task<bool>
+}
+
+class PatientRepository {
+  - _context: DDDSample1DbContext
+  + GetByEmailAsync(email: string): Task<Patient>
+  + UpdateAsync(patient: Patient): Task<Patient>
+  + IsEmailUniqueAsync(email: string): Task<bool>
+}
+
+interface ILoggingService {
+  + LogChangeAsync(action: string, userId: string, patientName: string, changeData: object): Task
+}
+
+class LoggingService {
+  - _logger: ILogger<LoggingService>
+  + LogChangeAsync(action: string, userId: string, patientName: string, changeData: object): Task
+}
+
+interface IEmailService {
+  + SendEmailAsync(to: string, subject: string, body: string): Task
+  + SendAdminLockoutNotification(userEmail: string): Task
+}
+
+class Patient {
+  + UserId: string
+  + FirstName: string
+  + LastName: string
+  + Email: string
+  + PhoneNumber: string
+  + UpdateContactInfo(email: string, phoneNumber: string): void
+}
+
+PatientController "1" --> "1" PatientService : uses >
+PatientController ..> PatientDto : returns >
+PatientController ..> UpdatePatientDto : receives >
+
+PatientService "1" --> "1" IPatientRepository : uses >
+PatientService "1" --> "1" ILoggingService : uses >
+PatientService "1" --> "1" IEmailService : uses >
+PatientService ..> PatientDto : creates >
+PatientService ..> UpdatePatientDto : receives >
+PatientService ..> Patient : manipulates >
+
+IPatientRepository "1" <|.. "1" PatientRepository : implements >
+IPatientRepository ..> Patient : manages >
+
+ILoggingService "1" <|.. "1" LoggingService : implements >
+
+PatientRepository "1" --> "*" Patient : manages >
+
+note right of PatientService
+  Orchestrates patient profile updates,
+  including validation, persistence,
+  logging, and email notifications
+end note
+
+note right of IEmailService
+  Handles email notifications
+  for profile updates and
+  admin notifications
+end note
+@enduml

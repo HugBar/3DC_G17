@@ -1,0 +1,33 @@
+
+@startuml 
+actor BackofficeUser as User
+participant System
+
+activate User
+User -> System : Solicitar redefinição de senha
+activate System
+System -> User : Exibir formulário para inserir e-mail
+deactivate System
+User -> System : Enviar e-mail
+activate System
+System -> User : Verificar e-mail
+deactivate System
+alt E-mail não encontrado
+    System -> User : "E-mail não cadastrado"
+    User -> System : Exibir formulário para inserir e-mail
+        activate System
+
+end 
+System -> User : Gerar token e enviar e-mail com link
+deactivate System
+User -> System : Clicar no link de redefinição de senha
+activate System
+System -> User : Exibir formulário para nova senha
+deactivate System
+User -> System : Enviar nova senha
+activate System
+System -> User : Validar e atualizar senha
+System -> User : Confirmar sucesso na redefinição de senha
+deactivate System
+
+@enduml

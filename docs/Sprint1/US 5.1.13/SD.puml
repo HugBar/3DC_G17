@@ -1,0 +1,87 @@
+@startuml Improved Sequence Diagram for US 5.1.13 with Better Alternatives
+actor Admin
+participant "StaffController" as SC
+participant "StaffService" as SS
+participant "IStaffRepository" as SR
+participant "Staff" as S
+participant "IUnitOfWork" as UOW
+participant "ILoggingService" as LS
+participant "IEmailService" as ES
+database "Database" as DB
+
+Admin -> SC: PATCH /api/staff/edit-staff-profile/{id}
+activate SC
+
+alt Invalid ModelState
+    SC --> Admin: BadRequest(ModelState)
+else Valid ModelState
+    SC -> SS: UpdateStaffAsync(id, updateStaffDto)
+    activate SS
+
+    SS -> SR: GetByIdAsync(id)
+    activate SR
+    SR -> DB: Query Staff
+    DB --> SR: Return Staff
+    SR --> SS: Return Staff
+    deactivate SR
+
+    alt Staff not found
+        SS --> SC: throw NotFoundException
+        SC --> Admin: NotFound("Staff not found")
+    else Staff found
+        SS -> SS: Map UpdateStaffDto to Staff
+
+        SS -> SR: IsEmailUniqueAsync(newEmail, excludeId)
+        activate SR
+        SR -> DB: Check email uniqueness
+        DB --> SR: Result
+        SR --> SS: Boolean result
+        deactivate SR
+
+        SS -> SR: IsPhoneNumberUniqueAsync(newPhoneNumber, excludeId)
+        activate SR
+        SR -> DB: Check phone number uniqueness
+        DB --> SR: Result
+        SR --> SS: Boolean result
+        deactivate SR
+
+        alt Email or Phone not unique
+            SS --> SC: throw BusinessRuleValidationException
+            SC --> Admin: Conflict("Email or phone number already in use")
+        else Email and Phone are unique
+            SS -> SR: UpdateAsync(staff)
+            activate SR
+            SR -> DB: Update Staff
+            DB --> SR: Updated data
+            SR --> SS: Updated Staff object
+            deactivate SR
+
+            SS -> UOW: CommitAsync()
+            activate UOW
+            UOW -> DB: Commit transaction
+            DB --> UOW: Confirmation
+            UOW --> SS: Commit result
+            deactivate UOW
+
+            alt Contact info changed
+                SS -> ES: SendContactInfoUpdateEmail(staff)
+                activate ES
+                ES --> SS: Email sent
+                deactivate ES
+            end
+
+            SS --> SC: Updated StaffDto
+            SC --> Admin: HTTP 200 OK with updated staff data
+        end
+    end
+    deactivate SS
+end
+
+alt Exception occurs during process
+    SC -> LS: LogError("Error updating staff profile", ex)
+    SC --> Admin: HTTP 500 Internal Server Error
+end
+
+deactivate SC
+
+@enduml

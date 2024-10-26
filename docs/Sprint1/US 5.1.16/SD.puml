@@ -1,0 +1,97 @@
+@startuml
+actor Doctor
+participant "OperationRequestController" as ORC
+participant "OperationRequestService" as ORS
+participant "IPatientRepository" as PR
+participant "IStaffRepository" as SR
+participant "IOperationTypeRepository" as OTR
+participant "IOperationRequestRepository" as ORR
+participant "IUnitOfWork" as UOW
+participant "ILoggingService" as LS
+database "Database" as DB
+
+Doctor -> ORC: POST /api/operation-request/create-operation-request
+activate ORC
+
+ORC -> ORC: Validate ModelState
+alt ModelState is invalid
+    ORC --> Doctor: BadRequest(ModelState)
+else ModelState is valid
+    ORC -> ORS: CreateOperationRequestAsync(CreateOperationRequestDto)
+    activate ORS
+
+    ORS -> PR: ExistsAsync(dto.PatientId)
+    activate PR
+    PR -> DB: Query Patient
+    DB --> PR: Patient Exists
+    PR --> ORS: Patient Exists
+    deactivate PR
+
+    alt Patient not found
+        ORS --> ORC: throw InvalidOperationException
+        ORC --> Doctor: Conflict("No patient found with this ID.")
+    else Patient found
+        ORS -> SR: GetByIdAsync(dto.DoctorId)
+        activate SR
+        SR -> DB: Query Doctor
+        DB --> SR: Doctor
+        SR --> ORS: Doctor
+        deactivate SR
+
+        alt Doctor not found or not a doctor
+            ORS --> ORC: throw InvalidOperationException
+            ORC --> Doctor: Conflict("No doctor found with this ID or user is not a doctor.")
+        else Doctor found
+            ORS -> OTR: GetByIdAsync(dto.OperationTypeId)
+            activate OTR
+            OTR -> DB: Query OperationType
+            DB --> OTR: OperationType
+            OTR --> ORS: OperationType
+            deactivate OTR
+
+            alt OperationType not found
+                ORS --> ORC: throw BusinessRuleValidationException
+                ORC --> Doctor: BadRequest("Invalid operation type.")
+            else OperationType found
+                ORS -> ORS: Validate Doctor Specialization
+                alt Specialization mismatch
+                    ORS --> ORC: throw BusinessRuleValidationException
+                    ORC --> Doctor: BadRequest("Doctor's specialization does not match...")
+                else Specialization matches
+                    ORS -> ORS: Validate Priority
+                    alt Invalid priority
+                        ORS --> ORC: throw InvalidOperationException
+                        ORC --> Doctor: Conflict("Invalid priority...")
+                    else Valid priority
+                        ORS -> ORS: GenerateUniqueOperationRequestId()
+                        ORS -> ORR: AddAsync(OperationRequest)
+                        activate ORR
+                        ORR -> DB: Save OperationRequest
+                        DB --> ORR: OperationRequest Saved
+                        ORR --> ORS: OperationRequest
+                        deactivate ORR
+
+                        ORS -> UOW: CommitAsync()
+                        activate UOW
+                        UOW -> DB: Commit Transaction
+                        DB --> UOW: Transaction Committed
+                        UOW --> ORS: 
+                        deactivate UOW
+
+                        ORS -> LS: LogInformation("New operation request created")
+                        activate LS
+                        LS --> ORS: Logged
+                        deactivate LS
+
+                        ORS --> ORC: OperationRequestDto
+                    end
+                end
+            end
+        end
+    end
+    deactivate ORS
+    ORC --> Doctor: 200 OK (OperationRequestDto)
+end
+deactivate ORC
+
+@enduml

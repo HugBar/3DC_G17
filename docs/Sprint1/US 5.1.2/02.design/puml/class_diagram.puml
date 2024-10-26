@@ -1,0 +1,97 @@
+@startuml namespace U.S 5.1.2 class diagram
+title US 5.1.2 Password Reset class diagram
+
+class AuthController {
+  -IAuthService _authService
+  -ILogger<AuthController> _logger
+  -UserManager<ApplicationUser> _userManager
+  +ResetPassword(ResetPasswordDto) : Task<IActionResult>
+  +ConfirmResetPassword(ConfirmResetPasswordDto) : Task<IActionResult>
+}
+
+class AuthService {
+  -UserManager<ApplicationUser> _userManager
+  -SignInManager<ApplicationUser> _signInManager
+  -IConfiguration _configuration
+  -IEmailService _emailService
+  -ILogger<AuthService> _logger
+  +ResetPasswordAsync(string email) : Task<bool>
+  +ConfirmResetPasswordAsync(string email, string token, string newPassword) : Task<bool>
+  -ValidatePasswordComplexity(string password) : void
+}
+
+interface IAuthService {
+  +ResetPasswordAsync(string email) : Task<bool>
+  +ConfirmResetPasswordAsync(string email, string token, string newPassword) : Task<bool>
+}
+
+class ResetPasswordDto {
+  +string Email
+}
+
+class ConfirmResetPasswordDto {
+  +string Email
+  +string Token
+  +string NewPassword
+}
+
+interface IEmailService {
+  +SendEmailAsync(string to, string subject, string body) : Task
+}
+
+interface ILoggingService {
+  +LogInformation(string message)
+  +LogWarning(string message)
+  +LogError(string message, Exception ex)
+}
+
+class LoggingService {
+  -ILogger<LoggingService> _logger
+  +LogInformation(string message)
+  +LogWarning(string message)
+  +LogError(string message, Exception ex)
+}
+
+class ApplicationUser {
+  +string Email
+  +string UserName
+  +bool IsLockedOut
+}
+
+class UserManager<ApplicationUser> {
+  +FindByEmailAsync(string email) : Task<ApplicationUser>
+  +IsInRoleAsync(ApplicationUser user, string role) : Task<bool>
+  +GeneratePasswordResetTokenAsync(ApplicationUser user) : Task<string>
+  +ResetPasswordAsync(ApplicationUser user, string token, string newPassword) : Task<IdentityResult>
+  +CheckPasswordAsync(ApplicationUser user, string password) : Task<bool>
+}
+
+AuthController --> IAuthService : uses
+AuthController --> ILoggingService : uses
+AuthController --> UserManager : uses
+AuthController ..> ResetPasswordDto : uses
+AuthController ..> ConfirmResetPasswordDto : uses
+AuthService ..|> IAuthService : implements
+AuthService --> IEmailService : uses
+AuthService --> ILoggingService : uses
+AuthService --> UserManager : uses
+AuthService ..> ConfirmResetPasswordDto : uses
+LoggingService ..|> ILoggingService : implements
+UserManager --> ApplicationUser : manages
+
+note right of ConfirmResetPasswordDto
+  Data Transfer Object for password reset confirmation:
+  - Contains email for user identification
+  - Includes reset token for verification
+  - Carries new password to be set
+end note
+
+note right of AuthService
+  Handles password complexity validation:
+  - Minimum length
+  - Uppercase letters
+  - Lowercase letters
+  - Numbers
+  - Special characters
+end note
+@enduml

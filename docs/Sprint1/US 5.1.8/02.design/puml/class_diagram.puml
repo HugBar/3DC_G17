@@ -1,0 +1,47 @@
+@startuml
+class PatientController {
+  + RegisterPatient(RegisterPatientDto): Task<IActionResult>
+}
+
+class PatientService {
+  + AddAsync(RegisterPatientDto): Task<PatientDto>
+  - GenerateUniqueMedicalNumber(): string
+}
+
+class Patient {
+  + UserId: string
+  + FirstName: string
+  + LastName: string
+  + Email: string
+  + PhoneNumber: string
+  + DateofBirth: DateTime
+  + MedicalNr: string
+}
+
+interface IPatientRepository {
+  + AddAsync(Patient): Task<Patient>
+  + IsEmailUniqueAsync(string): Task<bool>
+  + IsPhoneNumberUniqueAsync(string): Task<bool>
+}
+
+class PatientRepository {
+  + AddAsync(Patient): Task<Patient>
+  + IsEmailUniqueAsync(string): Task<bool>
+  + IsPhoneNumberUniqueAsync(string): Task<bool>
+}
+
+interface IUnitOfWork {
+  + CommitAsync(): Task
+}
+
+interface IEmailService {
+  + SendEmailAsync(string, string, string): Task
+}
+
+PatientController --> PatientService
+PatientService --> IPatientRepository
+PatientService --> Patient
+PatientService --> IUnitOfWork
+PatientService --> IEmailService
+IPatientRepository <|.. PatientRepository
+@enduml

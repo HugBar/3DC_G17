@@ -1,0 +1,44 @@
+@startuml
+class OperationRequestController {
+  -OperationRequestService _service
+  -ILogger<OperationRequestController> _logger
+  +CreateOperationRequest(CreateOperationRequestDto): Task<IActionResult>
+  +DeleteOperationRequest(string): Task<IActionResult>
+  +SearchOperationRequests(SearchOperationRequestDto): Task<ActionResult<IEnumerable<OperationRequestDto>>>
+}
+
+class OperationRequestService {
+  -IOperationRequestRepository _repository
+  -IUnitOfWork _unitOfWork
+  -IStaffRepository _staffRepo
+  -IPatientRepository _patientRepo
+  -ILoggingService _loggingService
+  -IOperationTypeRepository _operationTypeRepo
+  +CreateOperationRequestAsync(CreateOperationRequestDto): Task<OperationRequestDto>
+  +DeleteOperationRequestAsync(string, string): Task<bool>
+  +SearchOperationRequestsAsync(SearchOperationRequestDto): Task<IEnumerable<OperationRequestDto>>
+}
+
+class OperationRequestDto {
+  +Id: string
+  +PatientId: string
+  +DoctorId: string
+  +OperationTypeId: string
+  +Deadline: DateTime
+  +Priority: string
+}
+
+class SearchOperationRequestDto {
+  // Add properties used for searching
+}
+
+interface IOperationRequestRepository {
+  +GetFilteredOperationRequestsAsync(SearchOperationRequestDto): Task<IEnumerable<OperationRequest>>
+}
+
+OperationRequestController --> OperationRequestService : uses
+OperationRequestService --> IOperationRequestRepository : uses
+OperationRequestService --> OperationRequestDto : returns
+OperationRequestController --> SearchOperationRequestDto : uses
+OperationRequestService --> SearchOperationRequestDto : uses
+@enduml

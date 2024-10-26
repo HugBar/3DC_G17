@@ -1,0 +1,70 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class OperationRequestController {
+  - _service: OperationRequestService
+  - _logger: ILogger<OperationRequestController>
+  + CreateOperationRequest(CreateOperationRequestDto): Task<IActionResult>
+}
+
+class OperationRequestService {
+  - _repository: IOperationRequestRepository
+  - _unitOfWork: IUnitOfWork
+  - _staffRepo: IStaffRepository
+  - _patientRepo: IPatientRepository
+  - _loggingService: ILoggingService
+  - _operationTypeRepo: IOperationTypeRepository
+  + CreateOperationRequestAsync(CreateOperationRequestDto): Task<OperationRequestDto>
+  - GenerateUniqueOperationRequestId(): string
+}
+
+interface IOperationRequestRepository {
+  + AddAsync(OperationRequest): Task<OperationRequest>
+}
+
+class OperationRequest {
+  + Id: string
+  + PatientId: string
+  + DoctorId: string
+  + OperationTypeId: string
+  + Deadline: DateTime
+  + Priority: string
+}
+
+class CreateOperationRequestDto {
+  + PatientId: string
+  + DoctorId: string
+  + OperationTypeId: string
+  + Deadline: DateTime
+  + Priority: string
+}
+
+class OperationRequestDto {
+  + Id: string
+  + PatientId: string
+  + DoctorId: string
+  + OperationTypeId: string
+  + Deadline: DateTime
+  + Priority: string
+}
+
+interface IUnitOfWork {
+  + CommitAsync(): Task<int>
+}
+
+interface ILoggingService {
+  + LogInformation(message: string): void
+}
+
+OperationRequestController --> OperationRequestService
+OperationRequestService --> IOperationRequestRepository
+OperationRequestService --> IUnitOfWork
+OperationRequestService --> IStaffRepository
+OperationRequestService --> IPatientRepository
+OperationRequestService --> ILoggingService
+OperationRequestService --> IOperationTypeRepository
+IOperationRequestRepository --> OperationRequest
+OperationRequestService ..> CreateOperationRequestDto
+OperationRequestService ..> OperationRequestDto
+
+@enduml

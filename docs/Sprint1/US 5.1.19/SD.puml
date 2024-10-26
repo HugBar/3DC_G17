@@ -1,0 +1,33 @@
+@startuml
+actor Doctor
+participant OperationRequestController
+participant OperationRequestService
+participant IOperationRequestRepository
+database Database
+
+Doctor -> OperationRequestController : SearchOperationRequests(searchDto)
+activate OperationRequestController
+
+OperationRequestController -> OperationRequestService : SearchOperationRequestsAsync(searchDto)
+activate OperationRequestService
+
+OperationRequestService -> IOperationRequestRepository : GetFilteredOperationRequestsAsync(searchDto)
+activate IOperationRequestRepository
+IOperationRequestRepository -> Database : Query
+Database --> IOperationRequestRepository : Results
+IOperationRequestRepository --> OperationRequestService : List<OperationRequest>
+deactivate IOperationRequestRepository
+
+OperationRequestService -> OperationRequestService : Map to OperationRequestDto
+OperationRequestService --> OperationRequestController : List<OperationRequestDto>
+deactivate OperationRequestService
+
+alt Requests found
+    OperationRequestController --> Doctor : 200 OK (List<OperationRequestDto>)
+else No requests found
+    OperationRequestController --> Doctor : 404 Not Found
+end
+
+deactivate OperationRequestController
+
+@enduml

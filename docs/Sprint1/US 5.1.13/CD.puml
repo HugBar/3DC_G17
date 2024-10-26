@@ -1,0 +1,80 @@
+@startuml Improved Class Diagram for US 5.1.13
+skinparam classAttributeIconSize 0
+
+class StaffController {
+  - _staffService: StaffService
+  - _logger: ILogger<StaffController>
+  + UpdateStaffProfile(id: string, patchDoc: JsonPatchDocument<UpdateStaffDto>): Task<IActionResult>
+}
+
+class StaffService {
+  - _staffRepo: IStaffRepository
+  - _userManager: UserManager<ApplicationUser>
+  - _unitOfWork: IUnitOfWork
+  - _loggingService: ILoggingService
+  - _emailService: IEmailService
+  + UpdateStaffAsync(id: string, updateDto: UpdateStaffDto): Task<StaffDto>
+  - SendContactInfoUpdateEmail(staff: Staff): Task
+}
+
+interface IStaffRepository {
+  + GetByIdAsync(id: string): Task<Staff>
+  + UpdateAsync(staff: Staff): Task<Staff>
+  + IsEmailUniqueAsync(email: string, excludeId: string): Task<bool>
+  + IsPhoneNumberUniqueAsync(phoneNumber: string, excludeId: string): Task<bool>
+}
+
+class Staff {
+  + Id: string
+  + FirstName: string
+  + LastName: string
+  + Email: string
+  + PhoneNumber: string
+  + Specialization: string
+  + AvailabilitySlots: List<AvailabilitySlot>
+}
+
+interface IUnitOfWork {
+  + CommitAsync(): Task<int>
+}
+
+interface ILoggingService {
+  + LogInformation(message: string): void
+}
+
+interface IEmailService {
+  + SendEmailAsync(email: string, subject: string, message: string): Task
+}
+
+class UpdateStaffDto {
+  + FirstName: string
+  + LastName: string
+  + Email: string
+  + PhoneNumber: string
+  + Specialization: string
+  + AvailabilitySlots: List<AvailabilitySlot>
+}
+
+class StaffDto {
+  + Id: string
+  + FirstName: string
+  + LastName: string
+  + Email: string
+  + PhoneNumber: string
+  + Specialization: string
+  + AvailabilitySlots: List<AvailabilitySlot>
+}
+
+StaffController --> StaffService: uses
+StaffService --> IStaffRepository: uses
+StaffService --> IUnitOfWork: uses
+StaffService --> ILoggingService: uses
+StaffService --> IEmailService: uses
+IStaffRepository --> Staff: manages
+StaffService ..> UpdateStaffDto: uses
+StaffService ..> StaffDto: returns
+StaffController ..> UpdateStaffDto: receives
+StaffController ..> StaffDto: returns
+
+
+@enduml

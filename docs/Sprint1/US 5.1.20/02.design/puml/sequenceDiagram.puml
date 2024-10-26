@@ -1,0 +1,72 @@
+@startuml
+
+actor "Admin" as admin
+participant "OperationTypeController" as controller
+participant "OperationTypeService" as service
+participant "IOperationTypeRepository" as repo
+participant "OperationPhases" as operation
+participant "OperationType" as operationType
+participant "UnitOfWork" as uow
+participant "LoggingService" as logger
+
+database "Database" as db
+
+admin -> controller : POST /api/operationtype/create-operation-type
+activate controller
+
+controller -> controller : Validate ModelState
+
+alt ModelState is not valid
+    controller --> admin : 400 Bad Request
+else ModelState is valid
+    controller -> service : AddAsync(CreateOperationTypeDto)
+    activate service
+
+    service -> repo : ExistsByNameAsync(dto.Name)
+    activate repo
+    repo -> db : Query
+    db --> repo : Result
+    repo --> service : bool
+    deactivate repo
+
+    alt Operation Type already exists
+        service --> controller : throw BusinessRuleValidationException
+        controller --> admin : 400 Bad Request
+    else Operation Type does not exist
+        service -> operation ** : new OperationPhases(dto.AnesthesiaPreparation, dto.Surgery, dto.Cleaning);
+        activate operation
+        operation --> service : operationPhases
+        deactivate operation
+        service -> operationType ** : new OperationType(dto.Name, dto.RequiredStaffBySpecialization, dto.EstimatedDuration)
+        activate operationType
+        operationType --> service : operationType
+        deactivate operationType
+
+        service -> repo : AddAsync(operationType)
+        activate repo
+        repo -> db : Insert
+        db --> repo : Confirmation
+        repo --> service : operationType
+        deactivate repo
+
+        service -> uow : CommitAsync()
+        activate uow
+        uow -> db : Commit Transaction
+        db --> uow : Confirmation
+        uow --> service : 
+        deactivate uow
+
+        service -> logger : LogInformation("New operation type created: {id}")
+        activate logger
+        logger --> service
+        deactivate logger
+
+        service --> controller : OperationTypeDto
+        deactivate service
+
+        controller --> admin : 200 OK (OperationTypeDto)
+    end
+end
+deactivate controller
+
+@enduml

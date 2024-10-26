@@ -1,0 +1,76 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class PatientController {
+  -PatientService _service
+  +PatientController(PatientService service)
+  +Task<IActionResult> RegisterPatient(RegisterPatientDto dto)
+}
+
+class PatientService {
+  -IPatientRepository _repository
+  -UserManager<ApplicationUser> _userManager
+  -IUnitOfWork _unitOfWork
+  -IEmailService _emailService
+  -ILoggingService _loggingService
+  +PatientService(IPatientRepository repository, UserManager<ApplicationUser> userManager, IUnitOfWork unitOfWork, IEmailService emailService, ILoggingService loggingService)
+  +Task<PatientDto> AddAsync(RegisterPatientDto dto)
+  -string GenerateUniqueMedicalNumber()
+}
+
+class Patient {
+  +string UserId
+  +string FirstName
+  +string LastName
+  +string Email
+  +string PhoneNumber
+  +DateTime DateofBirth
+  +string Gender
+  +string ContactInfo
+  +string EmergencyContact
+  +string AppointmentHistory
+  +string MedicalHistory
+  +string MedicalNr
+  +Patient(string userId, string firstName, string lastName, string email, string phoneNumber, DateTime dateofBirth, string gender, string contactInfo, string emergencyContact, string appointmentHistory, string medicalHistory, string medicalNr)
+}
+
+class RegisterPatientDto {
+  +string FirstName
+  +string LastName
+  +string Email
+  +string PhoneNumber
+  +DateTime DateofBirth
+  +string Gender
+  +string ContactInfo
+  +string EmergencyContact
+}
+
+class PatientDto {
+  +string Id
+  +string FirstName
+  +string LastName
+  +string Email
+  +string PhoneNumber
+  +DateTime DateofBirth
+  +string Gender
+  +string ContactInfo
+  +string EmergencyContact
+  +string AppointmentHistory
+  +string MedicalHistory
+  +string MedicalNr
+  +PatientDto(string id, string firstName, string lastName, string email, string phoneNumber, DateTime dateofBirth, string gender, string contactInfo, string emergencyContact, string appointmentHistory, string medicalHistory, string medicalNr)
+}
+
+interface IPatientRepository {
+  +Task<Patient> AddAsync(Patient patient)
+  +Task<bool> IsEmailUniqueAsync(string email)
+  +Task<bool> IsPhoneNumberUniqueAsync(string phoneNumber)
+}
+
+PatientController --> PatientService
+PatientService --> IPatientRepository
+PatientService --> Patient
+PatientService ..> RegisterPatientDto
+PatientService ..> PatientDto
+Patient ..> PatientDto
+@enduml

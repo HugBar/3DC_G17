@@ -1,0 +1,46 @@
+@startuml namespace User story 5.1.10 class diagram
+
+class PatientController {
+  - _service: PatientService
+  + DeletePatient(id: string, deleteDto: DeletePatientDto): Task<IActionResult>
+}
+
+class PatientService {
+  - _repository: IPatientRepository
+  - _unitOfWork: IUnitOfWork
+  - _loggingService: ILoggingService
+  + DeletePatientAsync(id: string): Task<bool>
+}
+
+class DeletePatientDto {
+  + ConfirmDeletion: bool
+}
+
+interface IPatientRepository {
+  + GetByUserIdAsync(userId: string): Task<Patient>
+  + RemoveAsync(patient: Patient): Task<Patient>
+}
+
+class PatientRepository {
+  - _context: DDDSample1DbContext
+  + GetByUserIdAsync(userId: string): Task<Patient>
+  + RemoveAsync(patient: Patient): Task<Patient>
+}
+
+interface ILoggingService {
+  + LogChangeAsync(action: string, userId: string, patientName: string, changeData: object): Task
+}
+
+class LoggingService {
+  - _logger: ILogger<LoggingService>
+  + LogChangeAsync(action: string, userId: string, patientName: string, changeData: object): Task
+}
+
+PatientController --> PatientService : uses
+PatientController --> DeletePatientDto : uses
+PatientService --> IPatientRepository : uses
+PatientService --> ILoggingService : uses
+IPatientRepository <|.. PatientRepository : implements
+ILoggingService <|.. LoggingService : implements
+
+@enduml

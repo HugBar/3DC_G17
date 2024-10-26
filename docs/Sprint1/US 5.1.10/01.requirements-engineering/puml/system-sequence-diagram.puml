@@ -1,0 +1,23 @@
+@startuml name system sequence diagram us 5.1.10
+actor Admin as User
+participant System
+activate User
+User -> System : Login to account
+activate System
+System -> User : Confirm successful login
+deactivate System
+User -> System : Request list of patients
+activate System
+System -> User : Display list of patients
+deactivate System
+User -> System : Select patient to delete
+activate System
+System -> User : Prompt for confirmation of deletion
+deactivate System
+User -> System : Confirm deletion
+activate System
+System -> User : Permanently remove patient data
+System -> User : Log deletion for audit and GDPR compliance
+System -> User : Confirm successful deletion
+deactivate System
+@enduml

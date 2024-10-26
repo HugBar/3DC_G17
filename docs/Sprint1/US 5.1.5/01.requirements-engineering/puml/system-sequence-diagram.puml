@@ -1,0 +1,23 @@
+@startuml name ssd us 5.1.5
+actor Patient as User
+participant System
+
+activate User
+User -> System : Request account deletion
+activate System
+System -> User : Send confirmation email for deletion
+deactivate System
+
+User -> System : Click on the confirmation link for deletion
+activate System
+System -> User : Confirm deletion request
+System -> User : Begin deletion of personal data
+
+alt Delete personal data
+    System -> User : Delete all identifiable data
+    System -> User : Retain anonymized data (for legal/research purposes)
+end
+
+System -> User : Confirm completion of deletion
+deactivate System
+@enduml

@@ -1,0 +1,98 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE ApplicationUser {
+    +Id: String
+    +UserName: String
+    +Email: String
+    +PasswordHash: String
+}
+
+RECTANGLE RoleManager {
+    +RoleExistsAsync(role: String): Task<bool>
+}
+
+RECTANGLE Staff {
+    +First Name: String
+    +Last Name: String
+    +License Number: String
+    +Specialization: String
+    +Contact Information: String
+    +Availability Slots: List<TimeSlot>
+}
+
+RECTANGLE Admin {
+    +Username: String
+    +Email: String
+}
+
+RECTANGLE Patient {
+    +UserId: String
+    +First Name: String
+    +Last Name: String
+    +Email: String
+    +PhoneNumber: String
+    +Date of Birth: Date
+    +Gender: String
+    +Contact Information: String
+    +Emergency Contact: String
+    +Appointment History: String
+    +Medical History: String
+    +Medical Record Number: String
+}
+
+RECTANGLE OperationRequest {
+    +ID: String
+    +Patient ID: String
+    +Doctor ID: String
+    +Operation Type ID: String
+    +Deadline Date: Date
+    +Priority: Enum {urgent,elective,emergency}
+}
+
+RECTANGLE OperationType {
+    +ID: String
+    +Name: String
+    +Required Staff by Specialization: List<String>
+    +Estimated Duration: Time
+}
+
+RECTANGLE Appointment {
+    +ID: String
+    +Request ID: String
+    +Room ID: String
+    +Date and Time: DateTime
+    +Status: Enum {Scheduled, Completed, Canceled}
+}
+
+RECTANGLE SurgeryRoom {
+    +Room Number: String
+    +Type: String
+    +Capacity: Int
+    +Current Status: Enum {Available, Occupied, Maintenance}
+}
+
+RECTANGLE TimeSlot {
+    +Start Time: DateTime
+    +End Time: DateTime
+}
+
+RECTANGLE EmailService {
+    +SendSetupEmail(user: ApplicationUser)
+}
+
+ApplicationUser --|> Admin
+ApplicationUser --|> Patient
+ApplicationUser --|> Staff
+Staff "1" -- "many" TimeSlot
+Patient "1" -- "many" Appointment
+Appointment "1" -- "1" SurgeryRoom
+Appointment "1" -- "1" OperationRequest
+OperationRequest "1" -- "1" Patient
+OperationRequest "1" -- "1" OperationType
+OperationRequest "1" -- "1" Staff : Requested by Doctor
+OperationType "1" -- "many" Staff : Requires
+ApplicationUser -- "1" RoleManager : Has Role
+ApplicationUser -- "1" EmailService : Receives setup link
+
+@enduml

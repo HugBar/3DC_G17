@@ -1,0 +1,89 @@
+@startuml namespace User story 5.1.4 sequence diagram
+title US 5.1.4 Patient Profile Update sequence diagram
+
+actor Patient
+participant "PatientController" as PC
+participant "PatientService" as PS
+participant "IPatientRepository" as IPR
+participant "PatientRepository" as PR
+participant "ILoggingService" as ILS
+participant "LoggingService" as LS
+participant "IEmailService" as IES
+
+activate Patient
+Patient -> PC: PATCH /api/Patient/edit-patient-profile
+activate PC
+
+PC -> PC: Extract user email from token
+alt Email not found in token
+    PC --> Patient: 401 Unauthorized ("User email not found in the token")
+else Email found
+    PC -> PS: UpdatePatientProfileAsync(email, dto)
+    activate PS
+
+    PS -> IPR: GetByEmailAsync(email)
+    activate IPR
+    IPR -> PR: GetByEmailAsync(email)
+    activate PR
+    PR --> IPR: Patient
+    deactivate PR
+    IPR --> PS: Patient
+    deactivate IPR
+
+    alt Patient not found
+        PS --> PC: Exception ("Patient not found")
+        PC --> Patient: 404 Not Found ("Patient not found")
+    else Patient found
+        PS -> IPR: IsEmailUniqueAsync(dto.Email)
+        activate IPR
+        IPR -> PR: IsEmailUniqueAsync(dto.Email)
+        activate PR
+        PR --> IPR: bool
+        deactivate PR
+        IPR --> PS: bool
+        deactivate IPR
+
+        alt Email already in use
+            PS --> PC: BusinessRuleValidationException ("Email is already in use")
+            PC --> Patient: 409 Conflict ("Email is already in use")
+        else Email is unique or unchanged
+            PS -> PS: Update patient fields
+            
+            alt Email or Phone changed
+                PS -> PS: SendContactInfoUpdateEmail(patient)
+                activate PS
+                PS -> IES: SendEmailAsync(to, subject, body)
+                activate IES
+                IES --> PS: Email sent
+                deactivate IES
+                deactivate PS
+            end
+
+            PS -> IPR: UpdateAsync(patient)
+            activate IPR
+            IPR -> PR: UpdateAsync(patient)
+            activate PR
+            PR --> IPR: Updated Patient
+            deactivate PR
+            IPR --> PS: Updated Patient
+            deactivate IPR
+
+            PS -> ILS: LogChangeAsync(action, userId, patientName, dto)
+            activate ILS
+            ILS -> LS: LogChangeAsync(action, userId, patientName, dto)
+            activate LS
+            LS --> ILS: Task completed
+            deactivate LS
+            ILS --> PS: Task completed
+            deactivate ILS
+
+            PS --> PC: PatientDto
+            deactivate PS
+            PC --> Patient: 200 OK (Updated PatientDto)
+            deactivate PC
+        end
+    end
+    deactivate PS
+end
+deactivate PC
+@enduml

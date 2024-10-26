@@ -1,0 +1,65 @@
+@startuml
+actor Admin
+participant UserController
+participant UserService
+participant UserManager
+participant RoleManager
+participant IEmailService
+database Database
+
+Admin -> UserController : POST /api/User/register(CreateUserDto)
+activate UserController
+
+UserController -> UserService : RegisterUserAsync(CreateUserDto)
+activate UserService
+
+UserService -> RoleManager : RoleExistsAsync(role)
+activate RoleManager
+RoleManager --> UserService : roleExists
+deactivate RoleManager
+
+alt Role doesn't exist
+    UserService --> UserController : throw InvalidOperationException
+    UserController --> Admin : BadRequest(Invalid role)
+else Role exists
+    UserService -> UserManager : FindByEmailAsync(email)
+    activate UserManager
+    UserManager --> UserService : existingUser
+    deactivate UserManager
+    
+    alt User already exists
+        UserService --> UserController : throw InvalidOperationException
+        UserController --> Admin : BadRequest(User already exists)
+    else User doesn't exist
+        UserService -> UserManager : CreateAsync(ApplicationUser, password)
+        activate UserManager
+        UserManager -> Database : Save User
+        Database --> UserManager : User Saved
+        UserManager --> UserService : IdentityResult
+        deactivate UserManager
+        
+        alt User creation succeeded
+            UserService -> UserManager : AddToRoleAsync(user, role)
+            activate UserManager
+            UserManager -> Database : Save Role Assignment
+            Database --> UserManager : Role Assigned
+            UserManager --> UserService : IdentityResult
+            deactivate UserManager
+            
+            UserService -> IEmailService : SendEmailAsync(email, subject, body)
+            activate IEmailService
+            IEmailService --> UserService : Email Sent
+            deactivate IEmailService
+            
+            UserService --> UserController : UserDto
+            UserController --> Admin : CreatedAtAction(UserDto)
+        else User creation failed
+            UserService --> UserController : throw InvalidOperationException
+            UserController --> Admin : BadRequest(Error messages)
+        end
+    end
+end
+
+deactivate UserService
+deactivate UserController
+@enduml
