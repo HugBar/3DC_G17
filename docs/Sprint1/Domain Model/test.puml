@@ -1,0 +1,305 @@
+@startuml
+package "Controllers" {
+    class PatientController {
+        +RegisterPatient(RegisterPatientDto dto)
+        +GetPatients(PatientFilterDTO filter, int pageNumber, int pageSize)
+        +GetPatientById(string id)
+        +UpdatePatientProfile(string email, JsonPatchDocument<UpdatePatientDto> patchDoc)
+        +RequestAccountDeletion(string email)
+        +ConfirmAccountDeletion(DeleteConfirmationDto dto)
+        +DeletePatient(string id, DeletePatientDto deleteDto)
+    }
+
+    class StaffController {
+        +CreateStaffProfile(CreateStaffDto model)
+        +UpdateStaffProfile(string id, JsonPatchDocument<UpdateStaffDto> patchDoc)
+        +Deactivate(string id)
+        +GetStaffs(StaffFilterDto filter)
+        +GetStaffById(string id)
+        +DeleteStaff(string id)
+    }
+
+    class OperationRequestController {
+        +CreateOperationRequest(CreateOperationRequestDto dto)
+        +DeleteOperationRequest(string id)
+        +SearchOperationRequests(SearchOperationRequestDto searchDto)
+        +UpdateOperationRequest(string id, JsonPatchDocument<UpdateOperationRequestDto> patchDoc)
+    }
+}
+
+package "Domain" {
+    package "PatientData" {
+        class PatientService {
+            +AddAsync(RegisterPatientDto dto)
+            +UpdatePatientProfileAsync(string email, UpdatePatientDto dto)
+            +DeletePatientAsync(string patientId)
+            +RequestAccountDeletionAsync(string email)
+            +ConfirmAccountDeletionAsync(string email)
+            +GenerateToken(string email)
+            +GetFilteredPatient(PatientFilterDTO filter, int pageNumber, int pageSize)
+            +AdminUpdatePatientProfileAsync(string patientId, UpdatePatientDto updateDto)
+        }
+        
+        class Patient {
+            +UserId
+            +FirstName
+            +LastName
+            +Email
+            +DateofBirth
+            +Gender
+            +ContactInfo
+            +EmergencyContact
+            +PhoneNumber
+            +MedicalNr
+            +IsAnonymized
+        }
+        
+        class PatientDto {
+            +Id
+            +FirstName
+            +LastName
+            +Email
+            +PhoneNumber
+            +DateofBirth
+            +Gender
+            +ContactInfo
+            +EmergencyContact
+            +MedicalNr
+        }
+
+        class RegisterPatientDto {
+            +FirstName
+            +LastName
+            +Email
+            +DateofBirth
+            +Gender
+            +ContactInfo
+            +EmergencyContact
+            +PhoneNumber
+        }
+
+        class UpdatePatientDto {
+            +FirstName
+            +LastName
+            +Email
+            +PhoneNumber
+            +ContactInfo
+            +EmergencyContact
+            +Gender
+            +DateOfBirth
+        }
+
+        class DeletePatientDto {
+            +ConfirmDeletion
+        }
+
+        class PatientFilterDTO {
+            +FirstName
+            +LastName
+            +Email
+        }
+    }
+
+    package "StaffData" {
+        class StaffService {
+            +AddAsync(CreateStaffDto dto)
+            +GetByIdAsync(string id)
+            +DeleteAsync(string id)
+            +getStaffFilteredAsync(StaffFilterDto filter)
+            +UpdateStaffAsync(string id, UpdateStaffDto dto)
+            +DeactivateAsync(string id)
+        }
+
+        class Staff {
+            +Id
+            +UserId
+            +FirstName
+            +LastName
+            +Email
+            +PhoneNumber
+            +Specialization
+            +LicenseNumber
+            +Active
+            +AvailabilitySlots
+            +AddAvailabilitySlot(DateTime startTime, DateTime endTime)
+            +Deactivate()
+            +Reactivate()
+        }
+
+        class StaffDto {
+            +Id
+            +FirstName
+            +LastName
+            +Email
+            +PhoneNumber
+            +Specialization
+            +LicenseNumber
+        }
+
+        class CreateStaffDto {
+            +FirstName
+            +LastName
+            +Email
+            +PhoneNumber
+            +Specialization
+            +LicenseNumber
+        }
+
+        class UpdateStaffDto {
+            +Email
+            +PhoneNumber
+            +Specialization
+            +AvailabilitySlots
+        }
+
+        class StaffFilterDto {
+            +FirstName
+            +LastName
+            +Email
+        }
+
+        class AvailabilitySlot {
+            +StartTime
+            +EndTime
+            +UpdateSlot(DateTime newStartTime, DateTime newEndTime)
+        }
+    }
+
+    package "OperationRequestData" {
+        class OperationRequestService {
+            +CreateOperationRequestAsync(CreateOperationRequestDto dto)
+            +DeleteOperationRequestAsync(string id)
+            +SearchOperationRequestsAsync(SearchOperationRequestDto searchDto)
+            +UpdateOperationRequestAsync(string id, UpdateOperationRequestDto patchDoc)
+        }
+
+        class OperationRequest {
+            +Id
+            +PatientId
+            +DoctorId
+            +OperationTypeId
+            +Deadline
+            +Priority
+        }
+
+        class OperationRequestDto {
+            +Id
+            +PatientId
+            +DoctorId
+            +OperationTypeId
+            +Deadline
+            +Priority
+        }
+
+        class CreateOperationRequestDto {
+            +PatientId
+            +DoctorId
+            +OperationTypeId
+            +Deadline
+            +Priority
+        }
+
+        class UpdateOperationRequestDto {
+            +OperationTypeId
+            +Deadline
+            +Priority
+        }
+
+        class SearchOperationRequestDto {
+            +PatientId
+            +DoctorId
+            +OperationTypeId
+            +Deadline
+            +Priority
+        }
+    }
+
+    package "OperationTypeData" {
+        class OperationType {
+            +Id
+            +Name
+            +RequiredStaffBySpecialization
+        }
+
+        class OperationTypeDto {
+            +Id
+            +Name
+            +RequiredStaffBySpecialization
+        }
+    }
+}
+
+package "Infrastructure" {
+    class DDDSample1DbContext {
+        +DbSet<Patient> Patients
+        +DbSet<Staff> Staffs
+        +DbSet<OperationRequest> OperationRequests
+        +DbSet<OperationType> OperationTypes
+    }
+
+    class StaffRepository {
+        +GetByIdAsync(string id)
+        +AddAsync(Staff staff)
+        +Remove(Staff staff)
+        +UpdateAsync(Staff staff)
+        +GetFilteredStaffAsync(StaffFilterDto filter)
+    }
+
+    class OperationRequestRepository {
+        +GetByIdAsync(string id)
+        +AddAsync(OperationRequest request)
+        +Remove(OperationRequest request)
+        +UpdateAsync(OperationRequest request)
+        +GetFilteredRequestsAsync(SearchOperationRequestDto filter)
+    }
+
+    class LoggingService {
+        +LogInformation(string message)
+        +LogWarning(string message)
+        +LogError(string message, Exception ex = null)
+        +LogChangeAsync(string action, string userId, string patientName, object changeData)
+    }
+
+    class SmtpEmailService {
+        +SendEmailAsync(string to, string subject, string body)
+        +SendAdminLockoutNotification(string userEmail)
+    }
+}
+
+PatientController --> PatientService
+StaffController --> StaffService
+OperationRequestController --> OperationRequestService
+
+PatientService --> PatientRepository
+PatientService --> IUnitOfWork
+PatientService --> ILoggingService
+PatientService --> IEmailService
+PatientRepository --> DDDSample1DbContext
+
+PatientService --> Patient
+PatientService --> UpdatePatientDto
+PatientService --> DeletePatientDto
+PatientService --> PatientDto
+PatientService --> RegisterPatientDto
+PatientService --> DeleteConfirmationDto
+PatientService --> PatientFilterDTO
+
+StaffService --> StaffRepository
+StaffService --> Staff
+StaffService --> StaffDto
+StaffService --> StaffFilterDto
+StaffService --> CreateStaffDto
+StaffService --> UpdateStaffDto
+StaffService --> AvailabilitySlot
+StaffService --> ILoggingService
+StaffService --> IEmailService
+
+OperationRequestService --> OperationRequestRepository
+OperationRequestService --> OperationRequest
+OperationRequestService --> OperationRequestDto
+OperationRequestService --> CreateOperationRequestDto
+OperationRequestService --> UpdateOperationRequestDto
+OperationRequestService --> SearchOperationRequestDto
+OperationRequestService --> ILoggingService
+OperationRequestService --> IEmailService
+@enduml
