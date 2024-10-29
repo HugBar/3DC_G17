@@ -1,60 +1,52 @@
 @startuml
-class StaffController {
-  +CreateStaffProfile(CreateStaffDto): Task<IActionResult>
+class AuthController {
+  -IAuthService _authService
+  -ILoggingService _loggingService
+  +AuthController(IAuthService, ILoggingService)
+  +Task<IActionResult> LoginWithIAM(IAMLoginDto)
 }
 
-class StaffService {
-  -IStaffRepository _staffRepo
-  -IUnitOfWork _unitOfWork
-  -IEmailService _emailService
-  +AddAsync(CreateStaffDto): Task<StaffDto>
-  -GenerateUniqueLicenseNumber(): string
+class AuthService {
+  -UserManager<ApplicationUser> _userManager
+  -IConfiguration _configuration
+  -ILoggingService _loggingService
+  +AuthService(UserManager, IConfiguration, ILoggingService)
+  +Task<AuthenticationResult> LoginWithIAMAsync(IAMLoginDto)
+  -Task<string> GenerateJwtToken(ApplicationUser)
+  -Task<bool> ValidateIAMCredentials(string)
 }
 
-class Staff {
-  +Id: string
-  +FirstName: string
-  +LastName: string
-  +Email: string
-  +PhoneNumber: string
-  +Specialization: string
-  +LicenseNumber: string
-  +Active: bool
-  +AvailabilitySlots: List<AvailabilitySlot>
-  +AddAvailabilitySlot(DateTime, DateTime): void
+class IAMLoginDto {
+  +string Token
+  +string Provider
 }
 
-interface IStaffRepository {
-  +AddAsync(Staff): Task<Staff>
-  +IsEmailUniqueAsync(string): Task<bool>
-  +IsPhoneNumberUniqueAsync(string): Task<bool>
+class AuthenticationResult {
+  +bool Success
+  +string Token
+  +string Error
 }
 
-class CreateStaffDto {
-  +FirstName: string
-  +LastName: string
-  +Email: string
-  +PhoneNumber: string
-  +Specialization: string
-  +AvailabilitySlots: List<AvailabilitySlotDto>
+class ApplicationUser {
+  +string Id
+  +string Email
+  +string UserName
+  +bool EmailConfirmed
 }
 
-class StaffDto {
-  +Id: string
-  +FirstName: string
-  +LastName: string
-  +Email: string
-  +PhoneNumber: string
-  +Specialization: string
-  +LicenseNumber: string
-  +Active: bool
-  +AvailabilitySlots: List<AvailabilitySlotDto>
+interface IAuthService {
+  +Task<AuthenticationResult> LoginWithIAMAsync(IAMLoginDto)
 }
 
-StaffController --> StaffService
-StaffService --> IStaffRepository
-StaffService --> Staff
-IStaffRepository --> Staff
-StaffService ..> CreateStaffDto
-StaffService ..> StaffDto
+interface ILoggingService {
+  +Task LogLoginAttempt(string, string)
+}
+
+AuthController --> IAuthService
+AuthController --> ILoggingService
+AuthService ..|> IAuthService
+AuthService --> ILoggingService
+AuthService --> ApplicationUser
+AuthService ..> IAMLoginDto
+AuthService ..> AuthenticationResult
 @enduml

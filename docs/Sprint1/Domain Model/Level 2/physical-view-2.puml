@@ -1,0 +1,34 @@
+@startuml namespace physical view level 2
+title physical view level 2
+
+package "Client" {
+    [Browser] --> [UI]
+}
+
+package "Server" {
+    [Http Server] --> [MDR]
+    [Http Server] --> [MDV]
+    [Http Server] --> [Planning]
+    [Http Server] --> [UI]
+}
+
+package "Database" {
+    [MySQL Server]
+}
+
+[UI] --> [Http Server] : HTTP Requests
+[Http Server] --> [MySQL Server] : SQL Queries
+
+[Browser] --> [UI] : User Interactions
+[UI] --> [Browser] : Rendered HTML/CSS/JS
+
+[MDR] --> [MySQL Server] : Data Access
+[MDV] --> [MySQL Server] : Data Validation
+[Planning] --> [MySQL Server] : Business Logic
+
+package "Authentication" {
+    [Keycloak]
+}
+
+[Http Server] --> [Keycloak] : User Authentication
+@enduml

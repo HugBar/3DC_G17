@@ -1,51 +1,63 @@
-@startuml class diagram us 5.1.9
+@startuml
 class PatientController {
-  - _service: PatientService
-  + DeletePatient(id: string, deleteDto: DeletePatientDto): Task<IActionResult>
+  -IPatientService _patientService
+  -ILoggingService _loggingService
+  +PatientController(IPatientService, ILoggingService)
+  +Task<IActionResult> UpdatePatient(string id, UpdatePatientDto dto)
 }
 
 class PatientService {
-  - _repository: IPatientRepository
-  - _unitOfWork: IUnitOfWork
-  - _loggingService: ILoggingService
-  + DeletePatientAsync(id: string): Task<bool>
+  -IPatientRepository _repository
+  -IUnitOfWork _unitOfWork
+  -IEmailService _emailService
+  -ILoggingService _loggingService
+  +PatientService(IPatientRepository, IUnitOfWork, IEmailService, ILoggingService)
+  +Task<PatientDto> UpdatePatientAsync(string id, UpdatePatientDto dto)
+  -Task ValidateUpdates(UpdatePatientDto dto)
+}
+
+class UpdatePatientDto {
+  +string FirstName
+  +string LastName
+  +string Email
+  +string PhoneNumber
+  +DateTime DateOfBirth
+  +string ContactInfo
+  +string EmergencyContact
+  +string MedicalHistory
+}
+
+class PatientDto {
+  +string Id
+  +string FirstName
+  +string LastName
+  +string Email
+  +string PhoneNumber
+  +DateTime DateOfBirth
+  +string ContactInfo
+  +string EmergencyContact
+  +string MedicalHistory
+  +string MedicalNr
 }
 
 interface IPatientRepository {
-  + GetByUserIdAsync(userId: string): Task<Patient>
-  + RemoveAsync(patient: Patient): Task<Patient>
+  +Task<Patient> GetByUserIdAsync(string id)
+  +Task<Patient> Update(Patient patient)
 }
 
-class Patient {
-  + UserId: string
-  + FirstName: string
-  + LastName: string
-  + Email: string
-  + PhoneNumber: string
-  + DateofBirth: DateTime
-  + ContactInfo: string
-  + EmergencyContact: string
-  + AppointmentHistory: string
-  + MedicalHistory: string
-  + MedicalNr: string
-}
-
-class DeletePatientDto {
-  + ConfirmDeletion: bool
-}
-
-interface IUnitOfWork {
-  + CommitAsync(): Task
+interface IEmailService {
+  +Task SendUpdateNotification(string email)
 }
 
 interface ILoggingService {
-  + LogChangeAsync(action: string, userId: string, patientName: string, changeData: object): Task
+  +Task LogChangeAsync(string action, string id)
 }
 
-PatientController --> PatientService : uses
-PatientService --> IPatientRepository : uses
-PatientService --> IUnitOfWork : uses
-PatientService --> ILoggingService : uses
-PatientController --> DeletePatientDto : uses
-IPatientRepository --> Patient : manages
+PatientController --> PatientService
+PatientService --> IPatientRepository
+PatientService --> IEmailService
+PatientService --> ILoggingService
+PatientService --> IUnitOfWork
+PatientService ..> UpdatePatientDto
+PatientService ..> PatientDto
 @enduml

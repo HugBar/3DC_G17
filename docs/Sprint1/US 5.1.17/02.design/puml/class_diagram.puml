@@ -1,0 +1,92 @@
+@startuml class diagram US 5.1.17
+
+skinparam classAttributeIconSize 0
+
+class OperationRequestController {
+    - _operationRequestService: IOperationRequestService
+    + UpdateOperationRequest(id: string, updateDto: UpdateOperationRequestDto): Task<IActionResult>
+}
+
+interface IOperationRequestService {
+    + UpdateOperationRequestAsync(id: string, updateDto: UpdateOperationRequestDto): Task<OperationRequestDto>
+}
+
+class OperationRequestService {
+    - _repo: IOperationRequestRepository
+    - _unitOfWork: IUnitOfWork
+    - _loggingService: ILoggingService
+    + UpdateOperationRequestAsync(id: string, updateDto: UpdateOperationRequestDto): Task<OperationRequestDto>
+}
+
+interface IOperationRequestRepository {
+    + GetByIdAsync(id: string): Task<OperationRequest>
+    + UpdateAsync(request: OperationRequest): Task<OperationRequest>
+}
+
+class OperationRequest {
+    + Id: OperationRequestId
+    + Description: string
+    + Priority: Priority
+    + Status: Status
+    + PatientId: string
+    + DoctorId: string
+    + OperationTypeId: string
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+    + UpdateDetails(updateDto: UpdateOperationRequestDto): void
+}
+
+class UpdateOperationRequestDto {
+    + Description: string
+    + Priority: Priority
+    + Status: Status
+    + OperationTypeId: string
+}
+
+class OperationRequestDto {
+    + Id: string
+    + Description: string
+    + Priority: string
+    + Status: string
+    + PatientId: string
+    + DoctorId: string
+    + OperationTypeId: string
+    + CreatedAt: DateTime
+    + UpdatedAt: DateTime
+}
+
+enum Priority {
+    LOW
+    MEDIUM
+    HIGH
+    URGENT
+}
+
+enum Status {
+    PENDING
+    APPROVED
+    REJECTED
+    IN_PROGRESS
+    COMPLETED
+}
+
+interface ILoggingService {
+    + LogChangeAsync(action: string, id: string, details: string): Task
+}
+
+interface IUnitOfWork {
+    + CommitAsync(): Task
+}
+
+OperationRequestController --> IOperationRequestService
+IOperationRequestService <|.. OperationRequestService
+OperationRequestService --> IOperationRequestRepository
+OperationRequestService --> IUnitOfWork
+OperationRequestService --> ILoggingService
+IOperationRequestRepository --> OperationRequest
+OperationRequestService ..> OperationRequestDto
+OperationRequestService ..> UpdateOperationRequestDto
+OperationRequest --> Priority
+OperationRequest --> Status
+
+@enduml

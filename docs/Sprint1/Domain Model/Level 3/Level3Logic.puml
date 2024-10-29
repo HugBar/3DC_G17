@@ -1,0 +1,103 @@
+@startuml
+package "Web Application" {
+
+  component "AuthController" {
+    [Login]
+    [Logout]
+    [ChangePassword]
+    [ResetPassword]
+    [ConfirmResetPassword]
+  }
+
+  component "GoogleAuth" {
+    [GoogleLogin]
+    [GoogleResponse]
+  }
+
+  component "OperationRequestController" {
+    [CreateOperationRequest]
+    [DeleteOperationRequest]
+    [SearchOperationRequests]
+    [UpdateOperationRequest]
+  }
+
+  component "OperationTypeController" {
+    [CreateOperationType]
+    [UpdateOperationType]
+  }
+
+  component "PatientController" {
+    [RegisterPatient]
+    [GetPatients]
+    [GetPatientById]
+    [UpdatePatientProfile]
+    [DeletePatient]
+    [AdminUpdatePatientProfile]
+    [RequestAccountDeletion]
+    [ConfirmAccountDeletion]
+  }
+
+  component "StaffController" {
+    [CreateStaffProfile]
+    [UpdateStaffProfile]
+    [Deactivate]
+    [GetStaffs]
+    [GetStaffById]
+    [DeleteStaff]
+  }
+
+  component "UserController" {
+    [Register]
+    [GetUser]
+    [UpdateUser]
+    [DeleteUser]
+  }
+}
+
+package "Services" {
+  [AuthService]
+  [OperationRequestService]
+  [OperationTypeService]
+  [PatientService]
+  [StaffService]
+  [UserService]
+}
+
+package "Repositories" {
+  [IOperationRequestRepository]
+  [IOperationTypeRepository]
+  [IPatientRepository]
+  [IStaffRepository]
+  [IUserRepository]
+}
+
+package "Repositories (Infrastructure)" {
+  [OperationRequestRepository]
+  [OperationTypeRepository]
+  [PatientRepository]
+  [StaffRepository]
+}
+
+
+[AuthController] --> [AuthService]
+[PatientController] --> [PatientService]
+[OperationRequestController] --> [OperationRequestService]
+[OperationTypeController] --> [OperationTypeService]
+[StaffController] --> [StaffService]
+[UserController] --> [UserService]
+
+[AuthService] --> [IUserRepository]
+[PatientService] --> [IPatientRepository]
+[OperationRequestService] --> [IOperationRequestRepository]
+[OperationTypeService] --> [IOperationTypeRepository]
+[StaffService] --> [IStaffRepository]
+[UserService] --> [IUserRepository]
+
+' Link domain interfaces to infrastructure implementations
+[IPatientRepository] <|.. [PatientRepository]
+[IOperationRequestRepository] <|.. [OperationRequestRepository]
+[IOperationTypeRepository] <|.. [OperationTypeRepository]
+[IStaffRepository] <|.. [StaffRepository]
+
+
+@enduml

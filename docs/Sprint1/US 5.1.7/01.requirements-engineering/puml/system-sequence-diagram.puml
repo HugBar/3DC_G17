@@ -1,19 +1,25 @@
-@startuml
-actor Admin as User
+@startuml name system sequence diagram us 5.1.7
+actor Patient as User
 participant System
 
 activate User
-User -> System: Create new staff profile
+User -> System: Request login with IAM credentials
 activate System
-System -> User: Request staff details
+System -> System: Redirect to IAM provider
+System --> User: Display IAM login page
 deactivate System
-User -> System: Provide staff details (CreateStaffDto)
+
+User -> System: Submit IAM credentials
 activate System
-System -> System: Validate unique email and phone
-System -> System: Generate license number
-System -> System: Create staff profile
-System -> System: Send confirmation email
-System -> User: Confirm staff profile created successfully
+System -> System: Validate IAM credentials
+alt Valid Credentials
+    System -> System: Generate JWT token
+    System -> System: Create user session
+    System --> User: Return authentication token
+    System --> User: Redirect to dashboard
+else Invalid Credentials
+    System --> User: Display error message
+end
 deactivate System
 deactivate User
 @enduml

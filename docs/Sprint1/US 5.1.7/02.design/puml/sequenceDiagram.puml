@@ -1,42 +1,47 @@
-@startuml
-actor Admin
-participant "StaffController" as SC
-participant "StaffService" as SS
-participant "IStaffRepository" as SR
-participant "Staff" as S
-participant "IUnitOfWork" as UOW
-participant "IEmailService" as ES
+@startuml namespace US 5.1.7 sequence diagram
+title US 5.1.7 Patient Login with External IAM sequence diagram
 
-Admin -> SC: POST /api/Staff/create-staff-profile (CreateStaffDto)
-activate SC
+actor Patient
+participant "AuthController" as AC
+participant "AuthService" as AS
+participant "External IAM" as IAM
+participant "UserManager" as UM
+participant "ILoggingService" as LS
+database "Database" as DB
 
-SC -> SS: AddAsync(CreateStaffDto)
-activate SS
+Patient -> AC: POST /api/auth/login-iam
+activate AC
 
-SS -> SR: IsEmailUniqueAsync(dto.Email)
-SR --> SS: isUnique
+AC -> AS: LoginWithIAMAsync(credentials)
+activate AS
 
-SS -> SR: IsPhoneNumberUniqueAsync(dto.PhoneNumber)
-SR --> SS: isUnique
+AS -> IAM: ValidateCredentials(token)
+activate IAM
+IAM --> AS: ValidationResult
+deactivate IAM
 
-SS -> S: <<create>>
-activate S
-S --> SS: staff
-deactivate S
+alt Invalid IAM Credentials
+    AS --> AC: throw InvalidOperationException
+    AC --> Patient: 401 Unauthorized
+else Valid IAM Credentials
+    AS -> UM: FindByEmailAsync(email)
+    activate UM
+    UM -> DB: Query User
+    DB --> UM: User Data
+    UM --> AS: ApplicationUser
+    deactivate UM
 
-SS -> SR: AddAsync(staff)
-SR --> SS: staff
+    AS -> AS: GenerateJwtToken(user)
+    
+    AS -> LS: LogLoginAttempt(userId, "IAM Login successful")
+    activate LS
+    LS --> AS: Log Confirmed
+    deactivate LS
 
-SS -> UOW: CommitAsync()
-UOW --> SS: Task completed
+    AS --> AC: AuthenticationResult
+    AC --> Patient: 200 OK (JWT Token)
+end
 
-SS -> ES: SendEmailAsync(to, subject, body)
-ES --> SS: Task completed
-
-SS --> SC: StaffDto
-deactivate SS
-
-SC --> Admin: 200 OK (StaffDto)
-deactivate SC
-
+deactivate AS
+deactivate AC
 @enduml

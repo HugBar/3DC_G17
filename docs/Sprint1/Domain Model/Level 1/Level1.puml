@@ -1,0 +1,11 @@
+@startuml
+actor Staffs
+actor Patient
+
+package "Healthcare Management System" {
+  [Web Application] --> [Database]
+}
+
+Patient --> [Web Application]
+Staffs --> [Web Application]
+@enduml

@@ -1,50 +1,68 @@
-@startuml sequence diagram us 5.1.9
+@startuml namespace US 5.1.9 sequence diagram
+title US 5.1.9 Edit Patient Profile sequence diagram
+
 actor Admin
 participant "PatientController" as PC
 participant "PatientService" as PS
-participant "IPatientRepository" as IPR
-participant "Patient" as P
+participant "IPatientRepository" as PR
 participant "IUnitOfWork" as UOW
+participant "IEmailService" as ES
 participant "ILoggingService" as LS
+database "Database" as DB
 
-Admin -> PC: DELETE /api/Patient/delete-patient/{id}
+Admin -> PC: PATCH /api/patient/edit-patient-profile/{id}
 activate PC
 
-PC -> PS: DeletePatientAsync(id)
+PC -> PC: Check Admin Role
+alt Not Admin
+    PC --> Admin: 401 Unauthorized
+end
+
+PC -> PS: UpdatePatientAsync(id, updateDto)
 activate PS
 
-PS -> IPR: GetByUserIdAsync(id)
-activate IPR
-IPR --> PS: Patient
-deactivate IPR
-
-alt Patient not found
-    PS --> PC: false
-    PC --> Admin: 404 Not Found (Patient not found)
-else Patient found
-    PS -> P: Deactivate()
-    activate P
-    P --> PS: void
-    deactivate P
-
-    PS -> IPR: RemoveAsync(patient)
-    activate IPR
-    IPR --> PS: Patient
-    deactivate IPR
-
-    PS -> UOW: CommitAsync()
-    activate UOW
-    UOW --> PS: void
-    deactivate UOW
-
-    PS -> LS: LogChangeAsync("Patient deleted", id, patientName, null)
-    activate LS
-    LS --> PS: Task completed
-    deactivate LS
-
-    PS --> PC: true
-    PC --> Admin: 200 OK (Patient successfully deleted)
+PS -> PR: GetByUserIdAsync(id)
+activate PR
+PR -> DB: Query Patient
+DB --> PR: Patient Data
+alt Patient Not Found
+    PR --> PS: null
+    PS --> PC: throw NotFoundException
+    PC --> Admin: 404 Not Found "Patient not found"
 end
+PR --> PS: Patient
+deactivate PR
+
+PS -> PS: ValidateUpdates(updateDto)
+alt Invalid Updates
+    PS --> PC: throw BusinessRuleValidationException
+    PC --> Admin: 400 Bad Request
+end
+
+PS -> PR: Update(patient)
+activate PR
+PR -> DB: Update Patient
+DB --> PR: Success
+PR --> PS: Updated Patient
+deactivate PR
+
+PS -> UOW: CommitAsync()
+activate UOW
+UOW --> PS: Success
+deactivate UOW
+
+PS -> ES: SendUpdateNotification(patient.Email)
+activate ES
+ES --> PS: Email Sent
+deactivate ES
+
+PS -> LS: LogChangeAsync("Patient updated", id)
+activate LS
+LS --> PS: Log Success
+deactivate LS
+
+PS --> PC: PatientDto
+PC --> Admin: 200 OK Updated Patient Profile
 
 deactivate PS
 deactivate PC

@@ -1,0 +1,31 @@
+@startuml
+package "Frameworks and Drivers Layer" {
+    [Routing] <<component>> as Routing
+    [Persistence] <<component>> as Persistence
+    [Filesystem Driver] <<component>> as FilesystemDriver
+}
+
+package "Interface Adapters Layer" {
+    [Controller] <<component>> as Controller
+    [Repository] <<component>> as Repository
+    [DTO] <<component>> as DTO
+}
+
+package "Application Business Rules" {
+    [Application Service] <<component>> as ApplicationService
+}
+
+package "Enterprise Business Rules" {
+    [Domain Model (DDD)] <<component>> as DomainModel
+}
+
+Routing --> Controller : Controller API
+Persistence --> Repository : Persistence API
+FilesystemDriver --> Repository : Filesystem API
+
+Controller --> ApplicationService : App Service API
+ApplicationService --> DomainModel : Model API
+ApplicationService --> Repository : Repo API
+ApplicationService --> DTO : DTO API
+
+@enduml

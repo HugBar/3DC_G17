@@ -1,0 +1,25 @@
+@startuml name system sequence diagram us 5.1.17
+actor Doctor as User
+participant System
+
+activate User
+User -> System : Request to update operation requisition
+activate System
+System -> User : Display current operation requisition details
+deactivate System
+
+User -> System : Submit updated operation details
+activate System
+System -> System : Validate doctor's credentials
+System -> System : Validate operation request exists
+alt Operation Request exists
+    System -> System : Update operation request
+    System -> System : Log update action
+    System -> User : Confirm successful update
+else Operation Request not found
+    System -> User : Notify operation request not found
+end
+deactivate System
+deactivate User
+
+@enduml

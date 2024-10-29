@@ -1,0 +1,43 @@
+@startuml namespace domain model level 2
+title domain model level 2
+
+class OperationType {
+    +Id: String
+    +Name: String
+    +RequiredStaffBySpecialization: List<String>
+    +EstimatedDuration: Time
+}
+
+class OperationRequest {
+    +Id: String
+    +PatientId: String
+    +DoctorId: String
+    +OperationTypeId: String
+    +Deadline: Date
+    +Priority: Enum {Low, Medium, High}
+}
+
+class Staff {
+    +FirstName: String
+    +LastName: String
+    +LicenseNumber: String
+    +Specialization: String
+    +ContactInformation: String
+    +AvailabilitySlots: List<TimeSlot>
+}
+
+class Patient {
+    +FirstName: String
+    +LastName: String
+    +DateOfBirth: Date
+    +Gender: String
+    +MedicalRecordNumber: String
+    +ContactInformation: String
+    +EmergencyContact: String
+}
+
+OperationRequest "1" --> "1" OperationType : type of
+OperationRequest "1" --> "1" Patient
+OperationRequest "1" --> "1" Staff : Requested by Doctor
+OperationType "1" --> "many" Staff : Requires staff with specialization
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+
+class OperationRequest {
+}
+
+class Patient {
+}
+
+class OperationType {
+}
+
+class Staff {
+}
+
+OperationRequest"*" --> "1" Patient : has subject
+OperationRequest"*" --> "1" Staff : is created by
+OperationRequest"*" --> "1" OperationType : type of
+OperationType"*" --> "1" Staff : needs staff with specializations
+
+@enduml

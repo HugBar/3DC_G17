@@ -1,0 +1,31 @@
+@startuml namespace logical view level 2
+title logical view level 2
+
+actor Staffs
+actor Patient
+
+package "Healthcare Management System - Logical View" {
+
+  package "Web Application" {
+    [UI] --> [Planning API Join]
+    [UI] --> [MDV API Join]
+    [UI] --> [MDR API Join]
+  }
+
+  package "Business Logic Services" {
+    [Planning API Join] --> [Planning Service] : Provides planning functionality
+    [MDV API Join] --> [MDV Service] : Provides MDV-related functionality
+    [MDR API Join] --> [MDR Service] : Provides MDR-related functionality
+  }
+
+  [Web Application] --> [UI] : User Interface
+}
+
+package "External Services" {
+  [Database] --> [Business Logic Services] : Stores application data
+  [Authentication Service] --> [Business Logic Services] : Provides authentication
+}
+
+Patient --> [UI] : Accesses application
+Staffs --> [UI] : Accesses application
+@enduml

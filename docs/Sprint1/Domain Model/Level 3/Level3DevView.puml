@@ -1,0 +1,59 @@
+@startuml
+skinparam rectangle {
+    BackgroundColor white
+    BorderColor black
+    Shadowing false
+}
+
+package "System" {
+    package "Infrastructure" {
+        [Routes]
+        [Persistence] 
+        [Logging]
+        [Caching]
+        [External Service]
+    }
+    package "Auth" {
+        [Controller] --> [Service]
+    }
+    package "Interface Adapters" {
+        package "Controllers" {
+            [IControllers] 
+        }
+        [Repositories]
+        [File Repository]
+    }
+
+    package "Application Services/use Case Services" {
+        package "App Services" {
+            [IAppServices]
+            [Validation Service]
+        }
+        [IRepositories]
+        [Management System]
+        [Planning]
+    }
+
+    package "Entities/Core domain" {
+        [Aggregates]
+        [Value Objects]
+        [Domain]
+        [Domain Service]
+    }
+}
+
+
+
+[Auth] --> [Interface Adapters]
+[Interface Adapters] --> [Application Services/use Case Services]
+[Application Services/use Case Services] --> [Entities/Core domain]
+[Persistence] --> [Repositories]
+[Logging] --> [App Services]
+[Caching] --> [Repositories]
+[External Service] --> [App Services]
+[File Repository] --> [Repositories]
+[IControllers] --> [IAppServices]
+[Validation Service] --> [IAppServices]
+[Domain Service] --> [Domain]
+
+@enduml

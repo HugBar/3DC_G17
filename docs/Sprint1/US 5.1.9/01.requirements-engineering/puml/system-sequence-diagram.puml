@@ -1,22 +1,30 @@
+@startuml name system sequence diagram us 5.1.9
+actor Admin as User
+participant System
 
-@startuml system sequence diagram us 5.1.9
-actor Admin as A
-participant System as S
+activate User
+User -> System: Request to edit patient profile
+activate System
+System -> User: Display current patient details
+deactivate System
 
-activate A
-A -> S: Request to deactivate patient
-activate S
-S -> S: Verify admin credentials
-S -> S: Validate patient exists
+User -> System: Submit updated patient information
+activate System
+System -> System: Validate admin credentials
+System -> System: Validate patient exists
 alt Patient exists
-    S -> S: Deactivate patient
-    S -> S: Update patient status in database
-    S -> S: Log deactivation action
-    S -> A: Confirm successful deactivation
+    System -> System: Validate updated information
+    alt Valid information
+        System -> System: Update patient profile
+        System -> System: Log update action
+        System -> System: Send notification email
+        System -> User: Confirm successful update
+    else Invalid information
+        System -> User: Display validation errors
+    end
 else Patient not found
-    S -> A: Notify patient not found
+    System -> User: Notify patient not found
 end
-deactivate S
-deactivate A
+deactivate System
+deactivate User
 @enduml
-

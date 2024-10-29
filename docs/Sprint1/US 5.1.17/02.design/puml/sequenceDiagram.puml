@@ -1,0 +1,62 @@
+@startuml sequence diagram US 5.1.17
+actor Doctor
+participant "OperationRequestController" as ORC
+participant "OperationRequestService" as ORS
+participant "IOperationRequestRepository" as IORR
+participant "OperationRequest" as OR
+participant "IUnitOfWork" as UOW
+participant "ILoggingService" as LS
+database "Database" as DB
+
+Doctor -> ORC: PATCH /api/operation-request/update/{id}
+activate ORC
+
+ORC -> ORC: ValidateUserRole("Doctor")
+alt Not Doctor Role
+    ORC --> Doctor: 401 Unauthorized
+end
+
+ORC -> ORS: UpdateOperationRequestAsync(id, updateDto)
+activate ORS
+
+ORS -> IORR: GetByIdAsync(id)
+activate IORR
+IORR -> DB: Query
+DB --> IORR: OperationRequest Data
+alt Operation Request not found
+    IORR --> ORS: null
+    ORS --> ORC: NotFoundException
+    ORC --> Doctor: 404 Not Found
+end
+IORR --> ORS: OperationRequest
+deactivate IORR
+
+ORS -> OR: UpdateDetails(updateDto)
+activate OR
+OR --> ORS: void
+deactivate OR
+
+ORS -> IORR: UpdateAsync(operationRequest)
+activate IORR
+IORR -> DB: Update
+DB --> IORR: Success
+IORR --> ORS: void
+deactivate IORR
+
+ORS -> UOW: CommitAsync()
+activate UOW
+UOW --> ORS: void
+deactivate UOW
+
+ORS -> LS: LogChangeAsync("Operation Request Updated", id, details)
+activate LS
+LS --> ORS: Task completed
+deactivate LS
+
+ORS --> ORC: OperationRequestDto
+deactivate ORS
+
+ORC --> Doctor: 200 OK (Updated Operation Request)
+deactivate ORC
+
+@enduml

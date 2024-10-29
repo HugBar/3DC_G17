@@ -1,0 +1,565 @@
+@startuml
+package "Controllers" {
+    class PatientController {
+        +RegisterPatient(RegisterPatientDto dto)
+        +GetPatients(PatientFilterDTO filter, int pageNumber, int pageSize)
+        +GetPatientById(string id)
+        +UpdatePatientProfile(string email, JsonPatchDocument<UpdatePatientDto> patchDoc)
+        +RequestAccountDeletion(string email)
+        +ConfirmAccountDeletion(DeleteConfirmationDto dto)
+        +DeletePatient(string id, DeletePatientDto deleteDto)
+    }
+
+    class StaffController {
+        +CreateStaffProfile(CreateStaffDto model)
+        +UpdateStaffProfile(string id, JsonPatchDocument<UpdateStaffDto> patchDoc)
+        +Deactivate(string id)
+        +GetStaffs(StaffFilterDto filter)
+        +GetStaffById(string id)
+        +DeleteStaff(string id)
+    }
+
+    class OperationRequestController {
+        +CreateOperationRequest(CreateOperationRequestDto dto)
+        +DeleteOperationRequest(string id)
+        +SearchOperationRequests(SearchOperationRequestDto searchDto)
+        +UpdateOperationRequest(string id, JsonPatchDocument<UpdateOperationRequestDto> patchDoc)
+    }
+    class AuthController {
+        +Login(LoginDto model)
+        +Logout()
+        +ChangePassword(ChangePasswordDto model)
+        +ResetPassword(ResetPasswordDto model)
+        +ConfirmResetPassword(ConfirmResetPasswordDto model)
+    }
+
+    class OperationTypeController {
+        +CreateOperationType(CreateOperationTypeDto dto)
+        +UpdateOperationType(Guid id, JsonPatchDocument<UpdateOperationTypeDto> patchDoc)
+    }
+
+    class UserController {
+        +Register(CreateUserDto model)
+        +GetUser(string id)
+        +UpdateUser(string id, UpdateUserDto model)
+        +DeleteUser(string id)
+    }
+}
+
+package "Domain" {
+    package "PatientData" {
+        class PatientService {
+            +AddAsync(RegisterPatientDto dto)
+            +UpdatePatientProfileAsync(string email, UpdatePatientDto dto)
+            +DeletePatientAsync(string patientId)
+            +RequestAccountDeletionAsync(string email)
+            +ConfirmAccountDeletionAsync(string email)
+            +GenerateToken(string email)
+            +GetFilteredPatient(PatientFilterDTO filter, int pageNumber, int pageSize)
+            +AdminUpdatePatientProfileAsync(string patientId, UpdatePatientDto updateDto)
+        }
+        
+        class Patient {
+            +UserId
+            +FirstName
+            +LastName
+            +Email
+            +DateofBirth
+            +Gender
+            +ContactInfo
+            +EmergencyContact
+            +PhoneNumber
+            +MedicalNr
+            +IsAnonymized
+        }
+        
+        class PatientDto {
+            +Id
+            +FirstName
+            +LastName
+            +Email
+            +PhoneNumber
+            +DateofBirth
+            +Gender
+            +ContactInfo
+            +EmergencyContact
+            +MedicalNr
+        }
+
+        class RegisterPatientDto {
+            +FirstName
+            +LastName
+            +Email
+            +DateofBirth
+            +Gender
+            +ContactInfo
+            +EmergencyContact
+            +PhoneNumber
+        }
+
+        class UpdatePatientDto {
+            +FirstName
+            +LastName
+            +Email
+            +PhoneNumber
+            +ContactInfo
+            +EmergencyContact
+            +Gender
+            +DateOfBirth
+        }
+
+        class DeletePatientDto {
+            +ConfirmDeletion
+        }
+
+        class PatientFilterDTO {
+            +FirstName
+            +LastName
+            +Email
+        }
+
+        class DeleteConfirmationDto {
+            +Token
+        }
+
+        class MedicalRecordNumber {
+            +Generate()
+        }
+    }
+
+    package "StaffData" {
+        class StaffService {
+            +AddAsync(CreateStaffDto dto)
+            +GetByIdAsync(string id)
+            +DeleteAsync(string id)
+            +getStaffFilteredAsync(StaffFilterDto filter)
+            +UpdateStaffAsync(string id, UpdateStaffDto dto)
+            +DeactivateAsync(string id)
+        }
+
+        class Staff {
+            +Id
+            +UserId
+            +FirstName
+            +LastName
+            +Email
+            +PhoneNumber
+            +Specialization
+            +LicenseNumber
+            +Active
+            +AvailabilitySlots
+            +AddAvailabilitySlot(DateTime startTime, DateTime endTime)
+            +Deactivate()
+            +Reactivate()
+        }
+
+        class StaffDto {
+            +Id
+            +FirstName
+            +LastName
+            +Email
+            +PhoneNumber
+            +Specialization
+            +LicenseNumber
+        }
+
+        class CreateStaffDto {
+            +FirstName
+            +LastName
+            +Email
+            +PhoneNumber
+            +Specialization
+            +LicenseNumber
+        }
+
+        class UpdateStaffDto {
+            +Email
+            +PhoneNumber
+            +Specialization
+            +AvailabilitySlots
+        }
+
+        class StaffFilterDto {
+            +FirstName
+            +LastName
+            +Email
+        }
+
+        class AvailabilitySlot {
+            +StartTime
+            +EndTime
+            +UpdateSlot(DateTime newStartTime, DateTime newEndTime)
+        }
+
+        class AvailabilitySlotDto {
+            +StartTime
+            +EndTime
+        }
+    }
+
+    package "OperationRequestData" {
+        class OperationRequestService {
+            +CreateOperationRequestAsync(CreateOperationRequestDto dto)
+            +DeleteOperationRequestAsync(string id)
+            +SearchOperationRequestsAsync(SearchOperationRequestDto searchDto)
+            +UpdateOperationRequestAsync(string id, UpdateOperationRequestDto patchDoc)
+        }
+
+        class OperationRequest {
+            +Id
+            +PatientId
+            +DoctorId
+            +OperationTypeId
+            +Deadline
+            +Priority
+        }
+
+        class OperationRequestDto {
+            +Id
+            +PatientId
+            +DoctorId
+            +OperationTypeId
+            +Deadline
+            +Priority
+        }
+
+        class CreateOperationRequestDto {
+            +PatientId
+            +DoctorId
+            +OperationTypeId
+            +Deadline
+            +Priority
+        }
+
+        class UpdateOperationRequestDto {
+            +OperationTypeId
+            +Deadline
+            +Priority
+        }
+
+        class SearchOperationRequestDto {
+            +PatientId
+            +DoctorId
+            +OperationTypeId
+            +Deadline
+            +Priority
+        }
+    }
+
+    package "OperationTypeData" {
+        class OperationTypeService {
+            +AddAsync(CreateOperationTypeDto dto)
+            +GetAllAsync()
+            +UpdateOperationType(OperationTypeId id, JsonPatchDocument<UpdateOperationTypeDto> patchDoc)
+        }
+        class OperationType {
+            +Id
+            +Name
+            +RequiredStaffBySpecialization
+        }
+
+        class OperationTypeDto {
+            +Id
+            +Name
+            +RequiredStaffBySpecialization
+        }
+        class CreateOperationTypeDto {
+            +Name
+            +RequiredStaffBySpecialization
+            +AnesthesiaPreparation
+            +Surgery
+            +Cleaning
+        }
+        class UpdateOperationTypeDto {
+            +Name
+            +RequiredStaffBySpecialization
+            +AnesthesiaPreparation
+            +Surgery
+            +Cleaning
+        }
+    }
+
+    package "UserData" {
+        class UserService {
+            +RegisterUserAsync(CreateUserDto model)
+            +GetUserByIdAsync(string id)
+            +UpdateUserAsync(string id, UpdateUserDto model)
+            +DeleteUserAsync(string id)
+        }
+
+        class UserDto {
+            +Id
+            +UserName
+            +Email
+            +Role
+        }
+
+        class CreateUserDto {
+            +UserName
+            +Email
+            +Password
+            +Role
+        }
+
+        class UpdateUserDto {
+            +UserName
+            +Email
+            +NewRole
+        }
+
+        class ResetPasswordDto {
+            +Email
+        }
+
+        class ChangePasswordDto {
+            +CurrentPassword
+            +NewPassword
+        }
+    }
+
+    package "AuthData" {
+        class AuthService {
+            +LoginAsync(LoginDto model)
+            +LogoutAsync()
+            +ChangePasswordAsync(string userId, string currentPassword, string newPassword)
+            +ResetPasswordAsync(string email)
+            +ConfirmResetPasswordAsync(string email, string token, string newPassword)
+        }
+
+        class LoginDto {
+            +Email
+            +Password
+        }
+
+        class ConfirmResetPasswordDto {
+            +Email
+            +Token
+            +NewPassword
+        }
+    }
+}
+
+package "Infrastructure" {
+    class DDDSample1DbContext {
+        +DbSet<Patient> Patients
+        +DbSet<Staff> Staffs
+        +DbSet<OperationRequest> OperationRequests
+        +DbSet<OperationType> OperationTypes
+    }
+
+    class StaffRepository {
+        +GetByIdAsync(string id)
+        +AddAsync(Staff staff)
+        +Remove(Staff staff)
+        +UpdateAsync(Staff staff)
+        +GetFilteredStaffAsync(StaffFilterDto filter)
+    }
+
+    class OperationRequestRepository {
+        +GetByIdAsync(string id)
+        +AddAsync(OperationRequest request)
+        +Remove(OperationRequest request)
+        +UpdateAsync(OperationRequest request)
+        +GetFilteredRequestsAsync(SearchOperationRequestDto filter)
+    }
+
+    class LoggingService implements ILoggingService {
+        +LogInformation(string message)
+        +LogWarning(string message)
+        +LogError(string message, Exception ex = null)
+        +LogChangeAsync(string action, string userId, string patientName, object changeData)
+    }
+
+    class SmtpEmailService implements IEmailService {
+        +SendEmailAsync(string to, string subject, string body)
+        +SendAdminLockoutNotification(string userEmail)
+    }
+     class PatientRepository {
+        +AddAsync(Patient patient)
+        +GetByUserIdAsync(string userId)
+        +GetFilteredPatientAsync(PatientFilterDTO filter, int pageNumber, int pageSize)
+        +ExistsAsync(string patientId)
+        +IsEmailUniqueAsync(string email)
+        +IsPhoneNumberUniqueAsync(string phoneNumber)
+        +RemoveAsync(Patient patient)
+        +UpdateAsync(Patient patient)
+        +GetByEmailAsync(string email)
+        +GetByIdAsync(string id)
+        +AnonymizeAsync(Patient patient)
+    }
+
+    class OperationTypeRepository {
+        +addAsync(OperationType operationType)
+        +GetByNameAsync(string name)
+        +ExistsByNameAsync(string name)
+        +UpdateAsync(OperationType operationType)
+        +GetByIdAsync(OperationTypeId id)
+        +GetRequiredStaffBySpecializationAsync(OperationTypeId id)
+    }
+
+    class UserManager<TUser> {
+        +CreateAsync(TUser user)
+        +UpdateAsync(TUser user)
+        +DeleteAsync(TUser user)
+        +FindByIdAsync(string userId)
+        +SetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName, string? tokenValue)
+        +RemoveAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName)
+        +GetAuthenticatorKeyAsync(TUser user)
+        +ResetAuthenticatorKeyAsync(TUser user)
+        +GenerateNewTwoFactorRecoveryCodesAsync(TUser user, int number)
+        +RedeemTwoFactorRecoveryCodeAsync(TUser user, string code)
+        +CountRecoveryCodesAsync(TUser user)
+    }
+}
+
+package "Interfaces" {
+    interface ILoggingService {
+        +LogInformation(string message)
+        +LogWarning(string message)
+        +LogError(string message, Exception ex = null)
+        +LogChangeAsync(string action, string userId, string patientName, object changeData)
+    }
+
+    interface IEmailService {
+        +SendEmailAsync(string to, string subject, string body)
+        +SendAdminLockoutNotification(string userEmail)
+    }
+
+    interface IStaffRepository {
+        +GetByIdAsync(string id)
+        +GetByUserIdAsync(string userId)
+        +GetByEmailAsync(string email)
+        +GetAllAsync()
+        +AddAsync(Staff staff)
+        +Remove(Staff staff)
+        +IsEmailUniqueAsync(string email)
+        +IsPhoneNumberUniqueAsync(string phoneNumber)
+        +UpdateAsync(Staff staff)
+        +GetActiveStaffAsync()
+        +ExistsAsync(string staffId)
+        +GetFilteredStaffAsync(StaffFilterDto filter)
+    }
+
+    interface IPatientRepository {
+        +GetByUserIdAsync(string userId)
+        +AddAsync(Patient patient)
+        +GetFilteredPatientAsync(PatientFilterDTO filter, int pageNumber, int pageSize)
+        +ExistsAsync(string patientId)
+        +RemoveAsync(Patient patient)
+        +IsEmailUniqueAsync(string email)
+        +IsPhoneNumberUniqueAsync(string phoneNumber)
+        +UpdateAsync(Patient patient)
+        +GetByEmailAsync(string email)
+        +GetByIdAsync(string id)
+        +AnonymizeAsync(Patient patient)
+    }
+
+    interface IUnitOfWork {
+        +CommitAsync()
+        +BeginTransactionAsync()
+        +CommitTransactionAsync()
+        +RollbackTransactionAsync()
+    }
+
+    interface IAuthService {
+        +LoginAsync(LoginDto model)
+        +LogoutAsync()
+        +ChangePasswordAsync(string userId, string currentPassword, string newPassword)
+        +ResetPasswordAsync(string email)
+        +ConfirmResetPasswordAsync(string email, string token, string newPassword)
+    }
+
+    interface IOperationTypeRepository {
+        +addAsync(OperationType operationType)
+        +GetByNameAsync(string name)
+        +ExistsByNameAsync(string name)
+        +UpdateAsync(OperationType operationType)
+        +GetByIdAsync(OperationTypeId id)
+        +GetRequiredStaffBySpecializationAsync(OperationTypeId id)
+    }
+
+    interface IOperationRequestRepository {
+        +AddAsync(OperationRequest operationRequest)
+        +GetByIdAsync(string id)
+        +UpdateAsync(OperationRequest operationRequest)
+        +RemoveAsync(OperationRequest operationRequest)
+        +GetFilteredOperationRequestsAsync(SearchOperationRequestDto filter)
+    }
+    interface IUserService {
+        +RegisterUserAsync(CreateUserDto model)
+        +GetUserByIdAsync(string id)
+        +UpdateUserAsync(string id, UpdateUserDto model)
+        +DeleteUserAsync(string id)
+    }
+}
+
+PatientController --> PatientService : uses
+StaffController --> StaffService : uses
+OperationRequestController --> OperationRequestService : uses
+AuthController --> IAuthService : uses
+UserController --> IUserService : uses
+OperationTypeController --> OperationTypeService : uses
+
+PatientService --> IPatientRepository : uses
+PatientService --> IUnitOfWork : uses
+PatientService --> ILoggingService : uses
+PatientService --> IEmailService : uses
+PatientRepository --> DDDSample1DbContext : uses
+
+PatientService --> Patient : manipulates
+PatientService --> UpdatePatientDto : uses
+PatientService --> DeletePatientDto : uses
+PatientService --> PatientDto : returns
+PatientService --> RegisterPatientDto : receives
+PatientService --> DeleteConfirmationDto : uses
+PatientService --> PatientFilterDTO : uses
+
+StaffService --> IStaffRepository : uses
+StaffService --> Staff : manipulates
+StaffService --> StaffDto : returns
+StaffService --> StaffFilterDto : uses
+StaffService --> CreateStaffDto : receives
+StaffService --> UpdateStaffDto : uses
+StaffService --> AvailabilitySlot : uses
+StaffService --> ILoggingService : uses
+StaffService --> IEmailService : uses
+
+OperationRequestService --> IOperationRequestRepository : uses
+OperationRequestService --> IStaffRepository : uses
+OperationRequestService --> IUnitOfWork : uses
+OperationRequestService --> ILoggingService : uses
+OperationRequestService --> IOperationTypeRepository : uses
+OperationRequestService --> OperationRequest : manipulates
+OperationRequestService --> CreateOperationRequestDto : receives
+OperationRequestService --> OperationRequestDto : returns
+
+UserService --> UserManager : uses
+UserService --> IEmailService : uses
+UserService --> UserDto : returns
+UserService --> CreateUserDto : receives
+UserService --> UpdateUserDto : uses
+UserService --> ResetPasswordDto : uses
+UserService --> ChangePasswordDto : uses
+
+OperationTypeService --> IOperationTypeRepository : uses
+OperationTypeService --> IUnitOfWork : uses
+OperationTypeService --> ILoggingService : uses
+OperationTypeService --> OperationType : manipulates
+OperationTypeService --> CreateOperationTypeDto : receives
+OperationTypeService --> UpdateOperationTypeDto : uses
+OperationTypeService --> OperationTypeDto : returns
+
+AuthService --> UserManager : uses
+AuthService --> IConfiguration : uses
+AuthService --> IEmailService : uses
+AuthService --> ILogger : uses
+AuthService --> LoginDto : receives
+AuthService --> ConfirmResetPasswordDto : uses
+
+IStaffRepository <|.. StaffRepository
+IPatientRepository <|.. PatientRepository
+IOperationRequestRepository <|.. OperationRequestRepository
+IOperationTypeRepository <|.. OperationTypeRepository
+
+
+@enduml
