@@ -22,13 +22,13 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build 3dc-g17-main.sln --configuration Release
+        run: dotnet build 3DC-G17.sln --configuration Release
         
       - name: Test with dotnet
-        run: dotnet test 3dc-g17-main.sln --configuration Release
+        run: dotnet test 3DC-G17.sln --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish 3dc-g17-main.sln -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish 3DC-G17.sln -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
