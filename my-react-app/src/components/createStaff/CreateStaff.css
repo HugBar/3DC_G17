@@ -1,0 +1,112 @@
+.create-staff-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+  color: #781f1c; /* Primary red color */
+}
+
+.success-message {
+  color: #5b8a5b; /* Green for success messages */
+  text-align: center;
+}
+
+.error-message {
+  color: #781f1c; /* Red for error messages */
+  text-align: center;
+}
+
+.staff-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.submit-button {
+  padding: 10px 15px;
+  background-color: #8a8989;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: #6f6f6f; /* Darker gray on hover */
+}
+
+.slot-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.time-inputs {
+  display: flex;
+  gap: 15px;
+  flex: 1;
+}
+
+.time-inputs input {
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.add-slot-button {
+  background-color: #006218;
+  color: white;
+  padding: 4px 8px;
+  font-size: 0.8em;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.add-slot-button:hover {
+  background-color: #004212;
+}
+
+.remove-slot-button{
+  background-color: #781f1c;
+  color: white;
+  padding: 4px 8px;
+  font-size: 0.8em;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.remove-slot-button:hover {
+  background-color: #5e1a18; /* Darker red on hover */
+}
