@@ -77,6 +77,45 @@ namespace DDDSample1.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpPatch("deactivate-operation-type/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeactivateOperationType([FromRoute] Guid id)
+        {
+            try
+            {
+                var result = await _service.DeactivateOperationType(id);
+                return Ok(result);
+            }
+            catch (BusinessRuleValidationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("search-operation-type")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SearchOperationType([FromQuery] OperationTypeFilterDto filterDto)
+        {
+            try
+            {
+                var result = await _service.SearchOperationType(filterDto);
+                return Ok(result);
+            }
+            catch (BusinessRuleValidationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An error occurred while searching operation types." });
+            }
+        }
+
         private object GetModelErrors()
         {
             return new
@@ -88,5 +127,6 @@ namespace DDDSample1.Controllers
                     .ToArray()
             };
         }
+
     }
 }

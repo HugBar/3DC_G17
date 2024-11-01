@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using DDDSample1.Domain.OperationTypeData;
 using DDDSample1.Infrastructure.Shared;
+using System.Linq;
 
 namespace DDDSample1.Infrastructure.OperationTypeData
 {
@@ -69,6 +70,34 @@ namespace DDDSample1.Infrastructure.OperationTypeData
             }
 
             return operationType.RequiredStaffBySpecialization;
+        }
+
+        public async Task<List<OperationType>> SearchOperationType(OperationTypeFilterDto filterDto)
+        {
+            var query = _context.OperationTypes.AsQueryable();
+
+            if (!string.IsNullOrEmpty(filterDto.NameFilter))
+            {
+                query = query.Where(o => o.Name.Contains(filterDto.NameFilter));
+            }
+
+            if (!string.IsNullOrEmpty(filterDto.SpecializationFilter))
+            {
+                query = query.Where(o => o.RequiredStaffBySpecialization.Keys.Contains(filterDto.SpecializationFilter));
+            }
+
+            if (filterDto.IsActiveFilter.HasValue)
+            {
+                query = query.Where(o => o.IsActive == filterDto.IsActiveFilter.Value);
+            }
+
+           
+            var items = await query
+                .Skip((filterDto.PageNumber - 1) * filterDto.PageSize)
+                .Take(filterDto.PageSize)
+                .ToListAsync();
+
+            return items;
         }
     }
 }
