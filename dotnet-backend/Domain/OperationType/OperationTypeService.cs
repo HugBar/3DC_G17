@@ -36,13 +36,13 @@ namespace DDDSample1.Domain.OperationTypeData
 
             _loggingService.LogInformation($"New operation type created: {operationType.Id}");
 
-            return new OperationTypeDto(operationType.Id, operationType.Name, operationType.RequiredStaffBySpecialization, operationType.Duration);
+            return new OperationTypeDto(operationType);
         }
 
         public async Task<IEnumerable<OperationTypeDto>> GetAllAsync()
         {
             var operationTypes = await _repo.GetAllAsync();
-            return operationTypes.Select(o => new OperationTypeDto(o.Id, o.Name, o.RequiredStaffBySpecialization, o.Duration));
+            return operationTypes.Select(o => new OperationTypeDto(o));
         }
 
         public async Task<OperationTypeDto> UpdateOperationType(OperationTypeId id, JsonPatchDocument<UpdateOperationTypeDto> patchDoc)
@@ -51,6 +51,9 @@ namespace DDDSample1.Domain.OperationTypeData
 
             if (operationType == null)
                 throw new BusinessRuleValidationException("Operation type not found.");
+
+            if (!operationType.IsActive)
+            throw new BusinessRuleValidationException("Cannot update an inactive version.");
 
             var operationTypeDto = ConvertToDto(operationType);
 
@@ -61,17 +64,15 @@ namespace DDDSample1.Domain.OperationTypeData
             
             var operationPhases = new OperationPhases(operationTypeDto.AnesthesiaPreparation, operationTypeDto.Surgery, operationTypeDto.Cleaning);
 
-            operationType.SetName(operationTypeDto.Name);
-            operationType.SetRequiredStaffBySpecialization(operationTypeDto.RequiredStaffBySpecialization);
-            operationType.SetEstimatedDuration(operationPhases);
-                
+            var newVersion = operationType.CreateNewVersion(operationTypeDto.RequiredStaffBySpecialization, operationPhases);
 
             await _repo.UpdateAsync(operationType);
+            await _repo.AddAsync(newVersion);
             await _unitOfWork.CommitAsync();
 
-            _loggingService.LogInformation($"Operation type updated: {operationType.Id}");
+            _loggingService.LogInformation($"Nova versão do tipo de operação criada: {newVersion.Id}, versão anterior: {operationType.Id}");
 
-            return new OperationTypeDto(operationType.Id, operationType.Name, operationType.RequiredStaffBySpecialization, operationType.Duration);
+            return new OperationTypeDto(newVersion);
         }
 
         private UpdateOperationTypeDto ConvertToDto(OperationType operationType)
@@ -84,6 +85,35 @@ namespace DDDSample1.Domain.OperationTypeData
                 Surgery = operationType.Duration.Surgery,
                 Cleaning = operationType.Duration.Cleaning
             };
+        }
+
+        public async Task<OperationTypeDto> DeactivateOperationType(Guid id)
+        {
+            var operationTypeId = new OperationTypeId(id);
+            var operationType = await _repo.GetByIdAsync(operationTypeId);
+
+            if (operationType == null)
+                throw new BusinessRuleValidationException("Operation type not found.");
+            
+            if (!operationType.IsActive)
+                throw new BusinessRuleValidationException("Operation type is already inactive.");
+
+            operationType.Deactivate();
+
+            await _repo.UpdateAsync(operationType);
+            await _unitOfWork.CommitAsync();
+
+            return new OperationTypeDto(operationType);
+        }
+
+        public async Task<List<OperationType>> SearchOperationType(OperationTypeFilterDto filterDto)
+        {
+            if (filterDto.PageNumber < 1 || filterDto.PageSize < 1)
+                throw new BusinessRuleValidationException("Invalid page number or page size.");
+
+            var operationTypes = await _repo.SearchOperationType(filterDto);
+            
+            return operationTypes;
         }
     
     }

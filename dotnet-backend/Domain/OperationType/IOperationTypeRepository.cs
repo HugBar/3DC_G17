@@ -20,5 +20,7 @@ namespace DDDSample1.Domain.OperationTypeData
 
         Task<Dictionary<string, int>> GetRequiredStaffBySpecializationAsync(OperationTypeId id);
 
+        Task<List<OperationType>> SearchOperationType(OperationTypeFilterDto filterDto);
+
     }
 }
