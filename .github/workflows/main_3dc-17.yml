@@ -21,14 +21,17 @@ jobs:
         with:
           dotnet-version: '8.x'
 
+      - name: Restore dependencies
+        run: dotnet restore 3DC_G17.sln
+
       - name: Build with dotnet
-        run: dotnet build 3DC_G17.sln --configuration Release
+        run: dotnet build 3DC_G17.sln --configuration Release --no-restore
         
       - name: Test with dotnet
-        run: dotnet test 3DC_G17.sln --configuration Release
+        run: dotnet test 3DC_G17.sln --configuration Release --no-build
 
-      - name: dotnet publish
-        run: dotnet publish 3DC_G17.sln -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      - name: Publish
+        run: dotnet publish dotnet-backend/DDDNetCore.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -43,13 +46,14 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: myapp
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -64,4 +68,5 @@ jobs:
         with:
           app-name: '3dc-17'
           slot-name: 'Production'
-          package: .
+          package: myapp
+          
