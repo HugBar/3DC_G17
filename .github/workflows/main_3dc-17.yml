@@ -56,6 +56,10 @@ jobs:
         working-directory: my-react-app
         run: npm ci
 
+      #- name: Run Tests
+      #  working-directory: my-react-app
+      #  run: npm test -- --watchAll=false
+
       - name: Build React App
         working-directory: my-react-app
         run: npm run build
