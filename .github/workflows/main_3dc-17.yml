@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build, test, and deploy ASP.Net Core app to Azure Web App - 3dc-17
+name: Build, test, and deploy ASP.Net Core app and React app to Azure Web App - 3dc-17
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-test-backend:
     runs-on: windows-latest
 
     steps:
@@ -39,9 +39,41 @@ jobs:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
+  build-and-test-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: my-react-app/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: my-react-app
+        run: npm ci
+
+      - name: Run Tests
+        working-directory: my-react-app
+        run: npm test -- --watchAll=false
+
+      - name: Build React App
+        working-directory: my-react-app
+        run: npm run build
+
+      - name: Upload React build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-build
+          path: my-react-app/build
+          retention-days: 5
+
   deploy:
     runs-on: windows-latest
-    needs: build
+    needs: [build-and-test-backend, build-and-test-frontend]
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -49,11 +81,17 @@ jobs:
       id-token: write
 
     steps:
-      - name: Download artifact from build job
+      - name: Download .NET app artifact
         uses: actions/download-artifact@v4
         with:
           name: .net-app
           path: myapp
+
+      - name: Download React build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: react-build
+          path: myapp/wwwroot
       
       - name: Login to Azure
         uses: azure/login@v2
