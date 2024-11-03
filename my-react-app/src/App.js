@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import CreateStaff from './components/createStaff/CreateStaff.js';
 import UpdateStaff from './components/updateStaff/UpdateStaff.js';
+import StaffList from './components/staffList/StaffList.js'; // Import the new StaffList component
 import Login from './components/auth/Login';
 import logo from './assets/hospital.png';
 import './App.css';
@@ -10,6 +11,7 @@ const App = () => {
   const [authToken, setAuthToken] = useState(localStorage.getItem('authToken'));
   const [showStaffActions, setShowStaffActions] = useState(false);
   const [selectedStaffAction, setSelectedStaffAction] = useState(null);
+  const [selectedStaffId, setSelectedStaffId] = useState(null); // Track selected staff ID for update
 
   const handleLogin = (token) => {
     setAuthToken(token);
@@ -21,6 +23,7 @@ const App = () => {
     localStorage.removeItem('authToken');
     setShowStaffActions(false);
     setSelectedStaffAction(null);
+    setSelectedStaffId(null); // Clear selected staff on logout
   };
 
   const isAuthenticated = () => !!authToken;
@@ -28,6 +31,12 @@ const App = () => {
   const handleHomeClick = () => {
     setShowStaffActions(false);
     setSelectedStaffAction(null);
+    setSelectedStaffId(null);
+  };
+
+  const handleSelectStaff = (staffId) => {
+    setSelectedStaffId(staffId);
+    setSelectedStaffAction('Update Staff'); // Transition to Update Staff view
   };
 
   return (
@@ -93,7 +102,13 @@ const App = () => {
 
           {/* Display Selected Action Component in Main Content */}
           {selectedStaffAction === 'Create Staff' && <CreateStaff />}
-          {selectedStaffAction === 'Update Staff' && <UpdateStaff />}
+          {selectedStaffAction === 'Update Staff' && (
+            selectedStaffId ? (
+              <UpdateStaff staffId={selectedStaffId} />
+            ) : (
+              <StaffList onSelectStaff={handleSelectStaff} />
+            )
+          )}
           {selectedStaffAction === 'Reactivate Staff' && (
             <h2>Reactivate Staff Section</h2>
           )}

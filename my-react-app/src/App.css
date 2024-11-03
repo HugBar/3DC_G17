@@ -20,7 +20,7 @@
 
 .app-title {
   font-size: 1.5em;
-  color: #781f1c;
+  color: #364953;
 }
 
 /* Navigation Styling */
@@ -55,7 +55,7 @@
 }
 
 .dropdown-button {
-  background-color: #781f1c;
+  background-color: #364953;
   color: white;
   border: none;
   padding: 8px 15px;
@@ -66,7 +66,7 @@
 }
 
 .dropdown-button:hover {
-  background-color: #5e1a18;
+  background-color: #151c20;
 }
 
 .dropdown-menu {
@@ -201,11 +201,11 @@
 
 /* Style specifically for the Logout button */
 .logout-button {
-  background-color: #781f1c; /* Red background for Logout button */
+  background-color: #364953; /* Red background for Logout button */
   color: white;
 }
 
 .logout-button:hover {
-  background-color: #5e1a18; /* Darker red on hover for Logout */
+  background-color: #151c20; /* Darker red on hover for Logout */
 }
 

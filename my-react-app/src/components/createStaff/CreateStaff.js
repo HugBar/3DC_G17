@@ -142,14 +142,17 @@ const CreateStaff = () => {
       <button type="button" onClick={() => removeSlot(index)} className="remove-slot-button">
         Remove Slot
       </button>
-      <button type="button" onClick={addSlot} className="add-slot-button">
-        Add Slot
-      </button>
     </div>
   </div>
 ))}
+
+<div className="button-group">
+  <button type="button" onClick={addSlot} className="add-slot-button">
+    Add Slot
+  </button>
+</div>
         <button type="submit" className="submit-button">
-          Create Staff
+          Create 
         </button>
       </form>
     </div>
