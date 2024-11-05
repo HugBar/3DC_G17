@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DDDNetCore.Migrations
 {
     [DbContext(typeof(DDDSample1DbContext))]
-    [Migration("20241027134552_InitialCreate")]
+    [Migration("20241104122626_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -69,13 +69,28 @@ namespace DDDNetCore.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("OperationTypeCode")
                         .HasColumnType("longtext");
 
                     b.Property<string>("RequiredStaffBySpecialization")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("ValidTo")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

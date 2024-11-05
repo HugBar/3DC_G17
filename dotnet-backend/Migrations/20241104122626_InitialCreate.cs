@@ -100,11 +100,17 @@ namespace DDDNetCore.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Name = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    ValidFrom = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    ValidTo = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     RequiredStaffBySpecialization = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Duration_AnesthesiaPreparation = table.Column<TimeSpan>(type: "time(6)", nullable: true),
                     Duration_Surgery = table.Column<TimeSpan>(type: "time(6)", nullable: true),
-                    Duration_Cleaning = table.Column<TimeSpan>(type: "time(6)", nullable: true)
+                    Duration_Cleaning = table.Column<TimeSpan>(type: "time(6)", nullable: true),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    OperationTypeCode = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {

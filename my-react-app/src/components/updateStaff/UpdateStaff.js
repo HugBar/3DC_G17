@@ -3,7 +3,7 @@ import staffService from '../../api/staffService';
 import useFormValidation from '../../hooks/useFormValidation';
 import './UpdateStaff.css';
 
-const UpdateStaff = ({ staffId }) => {
+const UpdateStaff = ({ staffId, onBack }) => {
   const [staffData, setStaffData] = useState({
     email: '',
     phoneNumber: '',
@@ -21,14 +21,13 @@ const UpdateStaff = ({ staffId }) => {
         const data = await staffService.getStaffById(staffId);
         setStaffData(data);
       } catch (error) {
-        console.error('Error fetching staff data:', error); // Log detailed error
+        console.error('Error fetching staff data:', error);
         setErrorMessage('Error fetching staff data.');
       }
     };
-  
+
     fetchStaffData();
   }, [staffId]);
-  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -100,55 +99,62 @@ const UpdateStaff = ({ staffId }) => {
           <input type="text" name="specialization" value={staffData.specialization} onChange={handleChange} required />
           {errors.specialization && <p className="error-message">{errors.specialization}</p>}
         </div>
-        
+
         {/* Dynamic Slot Inputs */}
         {staffData.availabilitySlots.map((slot, index) => (
-  <div key={index} className="form-group slot-container">
-    <div className="time-inputs">
-      <div className="form-group">
-        <label>Start Time:</label>
-        <input
-          type="datetime-local"
-          name="startTime"
-          value={slot.startTime}
-          onChange={(e) => handleSlotChange(index, e)}
-          required
-        />
-        {errors[`availabilitySlots.${index}.startTime`] && (
-          <p className="error-message">{errors[`availabilitySlots.${index}.startTime`]}</p>
-        )}
-      </div>
-      <div className="form-group">
-        <label>End Time:</label>
-        <input
-          type="datetime-local"
-          name="endTime"
-          value={slot.endTime}
-          onChange={(e) => handleSlotChange(index, e)}
-          required
-        />
-        {errors[`availabilitySlots.${index}.endTime`] && (
-          <p className="error-message">{errors[`availabilitySlots.${index}.endTime`]}</p>
-        )}
-      </div>
-    </div>
-    <div className="button-group">
-      <button type="button" onClick={() => removeSlot(index)} className="remove-slot-button">
-        Remove Slot
-      </button>
-    </div>
-  </div>
-))}
+          <div key={index} className="form-group slot-container">
+            <div className="time-inputs">
+              <div className="form-group">
+                <label>Start Time:</label>
+                <input
+                  type="datetime-local"
+                  name="startTime"
+                  value={slot.startTime}
+                  onChange={(e) => handleSlotChange(index, e)}
+                  required
+                />
+                {errors[`availabilitySlots.${index}.startTime`] && (
+                  <p className="error-message">{errors[`availabilitySlots.${index}.startTime`]}</p>
+                )}
+              </div>
+              <div className="form-group">
+                <label>End Time:</label>
+                <input
+                  type="datetime-local"
+                  name="endTime"
+                  value={slot.endTime}
+                  onChange={(e) => handleSlotChange(index, e)}
+                  required
+                />
+                {errors[`availabilitySlots.${index}.endTime`] && (
+                  <p className="error-message">{errors[`availabilitySlots.${index}.endTime`]}</p>
+                )}
+              </div>
+            </div>
+            <div className="button-group">
+              <button type="button" onClick={() => removeSlot(index)} className="remove-slot-button">
+                Remove Slot
+              </button>
+            </div>
+          </div>
+        ))}
 
-<div className="button-group">
-  <button type="button" onClick={addSlot} className="add-slot-button">
-    Add Slot
-  </button>
-</div>
+        <div className="button-group">
+          <button type="button" onClick={addSlot} className="add-slot-button">
+            Add Slot
+          </button>
+        </div>
 
-        <button type="submit" className="submit-button">
-          Update
-        </button>
+        <div className="button-group">
+          {/* Back Button */}
+          <button type="button" onClick={onBack} className="back-button submit-button">
+            Back
+          </button>
+          {/* Update Button */}
+          <button type="submit" className="submit-button">
+            Update
+          </button>
+        </div>
       </form>
     </div>
   );

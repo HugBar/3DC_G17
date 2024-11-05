@@ -1,0 +1,100 @@
+@startuml
+actor User
+participant "CreateStaff UI" as UI
+participant "staffService" as SS
+participant "Backend API" as API
+participant "StaffController" as SC
+participant "StaffService" as SVC
+participant "IStaffRepository" as SR
+participant "UserManager" as UM
+participant "IUnitOfWork" as UOW
+participant "IEmailService" as ES
+database "Database" as DB
+
+User -> UI: Fill in staff details
+User -> UI: Click "Create Staff" button
+activate UI
+
+UI -> SS: createStaff(staffData)
+activate SS
+
+SS -> API: POST /create-staff-profile
+activate API
+
+API -> SC: POST /api/staff/create-staff-profile (CreateStaffDto)
+activate SC
+
+SC -> SVC: AddAsync(CreateStaffDto)
+activate SVC
+
+SVC -> UM: FindByEmailAsync(dto.Email)
+activate UM
+UM -> DB: Query User
+DB --> UM: User
+UM --> SVC: ApplicationUser
+deactivate UM
+
+alt User not found
+    SVC --> SC: throw BusinessRuleValidationException
+    SC --> API: BadRequest(User not found)
+    API --> SS: Error
+    SS --> UI: Show error message
+else User found
+    SVC -> SR: GetByUserIdAsync(user.Id)
+    activate SR
+    SR -> DB: Query Staff
+    DB --> SR: Staff
+    SR --> SVC: Staff
+    deactivate SR
+
+    alt Staff profile already exists
+        SVC --> SC: throw BusinessRuleValidationException
+        SC --> API: BadRequest(Staff profile already exists)
+        API --> SS: Error
+        SS --> UI: Show error message
+    else Staff profile doesn't exist
+        SVC -> SR: IsEmailUnique(dto.Email)
+        SR --> SVC: emailIsUnique
+        SVC -> SR: IsPhoneNumberUnique(dto.PhoneNumber)
+        SR --> SVC: phoneIsUnique
+
+        alt Email or Phone not unique
+            SVC --> SC: throw BusinessRuleValidationException
+            SC --> API: BadRequest(Email or Phone already in use)
+            API --> SS: Error
+            SS --> UI: Show error message
+        else Email and Phone are unique
+            SVC -> SVC: GenerateUniqueLicenseNumber()
+            SVC -> SR: AddAsync(new Staff)
+            activate SR
+            SR -> DB: Save Staff
+            DB --> SR: Staff Saved
+            SR --> SVC: Staff
+            deactivate SR
+
+            SVC -> UOW: CommitAsync()
+            activate UOW
+            UOW -> DB: Commit Transaction
+            DB --> UOW: Transaction Committed
+            UOW --> SVC: 
+            deactivate UOW
+
+            SVC -> ES: SendEmail(staff.Email)
+            activate ES
+            ES --> SVC: Email Sent
+            deactivate ES
+
+            SVC --> SC: StaffDto
+            SC --> API: CreatedAtAction(StaffDto)
+            API --> SS: Success
+            SS --> UI: Show success message
+        end
+    end
+end
+
+deactivate SVC
+deactivate SC
+deactivate API
+deactivate SS
+deactivate UI
+@enduml

@@ -1,14 +1,32 @@
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode'; // Use named import
 
 const API_URL = 'https://localhost:5001/api/staff';
 
+const getAuthToken = () => {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    console.error('No auth token found');
+    throw new Error('No auth token found');
+  }
+  return token;
+};
+
+const checkAdminRole = (token) => {
+  const decodedToken = jwtDecode(token);
+
+  // Access the role using the full claim key
+  const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+  if (role !== 'Admin') {
+    console.error('User does not have the Admin role');
+    throw new Error('User does not have the Admin role');
+  }
+};
+
 const staffService = {
   createStaff: async (staffData) => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      console.error('No auth token found');
-      throw new Error('No auth token found');
-    }
+    const token = getAuthToken();
+    checkAdminRole(token);
 
     try {
       const response = await axios.post(`${API_URL}/create-staff-profile`, staffData, {
@@ -31,15 +49,10 @@ const staffService = {
   },
 
   updateStaff: async (staffId, updateData) => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      console.error('No auth token found');
-      throw new Error('No auth token found');
-    }
-  
-    // Build JSON Patch for top-level fields
+    const token = getAuthToken();
+    checkAdminRole(token);
+
     const patchData = [];
-  
     if (updateData.email !== undefined) {
       patchData.push({ op: "replace", path: "/email", value: updateData.email });
     }
@@ -49,7 +62,6 @@ const staffService = {
     if (updateData.specialization !== undefined) {
       patchData.push({ op: "replace", path: "/specialization", value: updateData.specialization });
     }
-  
     if (Array.isArray(updateData.availabilitySlots)) {
       patchData.push({
         op: "replace",
@@ -60,8 +72,7 @@ const staffService = {
         }))
       });
     }
-    
-  
+
     try {
       const response = await axios.patch(`${API_URL}/edit-staff-profile/${staffId}`, patchData, {
         headers: {
@@ -82,66 +93,54 @@ const staffService = {
       throw error;
     }
   },
-  
-  
-  
-  
 
-getAllStaff: async () => {
-  const token = localStorage.getItem('authToken');
-  if (!token) {
-    console.error('No auth token found');
-    throw new Error('No auth token found');
-  }
+  getAllStaff: async () => {
+    const token = getAuthToken();
+    checkAdminRole(token);
 
-  try {
-    const response = await axios.get(`${API_URL}/filter`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    if (error.response) {
-      console.error('Error response:', error.response.data);
-      console.error('Error status:', error.response.status);
-    } else if (error.request) {
-      console.error('Error request:', error.request);
-    } else {
-      console.error('Error message:', error.message);
+    try {
+      const response = await axios.get(`${API_URL}/filter`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+      throw error;
     }
-    throw error;
-  }
-},
+  },
 
-getStaffById: async (staffId) => {
-  const token = localStorage.getItem('authToken');
-  if (!token) {
-    console.error('No auth token found');
-    throw new Error('No auth token found');
-  }
+  getStaffById: async (staffId) => {
+    const token = getAuthToken();
+    checkAdminRole(token);
 
-  try {
-    const response = await axios.get(`${API_URL}/get-staff-profile/${staffId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    if (error.response) {
-      console.error('Error response:', error.response.data);
-      console.error('Error status:', error.response.status);
-    } else if (error.request) {
-      console.error('Error request:', error.request);
-    } else {
-      console.error('Error message:', error.message);
+    try {
+      const response = await axios.get(`${API_URL}/get-staff-profile/${staffId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+      throw error;
     }
-    throw error;
-  }
-},
-
-
+  },
 };
 
 export default staffService;

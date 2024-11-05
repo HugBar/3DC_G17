@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode'; // Use named import
 import CreateStaff from './components/createStaff/CreateStaff.js';
 import UpdateStaff from './components/updateStaff/UpdateStaff.js';
-import StaffList from './components/staffList/StaffList.js'; // Import the new StaffList component
+import StaffList from './components/staffList/StaffList.js';
 import Login from './components/auth/Login';
+import CreateOperationRequest from './components/createOperationRequest/CreateOperationRequest.js';
 import logo from './assets/hospital.png';
 import './App.css';
 
@@ -11,7 +13,21 @@ const App = () => {
   const [authToken, setAuthToken] = useState(localStorage.getItem('authToken'));
   const [showStaffActions, setShowStaffActions] = useState(false);
   const [selectedStaffAction, setSelectedStaffAction] = useState(null);
-  const [selectedStaffId, setSelectedStaffId] = useState(null); // Track selected staff ID for update
+  const [selectedStaffId, setSelectedStaffId] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isDoctor, setIsDoctor] = useState(false);
+
+  useEffect(() => {
+    if (authToken) {
+      const decodedToken = jwtDecode(authToken);
+      const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      setIsAdmin(role === 'Admin');
+      setIsDoctor(role === 'Doctor');
+    } else {
+      setIsAdmin(false);
+      setIsDoctor(false);
+    }
+  }, [authToken]);
 
   const handleLogin = (token) => {
     setAuthToken(token);
@@ -23,7 +39,9 @@ const App = () => {
     localStorage.removeItem('authToken');
     setShowStaffActions(false);
     setSelectedStaffAction(null);
-    setSelectedStaffId(null); // Clear selected staff on logout
+    setSelectedStaffId(null);
+    setIsAdmin(false);
+    setIsDoctor(false);
   };
 
   const isAuthenticated = () => !!authToken;
@@ -36,7 +54,13 @@ const App = () => {
 
   const handleSelectStaff = (staffId) => {
     setSelectedStaffId(staffId);
-    setSelectedStaffAction('Update Staff'); // Transition to Update Staff view
+    setSelectedStaffAction('Update Staff');
+  };
+
+  const resetStaffAction = () => {
+    setSelectedStaffAction(null);
+    setSelectedStaffId(null);
+    setShowStaffActions(true);
   };
 
   return (
@@ -65,30 +89,35 @@ const App = () => {
         {/* Staff Action Bar Below Header */}
         {showStaffActions && (
           <div className="staff-action-bar">
-            <button
-              onClick={() => setSelectedStaffAction('Create Staff')}
-              className={`action-button ${selectedStaffAction === 'Create Staff' ? 'active' : ''}`}
-            >
-              Create Staff
-            </button>
-            <button
-              onClick={() => setSelectedStaffAction('Update Staff')}
-              className={`action-button ${selectedStaffAction === 'Update Staff' ? 'active' : ''}`}
-            >
-              Update Staff
-            </button>
-            <button
-              onClick={() => setSelectedStaffAction('Reactivate Staff')}
-              className={`action-button ${selectedStaffAction === 'Reactivate Staff' ? 'active' : ''}`}
-            >
-              Reactivate Staff
-            </button>
+            {isAdmin && (
+              <>
+                <button
+                  onClick={() => setSelectedStaffAction('Create Staff')}
+                  className={`action-button ${selectedStaffAction === 'Create Staff' ? 'active' : ''}`}
+                >
+                  Create Staff
+                </button>
+                <button
+                  onClick={() => setSelectedStaffAction('Update Staff')}
+                  className={`action-button ${selectedStaffAction === 'Update Staff' ? 'active' : ''}`}
+                >
+                  Update Staff
+                </button>
+              </>
+            )}
+            {isDoctor && (
+              <button
+                onClick={() => setSelectedStaffAction('Request Operation')}
+                className={`action-button ${selectedStaffAction === 'Request Operation' ? 'active' : ''}`}
+              >
+                Request Operation
+              </button>
+            )}
           </div>
         )}
 
         <main className="main-content">
           <Routes>
-            {/* Home content is only displayed when no staff action is selected */}
             <Route
               path="/"
               element={
@@ -100,18 +129,17 @@ const App = () => {
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
           </Routes>
 
-          {/* Display Selected Action Component in Main Content */}
+          {/* Conditionally Render Components Based on Action */}
           {selectedStaffAction === 'Create Staff' && <CreateStaff />}
           {selectedStaffAction === 'Update Staff' && (
             selectedStaffId ? (
-              <UpdateStaff staffId={selectedStaffId} />
+              <UpdateStaff staffId={selectedStaffId} onBack={resetStaffAction} />
             ) : (
               <StaffList onSelectStaff={handleSelectStaff} />
             )
           )}
-          {selectedStaffAction === 'Reactivate Staff' && (
-            <h2>Reactivate Staff Section</h2>
-          )}
+          {selectedStaffAction === 'Reactivate Staff' && <h2>Reactivate Staff Section</h2>}
+          {selectedStaffAction === 'Request Operation' && <CreateOperationRequest />}
         </main>
       </div>
     </Router>
