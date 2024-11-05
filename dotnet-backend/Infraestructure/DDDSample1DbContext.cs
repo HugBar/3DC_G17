@@ -8,6 +8,8 @@ using DDDSample1.Domain.UserData;
 using DDDSample1.Infrastructure.OperationRequestData;
 using DDDSample1.Infrastructure.OperationTypeData;
 using DDDSample1.Domain.OperationTypeData;
+using DDDSample1.Domain.SurgeryRoomData;
+using DDDSample1.Infrastructure.SurgeryRoomData;
 
 
 namespace DDDSample1.Infrastructure
@@ -23,6 +25,8 @@ namespace DDDSample1.Infrastructure
         public DbSet<OperationRequest> OperationRequests { get; set; }
 
         public DbSet<OperationType> OperationTypes { get; set; }
+
+        public DbSet<SurgeryRoom> SurgeryRooms { get; set; }
 
 
 
@@ -43,6 +47,8 @@ namespace DDDSample1.Infrastructure
 
             modelBuilder.ApplyConfiguration(new OperationTypeEntityTypeConfiguration());
 
+            modelBuilder.ApplyConfiguration(new SurgeryRoomEntityTypeConfiguration());
+
             modelBuilder.Entity<Staff>()
                 .OwnsMany(s => s.AvailabilitySlots, a =>
                 {
@@ -58,6 +64,7 @@ namespace DDDSample1.Infrastructure
                     entity.Property(p => p.FirstName).IsRequired();
                     // Outros mapeamentos...
                 });
+            
         }
 
 
