@@ -223,6 +223,8 @@ namespace DDDSample1
             services.AddScoped<IOperationTypeRepository, OperationTypeRepository>();
             services.AddScoped<OperationTypeService>();
 
+    
+
         }
 
     }
