@@ -122,7 +122,10 @@ const App = () => {
               path="/"
               element={
                 selectedStaffAction === null ? (
-                  <h2>Welcome to the Hospital Management App</h2>
+                  <div>
+                    <h1 className="welcome-title">Welcome to<br/>Hospital Management</h1>
+                    <p className="welcome-subtitle">Your Healthcare Administration Solution</p>
+                  </div>
                 ) : null
               }
             />
