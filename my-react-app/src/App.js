@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode'; // Use named import
-import CreateStaff from './components/createStaff/CreateStaff.js';
-import UpdateStaff from './components/updateStaff/UpdateStaff.js';
-import StaffList from './components/staffList/StaffList.js';
+import CreateStaff from './components/createStaff/CreateStaff';
+import UpdateStaff from './components/updateStaff/UpdateStaff';
+import StaffList from './components/staffList/StaffList';
 import Login from './components/auth/Login';
-import CreateOperationRequest from './components/createOperationRequest/CreateOperationRequest.js';
+import CreateOperationRequest from './components/createOperationRequest/CreateOperationRequest';
+import OperationRequestList from './components/listOperationRequest/OperationRequestList';
+import OperationRequestDeleteConfirmation from './components/deleteOperationRequest/OperationRequestDeleteConfirmation';
+import OperationRequestDetails from './components/consultOperationRequest/OperationRequestDetails';
+
 import logo from './assets/hospital.png';
 import './App.css';
 
@@ -14,8 +18,12 @@ const App = () => {
   const [showStaffActions, setShowStaffActions] = useState(false);
   const [selectedStaffAction, setSelectedStaffAction] = useState(null);
   const [selectedStaffId, setSelectedStaffId] = useState(null);
+  const [selectedOperationRequest, setSelectedOperationRequest] = useState(null);
+  const [selectedOperationRequestId, setSelectedOperationRequestId] = useState(null);
+  const [selectedOperationRequestIdForDetails, setSelectedOperationRequestIdForDetails] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDoctor, setIsDoctor] = useState(false);
+
 
   useEffect(() => {
     if (authToken) {
@@ -40,6 +48,8 @@ const App = () => {
     setShowStaffActions(false);
     setSelectedStaffAction(null);
     setSelectedStaffId(null);
+    setSelectedOperationRequest(null);
+    setSelectedOperationRequestId(null);
     setIsAdmin(false);
     setIsDoctor(false);
   };
@@ -50,6 +60,8 @@ const App = () => {
     setShowStaffActions(false);
     setSelectedStaffAction(null);
     setSelectedStaffId(null);
+    setSelectedOperationRequest(null);
+    setSelectedOperationRequestId(null);
   };
 
   const handleSelectStaff = (staffId) => {
@@ -57,10 +69,29 @@ const App = () => {
     setSelectedStaffAction('Update Staff');
   };
 
+  const handleSelectOperationRequestForDeletion = (requestId) => {
+    setSelectedOperationRequestId(requestId);
+    setSelectedOperationRequest('Delete Operation Requests');
+  };
+
+  const resetOperationRequestAction = () => {
+    setSelectedOperationRequest(null);
+    setSelectedOperationRequestId(null);
+    setShowStaffActions(true);
+  };
+
   const resetStaffAction = () => {
     setSelectedStaffAction(null);
     setSelectedStaffId(null);
-    setShowStaffActions(true);
+    setShowStaffActions(true); // Show the action bar again if needed
+  };
+
+  const handleSelectOperationRequestForDetails = (requestId) => {
+    setSelectedOperationRequestIdForDetails(requestId);
+  };
+  
+  const resetOperationRequestDetails = () => {
+    setSelectedOperationRequestIdForDetails(null);
   };
 
   return (
@@ -85,7 +116,7 @@ const App = () => {
             )}
           </nav>
         </header>
-
+  
         {/* Staff Action Bar Below Header */}
         {showStaffActions && (
           <div className="staff-action-bar">
@@ -106,22 +137,36 @@ const App = () => {
               </>
             )}
             {isDoctor && (
-              <button
-                onClick={() => setSelectedStaffAction('Request Operation')}
-                className={`action-button ${selectedStaffAction === 'Request Operation' ? 'active' : ''}`}
-              >
-                Request Operation
-              </button>
+              <>
+                <button
+                  onClick={() => setSelectedOperationRequest('Request Operation')}
+                  className={`action-button ${selectedOperationRequest === 'Request Operation' ? 'active' : ''}`}
+                >
+                  Request Operation
+                </button>
+                <button
+                  onClick={() => setSelectedOperationRequest('View Operation Requests')}
+                  className={`action-button ${selectedOperationRequest === 'View Operation Requests' ? 'active' : ''}`}
+                >
+                  View Operation Requests
+                </button>
+                <button
+                  onClick={() => setSelectedOperationRequest('Delete Operation Requests')}
+                  className={`action-button ${selectedOperationRequest === 'Delete Operation Requests' ? 'active' : ''}`}
+                >
+                  Delete Operation Requests
+                </button>
+              </>
             )}
           </div>
         )}
-
+  
         <main className="main-content">
           <Routes>
             <Route
               path="/"
               element={
-                selectedStaffAction === null ? (
+                selectedStaffAction === null && selectedOperationRequest === null ? (
                   <div>
                     <h1 className="welcome-title">Welcome to<br/>Hospital Management</h1>
                     <p className="welcome-subtitle">Your Healthcare Administration Solution</p>
@@ -131,7 +176,7 @@ const App = () => {
             />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
           </Routes>
-
+  
           {/* Conditionally Render Components Based on Action */}
           {selectedStaffAction === 'Create Staff' && <CreateStaff />}
           {selectedStaffAction === 'Update Staff' && (
@@ -141,12 +186,33 @@ const App = () => {
               <StaffList onSelectStaff={handleSelectStaff} />
             )
           )}
-          {selectedStaffAction === 'Reactivate Staff' && <h2>Reactivate Staff Section</h2>}
-          {selectedStaffAction === 'Request Operation' && <CreateOperationRequest />}
+          {selectedOperationRequest === 'Request Operation' && <CreateOperationRequest />}
+          {selectedOperationRequest === 'View Operation Requests' && (
+            selectedOperationRequestIdForDetails ? (
+              <OperationRequestDetails
+                operationRequestId={selectedOperationRequestIdForDetails}
+                onBack={resetOperationRequestDetails}
+              />
+            ) : (
+              <OperationRequestList onSelectOperationRequest={handleSelectOperationRequestForDetails} />
+            )
+          )}
+          {selectedOperationRequest === 'Delete Operation Requests' && (
+            selectedOperationRequestId ? (
+              <OperationRequestDeleteConfirmation
+                operationRequestId={selectedOperationRequestId}
+                onConfirm={resetOperationRequestAction}
+                onCancel={resetOperationRequestAction}
+              />
+            ) : (
+              <OperationRequestList onSelectOperationRequest={handleSelectOperationRequestForDeletion} />
+            )
+          )}
         </main>
       </div>
     </Router>
   );
+  
 };
 
 export default App;
