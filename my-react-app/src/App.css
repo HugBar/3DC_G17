@@ -141,15 +141,77 @@
 
 
 .main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 100px);
   padding: 20px;
   text-align: center;
-  font-size: 1.2em;
-  color: #364953;
-  font-weight: 500;
-  line-height: 1.5;
-  margin-top: 80px;
-  margin-bottom: 80px;
+}
 
+.welcome-title {
+  font-size: 3.5em;
+  font-weight: 700;
+  color: #364953;
+  text-align: center;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.2;
+  animation: fadeInDown 1s ease-out;
+}
+
+.welcome-subtitle {
+  font-size: 1.5em;
+  color: #8a8989;
+  text-align: center;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  font-weight: 300;
+  letter-spacing: 1px;
+  animation: fadeInUp 1s ease-out 0.5s both;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilo específico para o botão de login na home */
+.main-content .nav-link {
+  margin-top: 2rem;
+  padding: 15px 40px;
+  font-size: 1.2em;
+  background-color: #364953;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+  animation: fadeInUp 1s ease-out 1s both;
+}
+
+.main-content .nav-link:hover {
+  background-color: #151c20;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .staff-action-bar {
@@ -230,27 +292,5 @@
   background-color: #151c20; /* Darker red on hover for Logout */
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.welcome-title {
-  font-size: 3.5em;
-  font-weight: 700;
-  color: #364953;
-  text-align: center;
-  margin: 2rem 0;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  font-family: 'Segoe UI', 'Roboto', sans-serif;
-  line-height: 1.2;
-}
-
-.welcome-subtitle {
-  font-size: 1.5em;
-  color: #8a8989;
-  text-align: center;
-  margin-top: 1rem;
-  font-weight: 300;
-  letter-spacing: 1px;
 }
 

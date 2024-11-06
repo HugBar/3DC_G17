@@ -29,24 +29,27 @@ h2 {
 
 .form-group {
   margin-bottom: 15px;
+  padding: 0 20px;
 }
 
 .form-group label {
   display: block;
   margin-bottom: 5px;
   color: #555;
+  text-align: left;
 }
 
 .form-group input {
-  width: 100%;
+  width: calc(100% - 2px);
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  box-sizing: border-box;
 }
 
-.submit-button {
+.staff-form .submit-button {
   padding: 10px 15px;
-  background-color: #8a8989;
+  background-color: #1a365d !important;  /* Darker blue with !important */
   color: white;
   border: none;
   border-radius: 4px;
@@ -54,8 +57,8 @@ h2 {
   transition: background-color 0.3s;
 }
 
-.submit-button:hover {
-  background-color: #6f6f6f; /* Darker gray on hover */
+.staff-form .submit-button:hover {
+  background-color: #0f2442 !important;  /* Darker blue for hover */
 }
 
 .slot-container {
@@ -66,9 +69,14 @@ h2 {
 }
 
 .time-inputs {
-  display: flex;
-  gap: 15px;
-  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 0;
+}
+
+.time-inputs .form-group {
+  padding: 0;
 }
 
 .time-inputs input {

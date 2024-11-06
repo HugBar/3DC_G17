@@ -1,10 +1,12 @@
 // src/components/Login/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../../api/auth';
+import { useAuth } from '../../context/AuthContext';
+import { login as loginApi } from '../../api/auth';
 import './Login.css';
 
-const Login = ({ onLogin }) => {
+const Login = () => {
+  const { login } = useAuth();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
@@ -17,10 +19,13 @@ const Login = ({ onLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = await login(credentials);
-      onLogin(token);
-      navigate('/');
+      const response = await loginApi(credentials);
+      if (response) {
+        login(response);
+        navigate('/');
+      }
     } catch (error) {
+      console.error('Login error:', error);
       setErrorMessage('Invalid email or password.');
     }
   };
