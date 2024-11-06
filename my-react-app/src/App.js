@@ -9,7 +9,6 @@ import CreateOperationRequest from './components/createOperationRequest/CreateOp
 import OperationRequestList from './components/listOperationRequest/OperationRequestList';
 import OperationRequestDeleteConfirmation from './components/deleteOperationRequest/OperationRequestDeleteConfirmation';
 import OperationRequestDetails from './components/consultOperationRequest/OperationRequestDetails';
-
 import NotFound from './components/notFound/NotFound';
 import logo from './assets/hospital.png';
 import './App.css';
@@ -24,40 +23,7 @@ const App = () => {
   const [selectedOperationRequest, setSelectedOperationRequest] = useState(null);
   const [selectedOperationRequestId, setSelectedOperationRequestId] = useState(null);
   const [selectedOperationRequestIdForDetails, setSelectedOperationRequestIdForDetails] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isDoctor, setIsDoctor] = useState(false);
-
-
-  useEffect(() => {
-    if (authToken) {
-      const decodedToken = jwtDecode(authToken);
-      const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-      setIsAdmin(role === 'Admin');
-      setIsDoctor(role === 'Doctor');
-    } else {
-      setIsAdmin(false);
-      setIsDoctor(false);
-    }
-  }, [authToken]);
-
-  const handleLogin = (token) => {
-    setAuthToken(token);
-    localStorage.setItem('authToken', token);
-  };
-
-  const handleLogout = () => {
-    setAuthToken(null);
-    localStorage.removeItem('authToken');
-    setShowStaffActions(false);
-    setSelectedStaffAction(null);
-    setSelectedStaffId(null);
-    setSelectedOperationRequest(null);
-    setSelectedOperationRequestId(null);
-    setIsAdmin(false);
-    setIsDoctor(false);
-  };
-
-  const isAuthenticated = () => !!authToken;
+ 
 
   const handleHomeClick = () => {
     setShowStaffActions(false);
@@ -73,7 +39,7 @@ const App = () => {
     navigate(`/staff/update/${staffId}`);
   };
 
-  const handleSelectOperationRequestForDeletion = (requestId) => {
+ /* const handleSelectOperationRequestForDeletion = (requestId) => {
     setSelectedOperationRequestId(requestId);
     setSelectedOperationRequest('Delete Operation Requests');
   };
@@ -94,6 +60,7 @@ const App = () => {
     setSelectedOperationRequestId(null);
     setShowStaffActions(true);
   };
+  */
 
   const resetStaffAction = () => {
     setSelectedStaffAction(null);
