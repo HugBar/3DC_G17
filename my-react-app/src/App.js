@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import CreateStaff from './components/createStaff/CreateStaff';
 import UpdateStaff from './components/updateStaff/UpdateStaff';
 import StaffList from './components/staffList/StaffList';
+import DeactivateStaff from './components/deactivateStaff/deactivateStaff';
 import Login from './components/auth/Login';
 import CreateOperationRequest from './components/createOperationRequest/CreateOperationRequest';
 import OperationRequestList from './components/listOperationRequest/OperationRequestList';
@@ -137,6 +138,15 @@ const App = () => {
               >
                 Update Staff
               </button>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('Deactivate Staff');
+                  navigate('/staff/deactivate');
+                }}
+                className={`action-button ${selectedStaffAction === 'Deactivate Staff' ? 'active' : ''}`}
+              >
+                Deactivate Staff
+              </button>
             </>
           )}
           {isDoctor && (
@@ -177,6 +187,9 @@ const App = () => {
         } />
         <Route path="/operation/request" element={
           isDoctor ? <CreateOperationRequest /> : <Navigate to="/" />
+        } />
+        <Route path="/staff/deactivate" element={
+          isAdmin ? <DeactivateStaff onBack={resetStaffAction} /> : <Navigate to="/" />
         } />
         <Route path="*" element={<NotFound />} />
       </Routes>

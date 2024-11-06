@@ -140,6 +140,30 @@ const staffService = {
       throw error;
     }
   },
+  deactivateStaff: async (staffId) => {
+    const token = getAuthToken();
+    checkAdminRole(token);
+
+    try {
+      const response = await axios.patch(`${API_URL}/${staffId}/deactivate`, null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+        console.error('Error headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+      throw error;
+    }
+  },
 };
 
 export default staffService;
