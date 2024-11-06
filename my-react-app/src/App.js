@@ -39,17 +39,6 @@ const App = () => {
     navigate(`/staff/update/${staffId}`);
   };
 
- /* const handleSelectOperationRequestForDeletion = (requestId) => {
-    setSelectedOperationRequestId(requestId);
-    setSelectedOperationRequest('Delete Operation Requests');
-  };
-
-  const resetOperationRequestAction = () => {
-    setSelectedOperationRequest(null);
-    setSelectedOperationRequestId(null);
-    setShowStaffActions(true);
-  };
-
   const handleSelectOperationRequestForDeletion = (requestId) => {
     setSelectedOperationRequestId(requestId);
     setSelectedOperationRequest('Delete Operation Requests');
@@ -60,7 +49,6 @@ const App = () => {
     setSelectedOperationRequestId(null);
     setShowStaffActions(true);
   };
-  */
 
   const resetStaffAction = () => {
     setSelectedStaffAction(null);
@@ -140,46 +128,98 @@ const App = () => {
             </>
           )}
           {isDoctor && (
-            <button
-              onClick={() => {
-                setSelectedStaffAction('Request Operation');
-                navigate('/operation/request');
-              }}
-              className={`action-button ${selectedStaffAction === 'Request Operation' ? 'active' : ''}`}
-            >
-              Request Operation
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  setSelectedOperationRequest('Request Operation');
+                  navigate('/operation/request');
+                }}
+                className={`action-button ${selectedOperationRequest === 'Request Operation' ? 'active' : ''}`}
+              >
+                Request Operation
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedOperationRequest('View Operation Requests');
+                  navigate('/operation/view');
+                }}
+                className={`action-button ${selectedOperationRequest === 'View Operation Requests' ? 'active' : ''}`}
+              >
+                View Operation Requests
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedOperationRequest('Delete Operation Requests');
+                  navigate('/operation/delete');
+                }}
+                className={`action-button ${selectedOperationRequest === 'Delete Operation Requests' ? 'active' : ''}`}
+              >
+                Delete Operation Requests
+              </button>
+            </>
           )}
+
         </div>
       )}
 
-      <Routes>
-        <Route path="/" element={
-          <div className="main-content">
-            <h1 className="welcome-title">Welcome to<br/>Hospital Management</h1>
-            <p className="welcome-subtitle">Your Trusted Healthcare Management Solution</p>
-            {!isAuthenticated && (
-              <Link to="/login" className="nav-link">
-                Login to Access the System
-              </Link>
-            )}
-          </div>
-        } />
-        <Route path="/login" element={<Login />} />
-        <Route path="/staff/create" element={
-          isAdmin ? <CreateStaff /> : <Navigate to="/" />
-        } />
-        <Route path="/staff/list" element={
-          isAdmin ? <StaffList onSelectStaff={handleSelectStaff} /> : <Navigate to="/" />
-        } />
-        <Route path="/staff/update/:id" element={
-          isAdmin ? <UpdateStaff staffId={selectedStaffId} onBack={resetStaffAction} /> : <Navigate to="/" />
-        } />
-        <Route path="/operation/request" element={
-          isDoctor ? <CreateOperationRequest /> : <Navigate to="/" />
-        } />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+<Routes>
+  <Route path="/" element={
+    <div className="main-content">
+      <h1 className="welcome-title">Welcome to<br/>Hospital Management</h1>
+      <p className="welcome-subtitle">Your Trusted Healthcare Management Solution</p>
+      {!isAuthenticated && (
+        <Link to="/login" className="nav-link">
+          Login to Access the System
+        </Link>
+      )}
+    </div>
+  } />
+  <Route path="/login" element={<Login />} />
+  
+  {/* Staff Routes */}
+  <Route path="/staff/create" element={
+    isAdmin ? <CreateStaff /> : <Navigate to="/" />
+  } />
+  <Route path="/staff/list" element={
+    isAdmin ? <StaffList onSelectStaff={handleSelectStaff} /> : <Navigate to="/" />
+  } />
+  <Route path="/staff/update/:id" element={
+    isAdmin ? <UpdateStaff staffId={selectedStaffId} onBack={resetStaffAction} /> : <Navigate to="/" />
+  } />
+  
+  {/* Operation Request Routes */}
+  <Route path="/operation/request" element={
+    isDoctor ? <CreateOperationRequest /> : <Navigate to="/" />
+  } />
+  <Route path="/operation/view" element={
+    isDoctor ? (
+      selectedOperationRequestIdForDetails ? (
+        <OperationRequestDetails
+          operationRequestId={selectedOperationRequestIdForDetails}
+          onBack={resetOperationRequestDetails}
+        />
+      ) : (
+        <OperationRequestList onSelectOperationRequest={handleSelectOperationRequestForDetails} />
+      )
+    ) : <Navigate to="/" />
+  } />
+  <Route path="/operation/delete" element={
+    isDoctor ? (
+      selectedOperationRequestId ? (
+        <OperationRequestDeleteConfirmation
+          operationRequestId={selectedOperationRequestId}
+          onConfirm={resetOperationRequestAction}
+          onCancel={resetOperationRequestAction}
+        />
+      ) : (
+        <OperationRequestList onSelectOperationRequest={handleSelectOperationRequestForDeletion} />
+      )
+    ) : <Navigate to="/" />
+  } />
+  
+  <Route path="*" element={<NotFound />} />
+</Routes>
+
     </div>
   );
   
