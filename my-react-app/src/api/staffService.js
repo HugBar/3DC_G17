@@ -94,12 +94,18 @@ const staffService = {
     }
   },
 
-  getAllStaff: async () => {
+  getAllStaff: async (filters = {}) => {
     const token = getAuthToken();
     checkAdminRole(token);
 
     try {
-      const response = await axios.get(`${API_URL}/filter`, {
+      // Convert filters object to URL parameters
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+
+      const response = await axios.get(`${API_URL}/filter?${params.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

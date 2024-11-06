@@ -119,11 +119,11 @@ const App = () => {
               <button
                 onClick={() => {
                   setSelectedStaffAction('Update Staff');
-                  navigate('/staff/list');
+                  navigate('/staff/filter');
                 }}
                 className={`action-button ${selectedStaffAction === 'Update Staff' ? 'active' : ''}`}
               >
-                Update Staff
+                View Staffs
               </button>
             </>
           )}
@@ -180,7 +180,7 @@ const App = () => {
   <Route path="/staff/create" element={
     isAdmin ? <CreateStaff /> : <Navigate to="/" />
   } />
-  <Route path="/staff/list" element={
+  <Route path="/staff/filter" element={
     isAdmin ? <StaffList onSelectStaff={handleSelectStaff} /> : <Navigate to="/" />
   } />
   <Route path="/staff/update/:id" element={
