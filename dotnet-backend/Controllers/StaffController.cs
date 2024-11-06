@@ -176,7 +176,6 @@ namespace DDDSample1.Controllers
         }
 
         [HttpGet("get-staff-profile/{id}")]
-        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<StaffDto>> GetStaffById(string id)
         {
             var staff = await _staffService.GetByIdAsync(id);

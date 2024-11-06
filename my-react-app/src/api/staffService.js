@@ -120,7 +120,6 @@ const staffService = {
 
   getStaffById: async (staffId) => {
     const token = getAuthToken();
-    checkAdminRole(token);
 
     try {
       const response = await axios.get(`${API_URL}/get-staff-profile/${staffId}`, {

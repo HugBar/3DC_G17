@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
-import CreateStaff from './components/createStaff/CreateStaff.js';
-import UpdateStaff from './components/updateStaff/UpdateStaff.js';
-import StaffList from './components/staffList/StaffList.js';
+import CreateStaff from './components/createStaff/CreateStaff';
+import UpdateStaff from './components/updateStaff/UpdateStaff';
+import StaffList from './components/staffList/StaffList';
 import Login from './components/auth/Login';
-import CreateOperationRequest from './components/createOperationRequest/CreateOperationRequest.js';
+import CreateOperationRequest from './components/createOperationRequest/CreateOperationRequest';
+import OperationRequestList from './components/listOperationRequest/OperationRequestList';
+import OperationRequestDeleteConfirmation from './components/deleteOperationRequest/OperationRequestDeleteConfirmation';
+import OperationRequestDetails from './components/consultOperationRequest/OperationRequestDetails';
+
 import NotFound from './components/notFound/NotFound';
 import logo from './assets/hospital.png';
 import './App.css';
@@ -17,12 +21,50 @@ const App = () => {
   const [showStaffActions, setShowStaffActions] = useState(false);
   const [selectedStaffAction, setSelectedStaffAction] = useState(null);
   const [selectedStaffId, setSelectedStaffId] = useState(null);
+  const [selectedOperationRequest, setSelectedOperationRequest] = useState(null);
+  const [selectedOperationRequestId, setSelectedOperationRequestId] = useState(null);
+  const [selectedOperationRequestIdForDetails, setSelectedOperationRequestIdForDetails] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isDoctor, setIsDoctor] = useState(false);
+
+
+  useEffect(() => {
+    if (authToken) {
+      const decodedToken = jwtDecode(authToken);
+      const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      setIsAdmin(role === 'Admin');
+      setIsDoctor(role === 'Doctor');
+    } else {
+      setIsAdmin(false);
+      setIsDoctor(false);
+    }
+  }, [authToken]);
+
+  const handleLogin = (token) => {
+    setAuthToken(token);
+    localStorage.setItem('authToken', token);
+  };
+
+  const handleLogout = () => {
+    setAuthToken(null);
+    localStorage.removeItem('authToken');
+    setShowStaffActions(false);
+    setSelectedStaffAction(null);
+    setSelectedStaffId(null);
+    setSelectedOperationRequest(null);
+    setSelectedOperationRequestId(null);
+    setIsAdmin(false);
+    setIsDoctor(false);
+  };
+
+  const isAuthenticated = () => !!authToken;
 
   const handleHomeClick = () => {
     setShowStaffActions(false);
     setSelectedStaffAction(null);
     setSelectedStaffId(null);
-    navigate('/');
+    setSelectedOperationRequest(null);
+    setSelectedOperationRequestId(null);
   };
 
   const handleSelectStaff = (staffId) => {
@@ -31,10 +73,40 @@ const App = () => {
     navigate(`/staff/update/${staffId}`);
   };
 
+  const handleSelectOperationRequestForDeletion = (requestId) => {
+    setSelectedOperationRequestId(requestId);
+    setSelectedOperationRequest('Delete Operation Requests');
+  };
+
+  const resetOperationRequestAction = () => {
+    setSelectedOperationRequest(null);
+    setSelectedOperationRequestId(null);
+    setShowStaffActions(true);
+  };
+
+  const handleSelectOperationRequestForDeletion = (requestId) => {
+    setSelectedOperationRequestId(requestId);
+    setSelectedOperationRequest('Delete Operation Requests');
+  };
+
+  const resetOperationRequestAction = () => {
+    setSelectedOperationRequest(null);
+    setSelectedOperationRequestId(null);
+    setShowStaffActions(true);
+  };
+
   const resetStaffAction = () => {
     setSelectedStaffAction(null);
     setSelectedStaffId(null);
-    setShowStaffActions(true);
+    setShowStaffActions(true); // Show the action bar again if needed
+  };
+
+  const handleSelectOperationRequestForDetails = (requestId) => {
+    setSelectedOperationRequestIdForDetails(requestId);
+  };
+  
+  const resetOperationRequestDetails = () => {
+    setSelectedOperationRequestIdForDetails(null);
     navigate('/staff/list');
   };
 
@@ -143,6 +215,7 @@ const App = () => {
       </Routes>
     </div>
   );
+  
 };
 
 export default App;

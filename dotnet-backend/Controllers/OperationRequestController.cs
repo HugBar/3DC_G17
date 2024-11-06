@@ -172,5 +172,29 @@ namespace DDDSample1.Controllers
             }
         }
 
+        [HttpGet("get/{id}")]
+        [Authorize(Policy = "DoctorPolicy")]
+        public async Task<ActionResult<OperationRequestDto>> GetOperationRequestById(string id)
+        {
+            try
+            {
+                var operationRequest = await _service.GetByIdAsync(id);
+                if (operationRequest == null)
+                {
+                    return NotFound("Operation request not found.");
+                }
+                return Ok(operationRequest);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while retrieving the operation request.");
+                return StatusCode(500, new { Message = "An error occurred while processing your request." });
+            }
+        }
+
     }
 }
