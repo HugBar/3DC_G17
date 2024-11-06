@@ -5,6 +5,7 @@ import CreateStaff from './components/createStaff/CreateStaff';
 import UpdateStaff from './components/updateStaff/UpdateStaff';
 import StaffList from './components/staffList/StaffList';
 import Login from './components/auth/Login';
+import DeactivateStaff from './components/deactivateStaff/deactivateStaff';
 import CreateOperationRequest from './components/createOperationRequest/CreateOperationRequest';
 import OperationRequestList from './components/listOperationRequest/OperationRequestList';
 import OperationRequestDeleteConfirmation from './components/deleteOperationRequest/OperationRequestDeleteConfirmation';
@@ -125,6 +126,15 @@ const App = () => {
               >
                 View Staffs
               </button>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('Deactivate Staff');
+                  navigate('/staff/deactivate');
+                }}
+                className={`action-button ${selectedStaffAction === 'Deactivate Staff' ? 'active' : ''}`}
+              >
+                Deactivate Staff
+              </button>
             </>
           )}
           {isDoctor && (
@@ -216,7 +226,9 @@ const App = () => {
       )
     ) : <Navigate to="/" />
   } />
-  
+  <Route path="/staff/deactivate" element={
+          isAdmin ? <DeactivateStaff onBack={resetStaffAction} /> : <Navigate to="/" />
+        } />
   <Route path="*" element={<NotFound />} />
 </Routes>
 
