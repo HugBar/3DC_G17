@@ -97,12 +97,11 @@ namespace DDDSample1.Domain.PatientData
 
         }
 
-        public async Task<IEnumerable<PatientDto>> GetFilteredPatient(PatientFilterDTO filter, int pageNumber, int pageSize)
+        public async Task<PagedResult<PatientDto>> GetFilteredPatient(PatientFilterDTO filter, int pageNumber, int pageSize)
         {
-            var patients = await _repository.GetFilteredPatientAsync(filter, pageNumber, pageSize);
-
-
-            return patients.Select(p => new PatientDto
+            var (patients, totalCount) = await _repository.GetFilteredPatientAsync(filter, pageNumber, pageSize);
+            
+            var dtos = patients.Select(p => new PatientDto
             {
                 Id = p.UserId,
                 FirstName = p.FirstName,
@@ -115,10 +114,15 @@ namespace DDDSample1.Domain.PatientData
                 AppointmentHistory = p.AppointmentHistory,
                 MedicalHistory = p.MedicalHistory,
                 MedicalNr = p.MedicalNr
-
             }).ToList();
 
-
+            return new PagedResult<PatientDto>
+            {
+                Items = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+            };
         }
         public async Task<PatientDto> UpdatePatientProfileAsync(string email, UpdatePatientDto dto)
         {

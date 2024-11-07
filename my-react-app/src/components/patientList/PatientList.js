@@ -10,7 +10,7 @@ const PatientList = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const pageSize = 5; // Mesmo valor default do backend
+  const pageSize = 1;
   
   const [filters, setFilters] = useState({
     firstName: '',
@@ -18,6 +18,8 @@ const PatientList = () => {
     email: '',
     medicalNr: ''
   });
+
+  const [selectedPatient, setSelectedPatient] = useState(null);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -42,10 +44,13 @@ const PatientList = () => {
 
   const updateURL = (currentFilters, page) => {
     const params = new URLSearchParams();
+    
     Object.entries(currentFilters).forEach(([key, value]) => {
       if (value) params.append(key, value);
     });
+    
     params.append('page', page.toString());
+    
     navigate(`/patient/list?${params.toString()}`, { replace: true });
   };
 
@@ -69,32 +74,30 @@ const PatientList = () => {
     const fetchPatients = async () => {
       try {
         const response = await patientService.getAllPatients(filters, currentPage, pageSize);
-        console.log('Fetched patients:', response); // Debug log
+        console.log('API Response:', response); // Para debug
         
-        if (response && Array.isArray(response)) {
-          setPatientList(response);
-          setErrorMessage('');
-        } else {
-          setPatientList([]);
-          setErrorMessage('Invalid response format');
+        if (response && response.items) {
+          setPatientList(response.items);
+          setTotalPages(response.totalPages);
         }
       } catch (error) {
-        console.error('Error in fetchPatients:', error);
-        if (error.response?.status === 404) {
-          setPatientList([]);
-          setErrorMessage('No patients found.');
-        } else if (error.response && error.response.status === 401) {
-          setPatientList([]);
-          setErrorMessage('Unauthorized. Please login.');
-        } else {
-          setPatientList([]);
-          setErrorMessage('Error fetching patient list.');
-        }
+        setPatientList([]);
+        setErrorMessage('Error fetching patient list.');
+        console.error('Error:', error);
       }
     };
 
     fetchPatients();
-  }, [filters, currentPage, pageSize]);
+  }, [currentPage, filters, pageSize]);
+
+  const handlePatientSelect = async (patientId) => {
+    try {
+      const patientDetails = await patientService.getPatientById(patientId);
+      setSelectedPatient(patientDetails);
+    } catch (error) {
+      setErrorMessage('Error fetching patient details.');
+    }
+  };
 
   return (
     <div className="patient-list-container">
@@ -140,10 +143,14 @@ const PatientList = () => {
 
       {errorMessage && <div className="error-message">{errorMessage}</div>}
 
-      {patientList.length > 0 ? (
+      {patientList && patientList.length > 0 ? (
         <div className="patient-grid">
           {patientList.map((patient) => (
-            <div key={patient.id} className="patient-card">
+            <div 
+              key={patient.id} 
+              className={`patient-card ${selectedPatient?.id === patient.id ? 'selected' : ''}`}
+              onClick={() => handlePatientSelect(patient.id)}
+            >
               <h3>{`${patient.firstName} ${patient.lastName}`}</h3>
               <p><strong>Medical Record #:</strong> {patient.medicalNr}</p>
               <p><strong>Email:</strong> {patient.email}</p>
@@ -157,10 +164,36 @@ const PatientList = () => {
         </div>
       )}
 
-      <div className="pagination">
+      {selectedPatient && (
+        <div className="patient-details-modal">
+          <div className="modal-content">
+            <h3>Patient Details</h3>
+            <div className="details-grid">
+              <p><strong>Name:</strong> {selectedPatient.firstName} {selectedPatient.lastName}</p>
+              <p><strong>Email:</strong> {selectedPatient.email}</p>
+              <p><strong>Medical Record #:</strong> {selectedPatient.medicalNr}</p>
+              <p><strong>Phone:</strong> {selectedPatient.phoneNumber}</p>
+              <p><strong>Date of Birth:</strong> {selectedPatient.dateOfBirth}</p>
+              <p><strong>Gender:</strong> {selectedPatient.gender}</p>
+              <p><strong>Emergency Contact:</strong> {selectedPatient.emergencyContact}</p>
+            </div>
+            <div className="modal-actions">
+              <button onClick={() => handlePatientSelect(selectedPatient.id)} className="update-button">
+                Update Patient
+              </button>
+              <button onClick={() => setSelectedPatient(null)} className="close-button">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="pagination-controls">
         <button 
           onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+          disabled={currentPage <= 1}
+          className="pagination-button"
         >
           Previous
         </button>
@@ -171,7 +204,8 @@ const PatientList = () => {
         
         <button 
           onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          disabled={currentPage >= totalPages}
+          className="pagination-button"
         >
           Next
         </button>

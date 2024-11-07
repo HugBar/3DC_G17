@@ -273,6 +273,7 @@ namespace DDDSample1.Tests.Unit.Controllers
             Assert.Contains("Invalid token", badRequestResult.Value.ToString());
         }
 
+
         [Fact]
         public async Task GetPatients_ReturnsOkResult_WithListOfPatientsAsync()
         {
@@ -291,32 +292,28 @@ namespace DDDSample1.Tests.Unit.Controllers
                     ContactInfo = "123 Elm Street, Springfield, IL",
                     EmergencyContact = "Jane Doe (+1-555-9876)",
                     AppointmentHistory = "Routine checkup in 2024",
-                    MedicalHistory =  "Hypertension, Diabetes" },
-                new Patient { FirstName= "Jane",
-                    LastName = "Doe",
-                    Email= "jane.doe@email.com",
-                    PhoneNumber = "+1-555-9876",
-                    DateofBirth = "1990-07-15",
-                    Gender = "Female",
-                    ContactInfo = "456 Oak Avenue, Metropolis, IL",
-                    EmergencyContact = "John Doe (+1-555-1234)",
-                    AppointmentHistory = "Annual physical in 2023",
-                    MedicalHistory = "None" }
+                    MedicalHistory =  "Hypertension, Diabetes" }
             };
-            _mockRepository.Setup(r => r.GetFilteredPatientAsync(filter, 1, 5)).ReturnsAsync(patients.Where(p => p.Email == filter.Email).ToList());
+
+            _mockRepository.Setup(r => r.GetFilteredPatientAsync(filter, 1, 5))
+                .ReturnsAsync((patients, patients.Count));
 
             // Act
             var result = await _controller.GetPatients(filter, 1, 5);
 
             // Assert
-            var actionResult = Assert.IsType<ActionResult<IEnumerable<PatientDto>>>(result);
+            var actionResult = Assert.IsType<ActionResult<PagedResult<PatientDto>>>(result);
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var returnPatients = Assert.IsType<List<PatientDto>>(okResult.Value);
-            Assert.Single(returnPatients);
-            Assert.Equal("John", returnPatients[0].FirstName);
+            var returnValue = Assert.IsType<PagedResult<PatientDto>>(okResult.Value);
+            Assert.Single(returnValue.Items);
+            Assert.Equal("John", returnValue.Items.First().FirstName);
+            Assert.Equal(1, returnValue.TotalCount);
+            Assert.Equal(1, returnValue.TotalPages);
 
             _mockRepository.Verify(r => r.GetFilteredPatientAsync(filter, 1, 5), Times.Once);
         }
+        
+        
 
         [Fact]
         public async Task GetPatients_ReturnsNotFound_WhenNoPatients()
@@ -325,15 +322,19 @@ namespace DDDSample1.Tests.Unit.Controllers
             var filter = new PatientFilterDTO();
             var emptyPatientList = new List<Patient>();
 
-            _mockRepository.Setup(r => r.GetFilteredPatientAsync(filter, 1, 5)).ReturnsAsync(emptyPatientList);
+            _mockRepository.Setup(r => r.GetFilteredPatientAsync(filter, 1, 5))
+                .ReturnsAsync((emptyPatientList, 0));
 
             // Act
             var result = await _controller.GetPatients(filter, 1, 5);
-            var actionResult = Assert.IsType<ActionResult<IEnumerable<PatientDto>>>(result);
+
             // Assert
-            Assert.IsType<NotFoundResult>(result.Result);
+            var actionResult = Assert.IsType<ActionResult<PagedResult<PatientDto>>>(result);
+            Assert.IsType<NotFoundObjectResult>(result.Result);
             _mockRepository.Verify(r => r.GetFilteredPatientAsync(filter, 1, 5), Times.Once);
         }
+        
+        
         [Fact]
         public async Task AdminUpdatePatientProfile_ValidUpdate_ReturnsOkResult()
         {

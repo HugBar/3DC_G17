@@ -335,3 +335,18 @@
   background-color: #2b3b42;
 }
 
+.form-group {
+  margin-bottom: 15px;
+  width: 100%;
+  padding: 0;  /* Remove padding */
+  box-sizing: border-box;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
