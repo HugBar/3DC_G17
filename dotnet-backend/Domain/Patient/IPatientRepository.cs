@@ -8,7 +8,7 @@ public interface IPatientRepository
 
     Task<Patient> AddAsync(Patient patient);
 
-    Task<IEnumerable<Patient>> GetFilteredPatientAsync(PatientFilterDTO filter, int pageNumber, int pageSize);
+    Task<(List<Patient> Patients, int TotalCount)> GetFilteredPatientAsync(PatientFilterDTO filter, int pageNumber, int pageSize);
 
     Task<bool> ExistsAsync(string patientId);
 

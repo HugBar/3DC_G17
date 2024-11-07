@@ -62,7 +62,7 @@ const patientService = {
     }
   },
 
-  getAllPatients: async (filters = {}, page = 1, pageSize = 5) => {
+  getAllPatients: async (filters = {}, page = 1, pageSize = 1) => {
     const token = getAuthToken();
     checkAdminRole(token);
 
@@ -71,8 +71,10 @@ const patientService = {
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
-      params.append('page', page.toString());
+      params.append('pageNumber', page.toString());
       params.append('pageSize', pageSize.toString());
+      
+      console.log('Request URL:', `${API_URL}/filter?${params.toString()}`); // Para debug
       
       const response = await axios.get(`${API_URL}/filter?${params.toString()}`, {
         headers: {
@@ -80,15 +82,46 @@ const patientService = {
         },
       });
       
-      console.log('API Response:', response.data);
+      console.log('Raw API Response:', response.data); // Para debug
       
-      return response.data;
+      // Garantir que a resposta está no formato correto
+      if (response.data && typeof response.data === 'object') {
+        return {
+          items: response.data.items || response.data,
+          totalPages: response.data.totalPages || 0 ,
+          currentPage: response.data.pageNumber || page,
+          pageSize: response.data.pageSize || pageSize,
+          totalCount: response.data.totalCount || 0
+        };
+      }
+      
+      return {
+        items: [],
+        totalPages: 1,
+        currentPage: page,
+        pageSize: pageSize,
+        totalCount: 0
+      };
     } catch (error) {
       console.error('Error in getAllPatients:', error);
       throw error;
     }
+  },
+
+  getPatientById: async (patientId) => {
+    const token = getAuthToken();
+    try {
+      const response = await axios.get(`${API_URL}/get-patient-profile/${patientId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching patient details:', error);
+      throw error;
+    }
   }
-  
 };
 
 export default patientService;

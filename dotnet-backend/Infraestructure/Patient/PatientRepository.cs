@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using DDDSample1.Domain.StaffData;
 using DDDSample1.Domain.PatientData;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System;
 
 namespace DDDSample1.Infrastructure.PatientData
 {
@@ -17,6 +18,72 @@ namespace DDDSample1.Infrastructure.PatientData
             _context = context;
         }
 
+        public async Task<(List<Patient> Patients, int TotalCount)> GetFilteredPatientAsync(PatientFilterDTO filter, int pageNumber, int pageSize)
+        {
+            var query = _context.Patients.AsQueryable();
+
+            if (filter.FirstName != null)
+            {
+                query = query.Where(p => p.FirstName == filter.FirstName);
+            }
+
+            if (filter.LastName != null)
+            {
+                query = query.Where(p => p.LastName == filter.LastName);
+            }
+
+            if (filter.Email != null)
+            {
+                query = query.Where(p => p.Email == filter.Email);
+            }
+                 if (filter.PhoneNumber != null)
+            {
+                query = query.Where(p => p.PhoneNumber == filter.PhoneNumber);
+            }
+            if (filter.Id != null)
+            {
+                query = query.Where(p => p.UserId == filter.Id);
+            }
+            if (filter.DateofBirth != null)
+            {
+                query = query.Where(p => p.DateofBirth == filter.DateofBirth);
+            }
+            if (filter.Gender != null)
+            {
+                query = query.Where(p => p.Gender == filter.Gender);
+            }
+            if (filter.ContactInfo != null)
+            {
+                query = query.Where(p => p.ContactInfo == filter.ContactInfo);
+            }
+            if (filter.EmergencyContact != null)
+            {
+                query = query.Where(p => p.EmergencyContact == filter.EmergencyContact);
+            }
+            if (filter.AppointmentHistory != null)
+            {
+                query = query.Where(p => p.AppointmentHistory == filter.AppointmentHistory);
+            }
+            if (filter.MedicalHistory != null)
+            {
+                query = query.Where(p => p.MedicalHistory == filter.MedicalHistory);
+            }
+            if (filter.MedicalNr != null)
+            {
+                query = query.Where(p => p.MedicalNr == filter.MedicalNr);
+            }
+
+            var totalCount = await query.CountAsync();
+            Console.WriteLine("Total count: -----------------------------------------------------------------------------------------------------------------------------" + totalCount);
+            var patients = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (patients, totalCount);
+        }
+       
+
 
         public async Task<Patient> AddAsync(Patient patient)
         {
@@ -28,64 +95,6 @@ namespace DDDSample1.Infrastructure.PatientData
         public async Task<Patient> GetByUserIdAsync(string userId)
         {
             return await _context.Patients.FirstOrDefaultAsync(s => s.UserId == userId);
-        }
-        public async Task<IEnumerable<Patient>> GetFilteredPatientAsync(PatientFilterDTO filter, int pageNumber, int pageSize)
-        {
-
-            var patients = _context.Patients.AsQueryable();
-
-            if (filter.FirstName != null)
-            {
-                patients = patients.Where(p => p.FirstName == filter.FirstName);
-            }
-
-            if (filter.LastName != null)
-            {
-                patients = patients.Where(p => p.LastName == filter.LastName);
-            }
-
-            if (filter.Email != null)
-            {
-                patients = patients.Where(p => p.Email == filter.Email);
-            }
-                 if (filter.PhoneNumber != null)
-            {
-                patients = patients.Where(p => p.PhoneNumber == filter.PhoneNumber);
-            }
-            if (filter.Id != null)
-            {
-                patients = patients.Where(p => p.UserId == filter.Id);
-            }
-            if (filter.DateofBirth != null)
-            {
-                patients = patients.Where(p => p.DateofBirth == filter.DateofBirth);
-            }
-            if (filter.Gender != null)
-            {
-                patients = patients.Where(p => p.Gender == filter.Gender);
-            }
-            if (filter.ContactInfo != null)
-            {
-                patients = patients.Where(p => p.ContactInfo == filter.ContactInfo);
-            }
-            if (filter.EmergencyContact != null)
-            {
-                patients = patients.Where(p => p.EmergencyContact == filter.EmergencyContact);
-            }
-            if (filter.AppointmentHistory != null)
-            {
-                patients = patients.Where(p => p.AppointmentHistory == filter.AppointmentHistory);
-            }
-            if (filter.MedicalHistory != null)
-            {
-                patients = patients.Where(p => p.MedicalHistory == filter.MedicalHistory);
-            }
-            if (filter.MedicalNr != null)
-            {
-                patients = patients.Where(p => p.MedicalNr == filter.MedicalNr);
-            }
-
-            return await patients.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
         }
 
         public async Task<bool> ExistsAsync(string patientId)

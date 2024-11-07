@@ -375,7 +375,7 @@ namespace DDDSample1.Tests.Unit.Domain
         }
 
 
-    
+        
         [Fact]
         public async Task GetPatientFilteredAsync_ValidFilter_ReturnsMatchingPatientDtos()
         {
@@ -390,20 +390,19 @@ namespace DDDSample1.Tests.Unit.Domain
                 new Patient("MED-456", "user-456", "Jane", "Doe", "jane.doe@example.com", "02/02/1991", "Female", "Contact", "Emergency", "9876543210", null, null)
             };
 
-            _mockPatientRepo.Setup(repo => repo.GetFilteredPatientAsync(It.Is<PatientFilterDTO>(f =>
-                f.FirstName == filter.FirstName
-            ), 1, 5)).ReturnsAsync(patients.Where(p => p.FirstName == filter.FirstName).ToList());
+            _mockPatientRepo.Setup(repo => repo.GetFilteredPatientAsync(It.IsAny<PatientFilterDTO>(), 1, 5)).ReturnsAsync((patients.Where(p => p.FirstName == filter.FirstName).ToList(), patients.Count));
 
             // Act
             var result = await _patientService.GetFilteredPatient(filter, 1, 5);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Single(result);
-            Assert.Equal("John", result.First().FirstName);
+            Assert.Single(result.Items);
+            Assert.Equal(filter.FirstName, result.Items.First().FirstName);
 
             _mockPatientRepo.Verify(repo => repo.GetFilteredPatientAsync(It.IsAny<PatientFilterDTO>(), 1, 5), Times.Once);
         }
+        
        [Fact]
         public async Task AdminUpdatePatientProfileAsync_ValidUpdate_ReturnsUpdatedPatient()
         {
