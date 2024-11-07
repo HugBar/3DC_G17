@@ -14,6 +14,7 @@ import OperationRequestDetails from './components/consultOperationRequest/Operat
 import NotFound from './components/notFound/NotFound';
 import logo from './assets/hospital.png';
 import './App.css';
+import PatientList from './components/patientList/PatientList';
 
 const App = () => {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ const App = () => {
   const [showPatientActions, setShowPatientActions] = useState(false);
   const [selectedStaffAction, setSelectedStaffAction] = useState(null);
   const [selectedPatientAction, setSelectedPatientAction] = useState(null);
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [selectedStaffId, setSelectedStaffId] = useState(null);
   const [selectedOperationRequest, setSelectedOperationRequest] = useState(null);
   const [selectedOperationRequestId, setSelectedOperationRequestId] = useState(null);
@@ -69,6 +71,11 @@ const App = () => {
     setSelectedPatientAction(null);
     setShowPatientActions(false);
   };
+  const handleSelectPatientFromList = (patientId) => {
+    setSelectedPatientId(patientId);
+    setSelectedPatientAction('View Patient');
+    navigate(`/patient/view/${patientId}`);
+  };
 
   const handleSelectOperationRequestForDetails = (requestId) => {
     setSelectedOperationRequestIdForDetails(requestId);
@@ -89,6 +96,20 @@ const App = () => {
     navigate('/');
   };
 
+  const handleStaffClick = () => {
+    setShowStaffActions(true);
+    setShowPatientActions(false); // Esconde as ações de paciente
+    setSelectedStaffAction(null);
+    setSelectedPatientAction(null);
+  };
+
+  const handlePatientClick = () => {
+    setShowPatientActions(true);
+    setShowStaffActions(false); // Esconde as ações de staff
+    setSelectedPatientAction(null);
+    setSelectedStaffAction(null);
+  };
+
   return (
     <div>
       <header className="app-header">
@@ -102,16 +123,16 @@ const App = () => {
             <>
               {(isAdmin || isDoctor) && (
                 <button 
-                  onClick={() => setShowStaffActions(!showStaffActions)} 
-                  className="nav-link"
+                  onClick={handleStaffClick}
+                  className={`nav-button ${showStaffActions ? 'active' : ''}`}
                 >
                   Staff
                 </button>
               )}
-              {isPatient && (
+              {(isPatient || isAdmin) && (
                 <button 
-                  onClick={() => setShowPatientActions(!showPatientActions)} 
-                  className="nav-link"
+                  onClick={handlePatientClick}
+                  className={`nav-button ${showPatientActions ? 'active' : ''}`}
                 >
                   Patient
                 </button>
@@ -212,6 +233,17 @@ const App = () => {
             Update Profile
           </button>
           )}
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setSelectedPatientAction('View Patients');
+                navigate('/patient/list');
+              }}
+              className={`action-button ${selectedPatientAction === 'View Patients' ? 'active' : ''}`}
+            >
+              View Patients
+            </button>
+          )}
         </div>
       )}
 
@@ -277,6 +309,9 @@ const App = () => {
       isAuthenticated && isPatient ? <UpdatePatient /> : <Navigate to="/" />
   } />
   <Route path="*" element={<NotFound />} />
+  <Route path="/patient/list" element={
+    isAdmin ? <PatientList onSelectPatient={handleSelectPatientFromList}/> : <Navigate to="/" />
+  } />
 </Routes>
 
     </div>
