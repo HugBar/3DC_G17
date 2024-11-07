@@ -225,6 +225,17 @@
   margin-top: 10px;
 }
 
+.patient-action-bar {
+  display: flex;
+  justify-content: center; /* Center the buttons horizontally */
+  align-items: center;
+  gap: 20px; /* Space between each button */
+  padding: 20px; /* Padding around the action bar itself */
+  background-color: #f9f9f9;
+  border-top: 1px solid #ddd;
+  margin-top: 10px;
+}
+
 .action-button {
   padding: 10px 20px; /* Padding inside each button */
   background-color: #d3d3d3; /* Light gray background */
@@ -292,5 +303,33 @@
   background-color: #151c20; /* Darker red on hover for Logout */
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.nav-button {
+  padding: 10px 20px;
+  margin: 0 5px;
+  background-color: #6c757d;  /* Mesma cor do Home */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.nav-button:hover {
+  background-color: #5a6268;
+}
+
+.nav-button.active {
+  background-color: #87CEEB; /* Cor azul clara quando ativo */
+}
+
+.logout-button {
+  background-color: #364953; /* Mantém a cor original do logout */
+}
+
+.logout-button:hover {
+  background-color: #2b3b42;
 }
 
