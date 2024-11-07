@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import patientService from '../../api/patientService';
 import './UpdatePatient.css';
 
-const UpdatePatient = ({ patientId, onBack }) => {
+const UpdatePatient = ({ patientEmail, onBack }) => {
   const [originalData, setOriginalData] = useState({});
   const [patientData, setPatientData] = useState({
     email: '',
@@ -23,7 +23,7 @@ const UpdatePatient = ({ patientId, onBack }) => {
   useEffect(() => {
     const fetchPatientData = async () => {
       try {
-        const data = await patientService.getPatientProfile(patientId);
+        const data = await patientService.getPatientProfile(patientEmail);
         setPatientData(data);
         setOriginalData(data);
       } catch (error) {
@@ -32,7 +32,7 @@ const UpdatePatient = ({ patientId, onBack }) => {
     };
 
     fetchPatientData();
-  }, [patientId]);
+  }, [patientEmail]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,24 +43,23 @@ const UpdatePatient = ({ patientId, onBack }) => {
     e.preventDefault();
     const updatedFields = {};
     let emailChanged = false;
-  
+
     for (const key in patientData) {
-      // Verifica se o valor foi alterado e não é null
-      if (patientData[key] !== originalData[key] && patientData[key] !== null) {
+      if (patientData[key] !== originalData[key] && patientData[key] !== null && patientData[key] !== '') {
         updatedFields[key] = patientData[key];
         if (key === 'email') {
           emailChanged = true;
         }
       }
     }
-  
+
     if (Object.keys(updatedFields).length === 0) {
       alert('No changes detected');
       return;
     }
-  
+
     try {
-      await patientService.updatePatientProfile(patientId, updatedFields);
+      await patientService.updatePatientProfile(patientEmail, updatedFields);
       setSuccessMessage('Profile updated successfully');
       
       if (emailChanged) {
@@ -74,12 +73,17 @@ const UpdatePatient = ({ patientId, onBack }) => {
 
   const handleModalClose = () => {
     setShowModal(false);
-    localStorage.removeItem('authToken'); // Remove o token de autenticação
-    navigate('/login'); // Redireciona para a página de login
+    localStorage.removeItem('authToken');
+    navigate('/login');
   };
 
   return (
     <div className="update-profile-container">
+      <div className="navbar">
+        <button onClick={() => navigate('/home')}>Home</button>
+        <button onClick={() => navigate('/patient')}>Patient</button>
+        <button onClick={() => navigate('/logout')}>Logout</button>
+      </div>
       <h2>Update Profile</h2>
       <form className="update-profile-form" onSubmit={handleSubmit}>
         <div className="form-group">
@@ -164,6 +168,12 @@ const UpdatePatient = ({ patientId, onBack }) => {
         </div>
         <button type="submit" className="update-button">Update</button>
       </form>
+
+      {successMessage && (
+        <div className="success-message">
+          {successMessage}
+        </div>
+      )}
 
       {showModal && (
         <div className="modal">
