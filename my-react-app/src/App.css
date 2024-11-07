@@ -307,22 +307,24 @@
 
 .nav-button {
   padding: 10px 20px;
-  margin: 0 5px;
-  background-color: #6c757d;  /* Mesma cor do Home */
-  color: white;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
+  border-radius: 6px;
+  background-color: #8a8989; /* Cor do botão Home */
+  color: white;
+  text-decoration: none;
+  font-size: 1.1em;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .nav-button:hover {
-  background-color: #5a6268;
+  background-color: #6f6f6f; /* Cor ao passar o mouse */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.nav-button.active {
-  background-color: #87CEEB; /* Cor azul clara quando ativo */
+.nav-button:active {
+  transform: scale(0.95); /* Efeito de "pressionado" */
 }
 
 .logout-button {
