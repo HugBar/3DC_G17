@@ -6,6 +6,7 @@ import UpdateStaff from './components/updateStaff/UpdateStaff';
 import StaffList from './components/staffList/StaffList';
 import Login from './components/auth/Login';
 import DeactivateStaff from './components/deactivateStaff/deactivateStaff';
+import UpdatePatient from './components/updatePatient/UpdatePatient';
 import CreateOperationRequest from './components/createOperationRequest/CreateOperationRequest';
 import OperationRequestList from './components/listOperationRequest/OperationRequestList';
 import OperationRequestDeleteConfirmation from './components/deleteOperationRequest/OperationRequestDeleteConfirmation';
@@ -16,10 +17,12 @@ import './App.css';
 
 const App = () => {
   const navigate = useNavigate();
-  const { isAdmin, isDoctor, isAuthenticated, logout } = useAuth();
+  const { isAdmin, isDoctor,isPatient, isAuthenticated, logout, } = useAuth();
 
   const [showStaffActions, setShowStaffActions] = useState(false);
+  const [showPatientActions, setShowPatientActions] = useState(false);
   const [selectedStaffAction, setSelectedStaffAction] = useState(null);
+  const [selectedPatientAction, setSelectedPatientAction] = useState(null);
   const [selectedStaffId, setSelectedStaffId] = useState(null);
   const [selectedOperationRequest, setSelectedOperationRequest] = useState(null);
   const [selectedOperationRequestId, setSelectedOperationRequestId] = useState(null);
@@ -28,7 +31,9 @@ const App = () => {
 
   const handleHomeClick = () => {
     setShowStaffActions(false);
+    setShowPatientActions(false);
     setSelectedStaffAction(null);
+    setSelectedPatientAction(null);
     setSelectedStaffId(null);
     setSelectedOperationRequest(null);
     setSelectedOperationRequestId(null);
@@ -38,6 +43,10 @@ const App = () => {
     setSelectedStaffId(staffId);
     setSelectedStaffAction('Update Staff');
     navigate(`/staff/update/${staffId}`);
+  };
+  const handleSelectPatient = () => {
+    setSelectedPatientAction('Update Profile');
+    navigate('/patient/update');
   };
 
   const handleSelectOperationRequestForDeletion = (requestId) => {
@@ -56,6 +65,10 @@ const App = () => {
     setSelectedStaffId(null);
     setShowStaffActions(true); // Show the action bar again if needed
   };
+  const resetPatientAction = () => {
+    setSelectedPatientAction(null);
+    setShowPatientActions(false);
+  };
 
   const handleSelectOperationRequestForDetails = (requestId) => {
     setSelectedOperationRequestIdForDetails(requestId);
@@ -69,7 +82,9 @@ const App = () => {
   const handleLogoutAndReset = () => {
     logout();
     setShowStaffActions(false);
+    setShowPatientActions(false);
     setSelectedStaffAction(null);
+    setSelectedPatientAction(null);
     setSelectedStaffId(null);
     navigate('/');
   };
@@ -84,12 +99,24 @@ const App = () => {
         <nav className="app-nav">
           <Link to="/" onClick={handleHomeClick} className="nav-link">Home</Link>
           {isAuthenticated && (
-            <button 
-              onClick={() => setShowStaffActions(!showStaffActions)} 
-              className="nav-link"
-            >
-              Staff
-            </button>
+            <>
+              {(isAdmin || isDoctor) && (
+                <button 
+                  onClick={() => setShowStaffActions(!showStaffActions)} 
+                  className="nav-link"
+                >
+                  Staff
+                </button>
+              )}
+              {isPatient && (
+                <button 
+                  onClick={() => setShowPatientActions(!showPatientActions)} 
+                  className="nav-link"
+                >
+                  Patient
+                </button>
+              )}
+            </>
           )}
           {isAuthenticated ? (
             <button 
@@ -168,7 +195,23 @@ const App = () => {
               </button>
             </>
           )}
+          
 
+        </div>
+      )}
+      {showPatientActions && (
+        <div className="patient-action-bar">
+          {isPatient && (
+          <button
+            onClick={() => {
+              setSelectedPatientAction('Update Profile');
+              navigate('/patient/update');
+            }}
+            className={`action-button ${selectedPatientAction === 'Update Profile' ? 'active' : ''}`}
+          >
+            Update Profile
+          </button>
+          )}
         </div>
       )}
 
@@ -228,7 +271,11 @@ const App = () => {
   } />
   <Route path="/staff/deactivate" element={
           isAdmin ? <DeactivateStaff onBack={resetStaffAction} /> : <Navigate to="/" />
-        } />
+  } />
+  {/* Rotas para Pacientes */}
+      <Route path="/patient/update" element={
+      isAuthenticated && isPatient ? <UpdatePatient /> : <Navigate to="/" />
+  } />
   <Route path="*" element={<NotFound />} />
 </Routes>
 

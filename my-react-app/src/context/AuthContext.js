@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [authToken, setAuthToken] = useState(localStorage.getItem('authToken'));
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDoctor, setIsDoctor] = useState(false);
+  const [isPatient, setIsPatient] = useState(false);
 
   useEffect(() => {
     if (authToken) {
@@ -14,9 +15,11 @@ export const AuthProvider = ({ children }) => {
       const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
       setIsAdmin(role === 'Admin');
       setIsDoctor(role === 'Doctor');
+      setIsPatient(role === 'Patient');
     } else {
       setIsAdmin(false);
       setIsDoctor(false);
+      setIsPatient(false);
     }
   }, [authToken]);
 
@@ -37,6 +40,7 @@ export const AuthProvider = ({ children }) => {
       authToken,
       isAdmin,
       isDoctor,
+      isPatient,
       login,
       logout,
       isAuthenticated
