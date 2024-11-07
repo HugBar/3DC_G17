@@ -17,6 +17,50 @@ const StaffList = ({ onSelectStaff }) => {
     specialization: ''
   });
 
+  // Sincronizar URL com filtros quando o componente monta
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const urlFilters = {
+      firstName: searchParams.get('firstName') || '',
+      lastName: searchParams.get('lastName') || '',
+      email: searchParams.get('email') || '',
+      specialization: searchParams.get('specialization') || ''
+    };
+    setFilters(urlFilters);
+  }, [location.search]);
+
+  const updateURLWithFilters = useCallback((currentFilters) => {
+    const params = new URLSearchParams();
+    Object.entries(currentFilters).forEach(([key, value]) => {
+      if (value) params.append(key, value);
+    });
+    const newURL = `/staff/filter?${params.toString()}`;
+    // Usar replace para não criar múltiplas entradas no histórico
+    navigate(newURL, { replace: true });
+  }, [navigate]);
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    const newFilters = {
+      ...filters,
+      [name]: value
+    };
+    setFilters(newFilters);
+    updateURLWithFilters(newFilters);
+  };
+
+  const clearFilters = () => {
+    const emptyFilters = {
+      firstName: '',
+      lastName: '',
+      email: '',
+      specialization: '',
+      phoneNumber: ''
+    };
+    setFilters(emptyFilters);
+    navigate('/staff/filter'); // Limpa os parâmetros da URL
+  };
+
   const fetchStaffList = useCallback(async () => {
     try {
       const data = await staffService.getAllStaff(filters);
@@ -35,47 +79,6 @@ const StaffList = ({ onSelectStaff }) => {
   useEffect(() => {
     fetchStaffList();
   }, [fetchStaffList]);
-
-  // Parse URL parameters on component mount
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const urlFilters = {
-      firstName: searchParams.get('firstName') || '',
-      lastName: searchParams.get('lastName') || '',
-      email: searchParams.get('email') || '',
-      specialization: searchParams.get('specialization') || ''
-    };
-    setFilters(urlFilters);
-  }, [location]);
-
-  const updateURL = (newFilters) => {
-    const params = new URLSearchParams();
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (value) params.append(key, value);
-    });
-    navigate(`${location.pathname}?${params.toString()}`);
-  };
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    const newFilters = {
-      ...filters,
-      [name]: value
-    };
-    setFilters(newFilters);
-    updateURL(newFilters);
-  };
-
-  const clearFilters = () => {
-    const emptyFilters = {
-      firstName: '',
-      lastName: '',
-      email: '',
-      specialization: ''
-    };
-    setFilters(emptyFilters);
-    navigate(location.pathname);
-  };
 
   const handleStaffSelect = async (staffId) => {
     try {
