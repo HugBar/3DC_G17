@@ -18,6 +18,7 @@ const UpdatePatient = ({ patientEmail, onBack }) => {
   });
   const [successMessage, setSuccessMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,13 +35,60 @@ const UpdatePatient = ({ patientEmail, onBack }) => {
     fetchPatientData();
   }, [patientEmail]);
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    if (successMessage || errorMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+        setErrorMessage('');
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, errorMessage]);
+
+const handleChange = (e) => {
     const { name, value } = e.target;
     setPatientData({ ...patientData, [name]: value });
   };
 
+  const validateFields = () => {
+    if (patientData.email && !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(patientData.email)) {
+      return 'Por favor, insira um email válido.';
+    }
+    if (patientData.phoneNumber && !/^\d{9}$/.test(patientData.phoneNumber)) {
+      return 'O número de telefone deve ter exatamente 9 dígitos.';
+    }
+    if (patientData.firstName && patientData.firstName.length > 100) {
+      return 'O primeiro nome não pode ter mais de 100 caracteres.';
+    }
+    if (patientData.lastName && patientData.lastName.length > 100) {
+      return 'O sobrenome não pode ter mais de 100 caracteres.';
+    }
+    if (patientData.gender && patientData.gender.length > 50) {
+      return 'O gênero não pode ter mais de 50 caracteres.';
+    }
+    if (patientData.contactInfo && patientData.contactInfo.length > 500) {
+      return 'As informações de contato não podem ter mais de 500 caracteres.';
+    }
+    if (patientData.emergencyContact && patientData.emergencyContact.length > 500) {
+      return 'As informações de contato de emergência não podem ter mais de 500 caracteres.';
+    }
+    if (patientData.medicalHistory && patientData.medicalHistory.length > 1000) {
+      return 'O histórico médico não pode ter mais de 1000 caracteres.';
+    }
+    if (patientData.medicalNr && !/^MED-[A-Z0-9]{8}$/.test(patientData.medicalNr)) {
+      return 'Formato de número médico inválido. Deve ser "MED-" seguido de 8 caracteres alfanuméricos.';
+    }
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationError = validateFields();
+    if (validationError) {
+      setErrorMessage(validationError);
+      return;
+    }
     const updatedFields = {};
     let emailChanged = false;
 
@@ -54,20 +102,25 @@ const UpdatePatient = ({ patientEmail, onBack }) => {
     }
 
     if (Object.keys(updatedFields).length === 0) {
-      alert('No changes detected');
+      setErrorMessage('Nenhuma alteração detetada');
       return;
     }
 
     try {
       await patientService.updatePatientProfile(patientEmail, updatedFields);
-      setSuccessMessage('Profile updated successfully');
+      setSuccessMessage('Perfil atualizado com sucesso');
+      setErrorMessage(''); // Limpa a mensagem de erro
       
       if (emailChanged) {
         setShowModal(true);
       }
     } catch (error) {
-      console.error('Failed to update profile:', error);
-      alert('Failed to update profile');
+      console.error('Falha ao atualizar o perfil:', error);
+      if (error.response && error.response.data) {
+        setErrorMessage(error.response.data); // Exibe a mensagem de erro do backend
+      } else {
+        setErrorMessage('Falha ao atualizar o perfil');
+      }
     }
   };
 
@@ -80,9 +133,6 @@ const UpdatePatient = ({ patientEmail, onBack }) => {
   return (
     <div className="update-profile-container">
       <div className="navbar">
-        <button onClick={() => navigate('/home')}>Home</button>
-        <button onClick={() => navigate('/patient')}>Patient</button>
-        <button onClick={() => navigate('/logout')}>Logout</button>
       </div>
       <h2>Update Profile</h2>
       <form className="update-profile-form" onSubmit={handleSubmit}>
@@ -174,7 +224,11 @@ const UpdatePatient = ({ patientEmail, onBack }) => {
           {successMessage}
         </div>
       )}
-
+      {errorMessage && (
+     <div className="error-message">
+       {errorMessage}
+        </div>
+      )}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
