@@ -24,25 +24,21 @@ namespace DDDSample1.Infrastructure.PatientData
 
             if (filter.FirstName != null)
             {
-                query = query.Where(p => p.FirstName == filter.FirstName);
+                query = query.Where(p => p.FirstName.StartsWith(filter.FirstName));
             }
 
             if (filter.LastName != null)
             {
-                query = query.Where(p => p.LastName == filter.LastName);
+                query = query.Where(p => p.LastName.StartsWith(filter.LastName));
             }
 
             if (filter.Email != null)
             {
-                query = query.Where(p => p.Email == filter.Email);
+                query = query.Where(p => p.Email.StartsWith(filter.Email));
             }
                  if (filter.PhoneNumber != null)
             {
-                query = query.Where(p => p.PhoneNumber == filter.PhoneNumber);
-            }
-            if (filter.Id != null)
-            {
-                query = query.Where(p => p.UserId == filter.Id);
+                query = query.Where(p => p.PhoneNumber.StartsWith(filter.PhoneNumber));
             }
             if (filter.DateofBirth != null)
             {
@@ -56,21 +52,9 @@ namespace DDDSample1.Infrastructure.PatientData
             {
                 query = query.Where(p => p.ContactInfo == filter.ContactInfo);
             }
-            if (filter.EmergencyContact != null)
-            {
-                query = query.Where(p => p.EmergencyContact == filter.EmergencyContact);
-            }
-            if (filter.AppointmentHistory != null)
-            {
-                query = query.Where(p => p.AppointmentHistory == filter.AppointmentHistory);
-            }
-            if (filter.MedicalHistory != null)
-            {
-                query = query.Where(p => p.MedicalHistory == filter.MedicalHistory);
-            }
             if (filter.MedicalNr != null)
             {
-                query = query.Where(p => p.MedicalNr == filter.MedicalNr);
+                query = query.Where(p => p.MedicalNr.StartsWith(filter.MedicalNr));
             }
 
             var totalCount = await query.CountAsync();
