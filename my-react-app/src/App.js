@@ -29,7 +29,7 @@ const App = () => {
   const [selectedStaffId, setSelectedStaffId] = useState(null);
   const [selectedOperationRequest, setSelectedOperationRequest] = useState(null);
   const [selectedOperationRequestId, setSelectedOperationRequestId] = useState(null);
-  const [selectedOperationRequestIdForDetails, setSelectedOperationRequestIdForDetails] = useState(null);
+  const [/*selectedOperationRequestIdForDetails*/, setSelectedOperationRequestIdForDetails] = useState(null);
  
 
   const handleHomeClick = () => {
@@ -47,10 +47,10 @@ const App = () => {
     setSelectedStaffAction('Update Staff');
     navigate(`/staff/update/${staffId}`);
   };
-  const handleSelectPatient = () => {
+  /*const handleSelectPatient = () => {
     setSelectedPatientAction('Update Profile');
     navigate('/patient/update');
-  };
+  };*/
 
   const handleSelectOperationRequestForDeletion = (requestId) => {
     setSelectedOperationRequestId(requestId);
@@ -85,10 +85,10 @@ const App = () => {
     setSelectedOperationRequestIdForDetails(requestId);
   };
   
-  const resetOperationRequestDetails = () => {
+  /*const resetOperationRequestDetails = () => {
     setSelectedOperationRequestIdForDetails(null);
     navigate('/staff/list');
-  };
+  };*/
 
   const handleLogoutAndReset = () => {
     logout();

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+//import { useNavigate } from 'react-router-dom';
 import staffService from '../../../api/staffService';
 import './DeactivatedStaffList.css';
 
 const DeactivatedStaffList = () => {
-  const navigate = useNavigate();
+  /*const navigate = useNavigate();*/
   const [deactivatedStaff, setDeactivatedStaff] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedStaff, setSelectedStaff] = useState(null);

@@ -52,7 +52,7 @@ const handleChange = (e) => {
   };
 
   const validateFields = () => {
-    if (patientData.email && !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(patientData.email)) {
+    if (patientData.email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(patientData.email)) {
       return 'Por favor, insira um email válido.';
     }
     if (patientData.phoneNumber && !/^\d{9}$/.test(patientData.phoneNumber)) {
