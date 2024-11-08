@@ -142,10 +142,14 @@ const OperationRequestList = ({ onDeleteOperationRequest }) => {
             <p><strong>ID:</strong> {selectedRequest.id}</p>
             <p><strong>Patient Medical Number:</strong> {selectedRequest.patientMedicalNumber}</p>
             <p><strong>Doctor License Number:</strong> {selectedRequest.doctorLicenseNumber}</p>
+            <p><strong>Operation Type ID:</strong> {selectedRequest.operationTypeId}</p>
             <p><strong>Priority:</strong> {selectedRequest.priority}</p>
             <p><strong>Deadline:</strong> {new Date(selectedRequest.deadline).toLocaleString()}</p>
+            <p><strong>Status:</strong> {selectedRequest.isScheduled ? 'Scheduled' : 'Not Scheduled'}</p>
+            <div className="modal-actions">
             <button onClick={handleDeleteClick} className="delete-button">Delete Operation Request</button>
             <button onClick={handleCloseDetails} className="back-button">Back to List</button>
+            </div>
           </div>
         </div>
       )}
