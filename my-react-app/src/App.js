@@ -15,6 +15,8 @@ import NotFound from './components/notFound/NotFound';
 import logo from './assets/hospital.png';
 import './App.css';
 import PatientList from './components/patientList/PatientList';
+import DeactivatedStaffList from './components/DeactivatedStaffList/DeactivatedStaffList';
+
 
 const App = () => {
   const navigate = useNavigate();
@@ -179,6 +181,15 @@ const App = () => {
               >
                 View Staffs
               </button>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('View Deactivated Staffs');
+                  navigate('/staff/deactivated-staffs');
+                }}
+                className={`action-button ${selectedStaffAction === 'View Deactivated Staffs' ? 'active' : ''}`}
+              >
+                View Deactivated Staffs
+              </button>
             </>
           )}
           {isDoctor && (
@@ -302,6 +313,9 @@ const App = () => {
   } />
   <Route path="/staff/deactivate/:id" element={
     isAdmin ? <DeactivateStaff staffId={selectedStaffId} onBack={resetStaffAction} /> : <Navigate to="/" />
+  } />
+  <Route path="/staff/deactivated-staffs" element={
+    isAdmin ? <DeactivatedStaffList onSelectStaff={handleSelectStaff} onDeactivateStaff={handleDeactivateStaff} /> : <Navigate to="/" />
   } />
   {/* Rotas para Pacientes */}
       <Route path="/patient/update" element={

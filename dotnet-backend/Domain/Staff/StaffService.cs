@@ -261,5 +261,10 @@ namespace DDDSample1.Domain.StaffData
             await _unitOfWork.CommitAsync();
             return true;
         }
+
+        public async Task<List<Staff>> GetDeactivatedStaffAsync()
+        {
+            return await _staffRepo.GetDeactivatedStaffAsync();
+        }
     }
 }

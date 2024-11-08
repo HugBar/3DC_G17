@@ -131,13 +131,18 @@ namespace DDDSample1.Infrastructure.Staffs
                 throw new ArgumentException("Filtering by AvailabilitySlots is not allowed.");
             }
 
-            return await staffs.ToListAsync();
+            return await staffs.Where(s => s.Active).ToListAsync();
         }
 
 
         public async Task<bool> ExistsAsync(string staffId)
         {
             return await _context.Staffs.AnyAsync(s => s.Id == staffId);
+        }
+
+        public async Task<List<Staff>> GetDeactivatedStaffAsync()
+        {
+            return await _context.Staffs.Where(s => !s.Active).ToListAsync();
         }
 
     }

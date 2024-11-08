@@ -17,5 +17,7 @@ namespace DDDSample1.Domain.StaffData
         Task<List<Staff>> GetActiveStaffAsync();
         Task<bool> ExistsAsync(string staffId);
         Task<List<Staff>> GetFilteredStaffAsync(StaffFilterDto filter);
+
+        Task<List<Staff>> GetDeactivatedStaffAsync();
     }
 }

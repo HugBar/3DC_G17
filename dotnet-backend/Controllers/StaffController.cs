@@ -199,6 +199,18 @@ namespace DDDSample1.Controllers
             return Ok();
         }
 
+        [HttpGet("deactivated-staffs")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<StaffDto>>> GetDeactivatedStaff()
+        {
+            var staffs = await _staffService.GetDeactivatedStaffAsync();
+            if (!staffs.Any())
+            {
+                return NotFound();
+            }
+            return Ok(staffs);
+        }
+
 
     }
 }

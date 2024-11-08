@@ -174,6 +174,7 @@ const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
               <p><strong>Email:</strong> {selectedStaff.email}</p>
               <p><strong>Phone:</strong> {selectedStaff.phoneNumber}</p>
               <p><strong>Specialization:</strong> {selectedStaff.specialization}</p>
+              <p><strong>License Number:</strong> {selectedStaff.licenseNumber}</p>
               {selectedStaff.availabilitySlots && (
                 <div className="availability-slots">
                   <h4>Availability Slots</h4>

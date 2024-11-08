@@ -171,6 +171,22 @@ const staffService = {
     }
   },
 
+  getDeactivatedStaff: async () => {
+    const token = getAuthToken();
+    checkAdminRole(token);
+
+    try {
+      const response = await axios.get(`${API_URL}/deactivated-staffs`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
 };
 
 export default staffService;
