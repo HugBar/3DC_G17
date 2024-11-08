@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Newtonsoft.Json;
 
 public class PatientDto
 {
@@ -8,6 +9,7 @@ public class PatientDto
     public string LastName { get; set; }
     public string Email { get; set; } 
     public string PhoneNumber { get; set; }
+    [JsonProperty("dateOfBirth")] 
     public string DateofBirth {get; set;}
     public string Gender {get; set;}
     public string ContactInfo {get; set;}
