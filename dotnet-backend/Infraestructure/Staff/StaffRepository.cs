@@ -91,19 +91,19 @@ namespace DDDSample1.Infrastructure.Staffs
         {
             var staffs = _context.Staffs.AsQueryable();
 
-            if (filter.FirstName != null)
+            if (!string.IsNullOrEmpty(filter.FirstName))
             {
-                staffs = staffs.Where(s => s.FirstName == filter.FirstName);
+                staffs = staffs.Where(s => s.FirstName.StartsWith(filter.FirstName));
             }
 
-            if (filter.LastName != null)
+            if (!string.IsNullOrEmpty(filter.LastName))
             {
-                staffs = staffs.Where(s => s.LastName == filter.LastName);
+                staffs = staffs.Where(s => s.LastName.StartsWith(filter.LastName));
             }
 
-            if (filter.Email != null)
+            if (!string.IsNullOrEmpty(filter.Email))
             {
-                staffs = staffs.Where(s => s.Email == filter.Email);
+                staffs = staffs.Where(s => s.Email.StartsWith(filter.Email));
             }
 
             if (filter.PhoneNumber != null)
@@ -111,14 +111,14 @@ namespace DDDSample1.Infrastructure.Staffs
                 throw new ArgumentException("Filtering by PhoneNumber is not allowed.");
             }
 
-            if (filter.Specialization != null)
+            if (!string.IsNullOrEmpty(filter.Specialization))
             {
-                staffs = staffs.Where(s => s.Specialization == filter.Specialization);
+                staffs = staffs.Where(s => s.Specialization.StartsWith(filter.Specialization));
             }
 
-            if (filter.LicenseNumber != null)
+            if (!string.IsNullOrEmpty(filter.LicenseNumber))
             {
-                staffs = staffs.Where(s => s.LicenseNumber == filter.LicenseNumber);
+                staffs = staffs.Where(s => s.LicenseNumber.StartsWith(filter.LicenseNumber));
             }
 
             if (filter.Active)
@@ -133,6 +133,7 @@ namespace DDDSample1.Infrastructure.Staffs
 
             return await staffs.Where(s => s.Active).ToListAsync();
         }
+
 
 
         public async Task<bool> ExistsAsync(string staffId)

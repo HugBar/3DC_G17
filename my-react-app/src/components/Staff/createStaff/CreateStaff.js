@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import staffService from '../../api/staffService';
-import useFormValidation from '../../hooks/useFormValidation';
+import staffService from '../../../api/staffService';
+import useFormValidation from '../../../hooks/useFormValidation';
 import './CreateStaff.css';
 
 const CreateStaff = () => {

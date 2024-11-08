@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import staffService from '../../api/staffService';
+import staffService from '../../../api/staffService';
 import './deactivateStaff.css';
 
 const DeactivateStaff = ({ staffId, onBack }) => {

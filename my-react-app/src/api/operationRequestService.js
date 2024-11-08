@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // Use named import
+import staffService from './staffService'; 
+import patientService from './patientService'; 
 
 const API_URL = 'https://localhost:5001/api/OperationRequest/';
 
@@ -50,16 +52,57 @@ const operationRequestService = {
     }
   },
 
-  getAllOperationRequests: async () => {
+  getAllOperationRequests: async (filters = {}) => {
     const token = getAuthToken();
     checkDoctorRole(token);
+
     try {
-      const response = await axios.get(`${API_URL}filter`, {
+      // Convert filters object to URL parameters
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+
+      const response = await axios.get(`${API_URL}filter?${params.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      return response.data;
+
+      const operationRequests = response.data;
+
+      // Fetch doctor details for each operation request
+      const operationRequestsWithDetails = await Promise.all(
+        operationRequests.map(async (request) => {
+          let doctorLicenseNumber = '';
+          let doctorName = '';
+          let patientMedicalNumber = '';
+
+          try {
+            const doctorDetails = await staffService.getStaffById(request.doctorId);
+            doctorLicenseNumber = doctorDetails.licenseNumber;
+            doctorName = `${doctorDetails.firstName} ${doctorDetails.lastName}`;
+          } catch (error) {
+            console.error(`Error fetching doctor details for doctorId ${request.doctorId}:`, error);
+          }
+
+          try {
+            const patientDetails = await patientService.getPatientById(request.patientId);
+            patientMedicalNumber = patientDetails.medicalNr;
+          } catch (error) {
+            console.error(`Error fetching patient details for patientId ${request.patientId}:`, error);
+          }
+
+          return {
+            ...request,
+            doctorLicenseNumber,
+            doctorName,
+            patientMedicalNumber,
+          };
+        })
+      );
+
+      return operationRequestsWithDetails;
     } catch (error) {
       if (error.response) {
         console.error('Error response:', error.response.data);
@@ -72,6 +115,7 @@ const operationRequestService = {
       throw error;
     }
   },
+  
   deleteOperationRequest: async (id) => {
     const token = getAuthToken();
     checkDoctorRole(token);

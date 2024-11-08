@@ -1,6 +1,6 @@
 // src/components/OperationRequestDeleteConfirmation/OperationRequestDeleteConfirmation.js
 import React from 'react';
-import operationRequestService from '../../api/operationRequestService'; // Import the service
+import operationRequestService from '../../../api/operationRequestService'; // Import the service
 import './OperationRequestDeleteConfirmation.css';
 
 const OperationRequestDeleteConfirmation = ({ operationRequestId, onConfirm, onCancel }) => {

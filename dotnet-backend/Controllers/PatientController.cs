@@ -48,7 +48,7 @@ namespace DDDSample1.Controllers
             [FromQuery] int pageSize = 5)
         {
             var result = await _service.GetFilteredPatient(filter, pageNumber, pageSize);
-            
+
             if (result.Items == null || !result.Items.Any())
             {
                 return NotFound("No patients found matching the criteria.");
@@ -58,7 +58,6 @@ namespace DDDSample1.Controllers
         }
 
         [HttpGet("get-patient-profile/{id}")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetPatientById([FromRoute] string id)
         {
             var patient = await _service.GetByIdAsync(id);
@@ -102,7 +101,7 @@ namespace DDDSample1.Controllers
             {
                 Email = patient.Email,
                 PhoneNumber = patient.PhoneNumber,
-            
+
             };
 
             patchDoc.ApplyTo(patientToPatch, ModelState);
@@ -266,5 +265,5 @@ namespace DDDSample1.Controllers
 
 
     }
-    
+
 }

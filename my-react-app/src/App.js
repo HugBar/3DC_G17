@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
 import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
-import CreateStaff from './components/createStaff/CreateStaff';
-import UpdateStaff from './components/updateStaff/UpdateStaff';
-import StaffList from './components/staffList/StaffList';
+import CreateStaff from './components/Staff/createStaff/CreateStaff';
+import UpdateStaff from './components/Staff/updateStaff/UpdateStaff';
+import StaffList from './components/Staff/staffList/StaffList';
 import Login from './components/auth/Login';
-import DeactivateStaff from './components/deactivateStaff/deactivateStaff';
-import UpdatePatient from './components/updatePatient/UpdatePatient';
-import CreateOperationRequest from './components/createOperationRequest/CreateOperationRequest';
-import OperationRequestList from './components/listOperationRequest/OperationRequestList';
-import OperationRequestDeleteConfirmation from './components/deleteOperationRequest/OperationRequestDeleteConfirmation';
-import OperationRequestDetails from './components/consultOperationRequest/OperationRequestDetails';
+import DeactivateStaff from './components/Staff/deactivateStaff/deactivateStaff';
+import UpdatePatient from './components/Patient/updatePatient/UpdatePatient';
+import CreateOperationRequest from './components/OperationRequest/createOperationRequest/CreateOperationRequest';
+import OperationRequestList from './components/OperationRequest/listOperationRequest/OperationRequestList';
+import OperationRequestDeleteConfirmation from './components/OperationRequest/deleteOperationRequest/OperationRequestDeleteConfirmation';
 import NotFound from './components/notFound/NotFound';
 import logo from './assets/hospital.png';
 import './App.css';
-import PatientList from './components/patientList/PatientList';
-import DeactivatedStaffList from './components/DeactivatedStaffList/DeactivatedStaffList';
+import PatientList from './components/Patient/patientList/PatientList';
+import DeactivatedStaffList from './components/Staff/DeactivatedStaffList/DeactivatedStaffList';
 
 
 const App = () => {
@@ -59,9 +58,9 @@ const App = () => {
   };
 
   const resetOperationRequestAction = () => {
-    setSelectedOperationRequest(null);
     setSelectedOperationRequestId(null);
-    setShowStaffActions(true);
+    setSelectedOperationRequest(null);
+    navigate('/operationrequest/filter'); // Navigate to the desired page
   };
 
   const resetStaffAction = () => {
@@ -108,7 +107,7 @@ const App = () => {
 
   const handlePatientClick = () => {
     setShowPatientActions(true);
-    setShowStaffActions(false); // Esconde as ações de staff
+    setShowStaffActions(false);
     setSelectedPatientAction(null);
     setSelectedStaffAction(null);
   };
@@ -118,6 +117,14 @@ const App = () => {
     setSelectedStaffAction('Deactivate Staff');
     navigate(`/staff/deactivate/${staffId}`);
   };
+
+  const handleDeleteOperationRequest = (requestId) => {
+    setSelectedOperationRequestId(requestId);
+    setSelectedOperationRequest('Delete Operation Request');
+    navigate(`/operation/delete/${requestId}`);
+  };
+
+
 
   return (
     <div>
@@ -206,20 +213,11 @@ const App = () => {
               <button
                 onClick={() => {
                   setSelectedOperationRequest('View Operation Requests');
-                  navigate('/operation/view');
+                  navigate('/operationrequest/filter');
                 }}
                 className={`action-button ${selectedOperationRequest === 'View Operation Requests' ? 'active' : ''}`}
               >
-                View Operation Requests
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedOperationRequest('Delete Operation Requests');
-                  navigate('/operation/delete');
-                }}
-                className={`action-button ${selectedOperationRequest === 'Delete Operation Requests' ? 'active' : ''}`}
-              >
-                Delete Operation Requests
+                Manage Operation Requests
               </button>
             </>
           )}
@@ -286,31 +284,24 @@ const App = () => {
   <Route path="/operation/request" element={
     isDoctor ? <CreateOperationRequest /> : <Navigate to="/" />
   } />
-  <Route path="/operation/view" element={
+  <Route path="/operationrequest/filter" element={
     isDoctor ? (
-      selectedOperationRequestIdForDetails ? (
-        <OperationRequestDetails
-          operationRequestId={selectedOperationRequestIdForDetails}
-          onBack={resetOperationRequestDetails}
-        />
-      ) : (
-        <OperationRequestList onSelectOperationRequest={handleSelectOperationRequestForDetails} />
-      )
+      <OperationRequestList onSelectOperationRequest={handleSelectOperationRequestForDetails} onDeleteOperationRequest={handleDeleteOperationRequest}  />
     ) : <Navigate to="/" />
   } />
-  <Route path="/operation/delete" element={
-    isDoctor ? (
-      selectedOperationRequestId ? (
-        <OperationRequestDeleteConfirmation
-          operationRequestId={selectedOperationRequestId}
-          onConfirm={resetOperationRequestAction}
-          onCancel={resetOperationRequestAction}
-        />
-      ) : (
-        <OperationRequestList onSelectOperationRequest={handleSelectOperationRequestForDeletion} />
-      )
-    ) : <Navigate to="/" />
-  } />
+  <Route path="/operation/delete/:id" element={
+  isDoctor ? (
+    selectedOperationRequestId ? (
+      <OperationRequestDeleteConfirmation
+        operationRequestId={selectedOperationRequestId}
+        onConfirm={resetOperationRequestAction}
+        onCancel={resetOperationRequestAction}
+      />
+    ) : (
+      <OperationRequestList onSelectOperationRequest={handleSelectOperationRequestForDeletion} />
+    )
+  ) : <Navigate to="/" />
+} />
   <Route path="/staff/deactivate/:id" element={
     isAdmin ? <DeactivateStaff staffId={selectedStaffId} onBack={resetStaffAction} /> : <Navigate to="/" />
   } />

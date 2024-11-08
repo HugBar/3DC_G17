@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import staffService from '../../api/staffService';
-import useFormValidation from '../../hooks/useFormValidation';
+import staffService from '../../../api/staffService';
+import useFormValidation from '../../../hooks/useFormValidation';
 import './UpdateStaff.css';
 
 const UpdateStaff = ({ staffId, onBack }) => {

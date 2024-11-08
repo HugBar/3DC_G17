@@ -47,21 +47,22 @@ namespace DDDSample1.Infrastructure.OperationRequestData
 
             if (!string.IsNullOrEmpty(filter.PatientId))
             {
-                operationRequests = operationRequests.Where(or => or.PatientId == filter.PatientId);
+                operationRequests = operationRequests.Where(or => or.PatientId.StartsWith(filter.PatientId));
             }
 
             if (!string.IsNullOrEmpty(filter.OperationTypeId))
             {
-                operationRequests = operationRequests.Where(or => or.OperationTypeId == filter.OperationTypeId);
+                operationRequests = operationRequests.Where(or => or.OperationTypeId.StartsWith(filter.OperationTypeId));
             }
 
             if (!string.IsNullOrEmpty(filter.Priority))
             {
-                operationRequests = operationRequests.Where(or => or.Priority == filter.Priority);
+                operationRequests = operationRequests.Where(or => or.Priority.StartsWith(filter.Priority));
             }
 
             return await operationRequests.ToListAsync();
         }
+
 
 
 

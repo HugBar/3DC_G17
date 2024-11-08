@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import patientService from '../../api/patientService';
+import patientService from '../../../api/patientService';
 import './UpdatePatient.css';
 
 const UpdatePatient = ({ patientEmail, onBack }) => {

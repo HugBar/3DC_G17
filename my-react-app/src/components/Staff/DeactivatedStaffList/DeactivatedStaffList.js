@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import staffService from '../../api/staffService';
+import staffService from '../../../api/staffService';
 import './DeactivatedStaffList.css';
 
 const DeactivatedStaffList = () => {

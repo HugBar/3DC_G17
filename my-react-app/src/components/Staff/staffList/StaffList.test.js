@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import StaffList from './StaffList';
-import staffService from '../../api/staffService';
+import staffService from '../../../api/staffService';
 import userEvent from '@testing-library/user-event';
 
 jest.mock('../../api/staffService', () => ({

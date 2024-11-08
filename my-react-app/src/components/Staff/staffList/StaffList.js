@@ -1,7 +1,7 @@
 // src/components/StaffList/StaffList.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import staffService from '../../api/staffService';
+import staffService from '../../../api/staffService';
 import './StaffList.css';
 
 const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
