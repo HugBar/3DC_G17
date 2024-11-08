@@ -15,7 +15,7 @@ import logo from './assets/hospital.png';
 import './App.css';
 import PatientList from './components/Patient/patientList/PatientList';
 import DeactivatedStaffList from './components/Staff/DeactivatedStaffList/DeactivatedStaffList';
-
+import DeletePatient from './components/Patient/deletePatient/DeletePatient';
 
 const App = () => {
   const navigate = useNavigate();
@@ -125,6 +125,13 @@ const App = () => {
     setSelectedOperationRequest('Delete Operation Request');
     navigate(`/operation/delete/${requestId}`);
   };
+
+  const handleDeletePatient = (patientId) => {
+    setSelectedPatientId(patientId);
+    setSelectedPatientAction('Delete Patient');
+    navigate(`/patient/delete/${patientId}`);
+  };
+
 
 
 
@@ -322,6 +329,9 @@ const App = () => {
   <Route path="/patient/list" element={
     isAdmin ? <PatientList onSelectPatient={handleSelectPatientFromList}/> : <Navigate to="/" />
   } />
+  {
+  <Route path="/patient/delete/:id" element={isAdmin ? (<DeletePatient patientId={selectedPatientId} onDelete={handleDeletePatient} />) : <Navigate to="/" />} />
+  }
 </Routes>
 
     </div>
