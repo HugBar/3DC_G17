@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import  patientService  from '../../../api/patientService';
 import './PatientList.css';
 
-const PatientList = () => {
+const PatientList = ({onSelectPatient}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [patientList, setPatientList] = useState([]);
@@ -70,6 +70,12 @@ const PatientList = () => {
     updateURL(filters, newPage);
   };
 
+  const handleSelectPatient = () => {
+    if (selectedPatient) {
+      onSelectPatient(selectedPatient.id);
+    }
+  };
+
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -81,9 +87,12 @@ const PatientList = () => {
           setTotalPages(response.totalPages);
         }
       } catch (error) {
-        setPatientList([]);
-        setErrorMessage('Error fetching patient list.');
-        console.error('Error:', error);
+        if (error.response && error.response.status === 404) {
+          setPatientList([]);
+          setErrorMessage('No patients found.');
+        } else {
+          setErrorMessage('Error fetching patient list.');
+        }
       }
     };
 
@@ -179,7 +188,7 @@ const PatientList = () => {
               <p><strong>Emergency Contact:</strong> {selectedPatient?.emergencyContact || 'Not available'}</p>
             </div>
             <div className="modal-actions">
-              <button onClick={() => handlePatientSelect(selectedPatient.id)} className="update-button">
+              <button onClick={handleSelectPatient} className="update-button">
                 Update Patient
               </button>
               <button onClick={() => setSelectedPatient(null)} className="close-button">

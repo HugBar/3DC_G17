@@ -71,12 +71,14 @@ const App = () => {
   };
   const resetPatientAction = () => {
     setSelectedPatientAction(null);
-    setShowPatientActions(false);
+    setSelectedPatientId(null);
+    setShowPatientActions(true);
+    navigate('/patient/list');
   };
   const handleSelectPatientFromList = (patientId) => {
     setSelectedPatientId(patientId);
     setSelectedPatientAction('View Patient');
-    navigate(`/patient/view/${patientId}`);
+    navigate(`/patient/admin/edit-patient-profile/${patientId}`);
   };
 
   const handleSelectOperationRequestForDetails = (requestId) => {
@@ -311,6 +313,10 @@ const App = () => {
   {/* Rotas para Pacientes */}
       <Route path="/patient/update" element={
       isAuthenticated && isPatient ? <UpdatePatient /> : <Navigate to="/" />
+  } />
+  <Route path="/patient/admin/edit-patient-profile/:id" element={
+    // Azevedo depois tens e alterar UpdatePatient para o AdminUpdatePatient, quando criares o componente
+    isAdmin ? <UpdatePatient patientId={selectedPatientId} onBack={resetPatientAction} /> : <Navigate to="/" />
   } />
   <Route path="*" element={<NotFound />} />
   <Route path="/patient/list" element={
