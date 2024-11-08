@@ -1,0 +1,73 @@
+@startuml namespace class Diagram 
+title "Class Diagram US 6.2.2"
+
+class UpdatePatient {
+        -originalData: object
+        -patientData: object
+        -successMessage: string
+        -showModal: boolean
+        -errorMessage: string
+        -navigate: useNavigate
+        +handleChange(event): void
+        +validateFields(): string|null
+        +handleSubmit(event): void
+        +handleModalClose(): void
+        +fetchPatientData(): Promise
+        +render(): JSX
+    }
+
+    class PatientService {
+        -API_URL: string
+        +getAuthToken(): string
+        +getPatientProfile(patientEmail): Promise
+        +updatePatientProfile(patientEmail, updateData): Promise
+    }
+
+    class UpdatePatientCSS {
+        <<interface>>
+        +update-profile-container: style
+        +update-profile-form: style
+        +form-group: style
+        +update-button: style
+        +modal: style
+        +modal-content: style
+        +success-message: style
+        +error-message: style
+        +fadeOut: animation
+    }
+
+    class App {
+        -navigate: useNavigate
+        -isAdmin: boolean
+        -isDoctor: boolean
+        -isPatient: boolean
+        -isAuthenticated: boolean
+        -showPatientActions: boolean
+        -selectedPatientAction: string
+        -selectedPatientId: string
+        +handlePatientClick(): void
+        +resetPatientAction(): void
+        +handleSelectPatientFromList(patientId): void
+        +render(): JSX
+    }
+
+    class PatientData {
+        <<interface>>
+        +email: string
+        +phoneNumber: string
+        +firstName: string
+        +lastName: string
+        +dateOfBirth: string
+        +gender: string
+        +contactInfo: string
+        +emergencyContact: string
+        +medicalHistory: string
+    }
+
+    UpdatePatient --> PatientService : uses
+    UpdatePatient --> UpdatePatientCSS : styles
+    UpdatePatient ..> PatientData : implements
+    App --> UpdatePatient : routes to
+    PatientService ..> PatientData : handles
+@endmul
+@enduml
