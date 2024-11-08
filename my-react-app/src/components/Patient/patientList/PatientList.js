@@ -155,6 +155,7 @@ const PatientList = () => {
               <p><strong>Medical Record #:</strong> {patient.medicalNr}</p>
               <p><strong>Email:</strong> {patient.email}</p>
               <p><strong>Phone:</strong> {patient.phoneNumber}</p>
+              <p><strong>Date of Birth:</strong> {patient?.dateOfBirth || 'Not available'}</p>
             </div>
           ))}
         </div>
@@ -173,9 +174,9 @@ const PatientList = () => {
               <p><strong>Email:</strong> {selectedPatient.email}</p>
               <p><strong>Medical Record #:</strong> {selectedPatient.medicalNr}</p>
               <p><strong>Phone:</strong> {selectedPatient.phoneNumber}</p>
-              <p><strong>Date of Birth:</strong> {selectedPatient.dateOfBirth}</p>
-              <p><strong>Gender:</strong> {selectedPatient.gender}</p>
-              <p><strong>Emergency Contact:</strong> {selectedPatient.emergencyContact}</p>
+              <p><strong>Date of Birth:</strong> {selectedPatient?.dateOfBirth || 'Not available'}</p>
+              <p><strong>Gender:</strong> {selectedPatient?.gender || 'Not available'}</p>
+              <p><strong>Emergency Contact:</strong> {selectedPatient?.emergencyContact || 'Not available'}</p>
             </div>
             <div className="modal-actions">
               <button onClick={() => handlePatientSelect(selectedPatient.id)} className="update-button">
