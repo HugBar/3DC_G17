@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import StaffList from './StaffList';
 import staffService from '../../api/staffService';
@@ -57,7 +57,9 @@ describe('StaffList Component', () => {
   };
 
   test('renders staff list component with filters', async () => {
-    renderStaffList();
+    await act(async () => {
+      renderStaffList();
+    });
     
     expect(screen.getByPlaceholderText('First Name')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Last Name')).toBeInTheDocument();
@@ -67,15 +69,18 @@ describe('StaffList Component', () => {
   });
 
   test('displays staff members after loading', async () => {
-    renderStaffList();
+    await act(async () => {
+      renderStaffList();
+    });
     
-    // Espera pelos elementos aparecerem na tela
     expect(await screen.findByText('John Doe')).toBeInTheDocument();
     expect(await screen.findByText('Jane Smith')).toBeInTheDocument();
   });
 
   test('filters update URL and trigger new search', async () => {
-    renderStaffList();
+    await act(async () => {
+      renderStaffList();
+    });
     const user = userEvent.setup();
 
     const firstNameInput = screen.getByPlaceholderText('First Name');
@@ -88,7 +93,9 @@ describe('StaffList Component', () => {
   });
 
   test('clear filters resets all inputs and URL', async () => {
-    renderStaffList();
+    await act(async () => {
+      renderStaffList();
+    });
     const user = userEvent.setup();
 
     const firstNameInput = screen.getByPlaceholderText('First Name');
@@ -103,21 +110,30 @@ describe('StaffList Component', () => {
 
   test('shows error message when API call fails', async () => {
     staffService.getAllStaff.mockRejectedValue(new Error('API Error'));
-    renderStaffList();
+    
+    await act(async () => {
+      renderStaffList();
+    });
 
     expect(await screen.findByText('Error fetching staff list.')).toBeInTheDocument();
   });
 
   test('shows no results message when no staff found', async () => {
     staffService.getAllStaff.mockResolvedValue([]);
-    renderStaffList();
+    
+    await act(async () => {
+      renderStaffList();
+    });
 
     expect(await screen.findByText('No staff members found')).toBeInTheDocument();
   });
 
   test('opens staff details modal when clicking on a staff member', async () => {
     staffService.getStaffById.mockResolvedValue(mockStaffData[0]);
-    renderStaffList();
+    
+    await act(async () => {
+      renderStaffList();
+    });
     const user = userEvent.setup();
 
     await screen.findByText('John Doe');
@@ -130,7 +146,10 @@ describe('StaffList Component', () => {
 
   test('closes modal when clicking close button', async () => {
     staffService.getStaffById.mockResolvedValue(mockStaffData[0]);
-    renderStaffList();
+    
+    await act(async () => {
+      renderStaffList();
+    });
     const user = userEvent.setup();
 
     await screen.findByText('John Doe');

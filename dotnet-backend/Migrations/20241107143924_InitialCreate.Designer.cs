@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DDDNetCore.Migrations
 {
     [DbContext(typeof(DDDSample1DbContext))]
-    [Migration("20241104122626_InitialCreate")]
+    [Migration("20241107143924_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -190,6 +190,34 @@ namespace DDDNetCore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Staffs", (string)null);
+                });
+
+            modelBuilder.Entity("DDDSample1.Domain.SurgeryRoomData.SurgeryRoom", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("AssignedEquipment")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.ToTable("SurgeryRooms", (string)null);
                 });
 
             modelBuilder.Entity("DDDSample1.Domain.UserData.ApplicationUser", b =>
@@ -440,6 +468,37 @@ namespace DDDNetCore.Migrations
                         });
 
                     b.Navigation("AvailabilitySlots");
+                });
+
+            modelBuilder.Entity("DDDSample1.Domain.SurgeryRoomData.SurgeryRoom", b =>
+                {
+                    b.OwnsMany("DDDSample1.Domain.SurgeryRoom.MaintenanceSlot", "MaintenanceSlots", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            b1.Property<DateTime>("EndTime")
+                                .HasColumnType("datetime(6)");
+
+                            b1.Property<DateTime>("StartTime")
+                                .HasColumnType("datetime(6)");
+
+                            b1.Property<string>("SurgeryRoomId")
+                                .IsRequired()
+                                .HasColumnType("varchar(20)");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("SurgeryRoomId");
+
+                            b1.ToTable("MaintenanceSlots", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("SurgeryRoomId");
+                        });
+
+                    b.Navigation("MaintenanceSlots");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

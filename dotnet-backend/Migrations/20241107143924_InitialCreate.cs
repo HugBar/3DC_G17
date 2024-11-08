@@ -184,6 +184,26 @@ namespace DDDNetCore.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "SurgeryRooms",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Type = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Capacity = table.Column<int>(type: "int", nullable: false),
+                    AssignedEquipment = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Status = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SurgeryRooms", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -333,6 +353,29 @@ namespace DDDNetCore.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "MaintenanceSlots",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    StartTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    EndTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    SurgeryRoomId = table.Column<string>(type: "varchar(20)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MaintenanceSlots", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MaintenanceSlots_SurgeryRooms_SurgeryRoomId",
+                        column: x => x.SurgeryRoomId,
+                        principalTable: "SurgeryRooms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -376,6 +419,11 @@ namespace DDDNetCore.Migrations
                 column: "StaffId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_MaintenanceSlots_SurgeryRoomId",
+                table: "MaintenanceSlots",
+                column: "SurgeryRoomId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OperationRequest_DoctorId",
                 table: "OperationRequests",
                 column: "DoctorId");
@@ -384,6 +432,12 @@ namespace DDDNetCore.Migrations
                 name: "IX_OperationRequest_PatientId",
                 table: "OperationRequests",
                 column: "PatientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SurgeryRooms_Id",
+                table: "SurgeryRooms",
+                column: "Id",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -408,6 +462,9 @@ namespace DDDNetCore.Migrations
                 name: "AvailabilitySlots");
 
             migrationBuilder.DropTable(
+                name: "MaintenanceSlots");
+
+            migrationBuilder.DropTable(
                 name: "OperationRequests");
 
             migrationBuilder.DropTable(
@@ -424,6 +481,9 @@ namespace DDDNetCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "Staffs");
+
+            migrationBuilder.DropTable(
+                name: "SurgeryRooms");
         }
     }
 }

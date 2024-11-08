@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import staffService from '../../api/staffService';
 import './StaffList.css';
 
-const StaffList = ({ onSelectStaff }) => {
+const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [staffList, setStaffList] = useState([]);
@@ -99,9 +99,15 @@ const StaffList = ({ onSelectStaff }) => {
     }
   };
 
+  const handleDeactivateClick = () => {
+    if (selectedStaff) {
+      onDeactivateStaff(selectedStaff.id);
+    }
+  };
+
   return (
     <div className="staff-list-container">
-      <h2>Select a Staff Member to Update</h2>
+      <h2>Select a Staff Member to Update or Deactivate</h2>
       
       <div className="filters-section">
         <div className="filter-group">
@@ -183,6 +189,9 @@ const StaffList = ({ onSelectStaff }) => {
             <div className="modal-actions">
               <button onClick={handleUpdateClick} className="update-button">
                 Update Staff
+              </button>
+              <button onClick={handleDeactivateClick} className="deactivate-button">
+                Deactivate Staff
               </button>
               <button onClick={handleCloseDetails} className="close-button">
                 Close

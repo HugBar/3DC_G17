@@ -39,8 +39,9 @@ const Login = () => {
       {errorMessage && <p className="login-error">{errorMessage}</p>}
       <form onSubmit={handleSubmit} className="login-form">
         <div className="form-group">
-          <label>Email:</label>
+          <label htmlFor="email">Email:</label>
           <input
+            id="email"
             type="email"
             name="email"
             value={credentials.email}
@@ -50,8 +51,9 @@ const Login = () => {
           />
         </div>
         <div className="form-group">
-          <label>Password:</label>
+          <label htmlFor="password">Password:</label>
           <input
+            id="password"
             type="password"
             name="password"
             value={credentials.password}

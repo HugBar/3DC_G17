@@ -6,9 +6,9 @@ const useFormValidation = () => {
 
   const validate = (values) => {
     const newErrors = {};
-    if (!values.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!values.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!values.email.trim()) {
+    if (!values.firstName?.trim()) newErrors.firstName = 'First name is required';
+    if (!values.lastName?.trim()) newErrors.lastName = 'Last name is required';
+    if (!values.email?.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(values.email)) {
       newErrors.email = 'Email is invalid';

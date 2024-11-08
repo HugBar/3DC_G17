@@ -65,7 +65,8 @@ const App = () => {
   const resetStaffAction = () => {
     setSelectedStaffAction(null);
     setSelectedStaffId(null);
-    setShowStaffActions(true); // Show the action bar again if needed
+    setShowStaffActions(true); 
+    navigate('/staff/filter');
   };
   const resetPatientAction = () => {
     setSelectedPatientAction(null);
@@ -108,6 +109,12 @@ const App = () => {
     setShowStaffActions(false); // Esconde as ações de staff
     setSelectedPatientAction(null);
     setSelectedStaffAction(null);
+  };
+
+  const handleDeactivateStaff = (staffId) => {
+    setSelectedStaffId(staffId);
+    setSelectedStaffAction('Deactivate Staff');
+    navigate(`/staff/deactivate/${staffId}`);
   };
 
   return (
@@ -171,15 +178,6 @@ const App = () => {
                 className={`action-button ${selectedStaffAction === 'Update Staff' ? 'active' : ''}`}
               >
                 View Staffs
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedStaffAction('Deactivate Staff');
-                  navigate('/staff/deactivate');
-                }}
-                className={`action-button ${selectedStaffAction === 'Deactivate Staff' ? 'active' : ''}`}
-              >
-                Deactivate Staff
               </button>
             </>
           )}
@@ -264,10 +262,13 @@ const App = () => {
     isAdmin ? <CreateStaff /> : <Navigate to="/" />
   } />
   <Route path="/staff/filter" element={
-    isAdmin ? <StaffList onSelectStaff={handleSelectStaff} /> : <Navigate to="/" />
+    isAdmin ? <StaffList onSelectStaff={handleSelectStaff} onDeactivateStaff={handleDeactivateStaff} /> : <Navigate to="/" />
   } />
   <Route path="/staff/update/:id" element={
     isAdmin ? <UpdateStaff staffId={selectedStaffId} onBack={resetStaffAction} /> : <Navigate to="/" />
+  } />
+  <Route path="/staff/deactivate/:id" element={
+    isAdmin ? <DeactivateStaff staffId={selectedStaffId} onBack={resetStaffAction} /> : <Navigate to="/" />
   } />
   
   {/* Operation Request Routes */}
@@ -299,8 +300,8 @@ const App = () => {
       )
     ) : <Navigate to="/" />
   } />
-  <Route path="/staff/deactivate" element={
-          isAdmin ? <DeactivateStaff onBack={resetStaffAction} /> : <Navigate to="/" />
+  <Route path="/staff/deactivate/:id" element={
+    isAdmin ? <DeactivateStaff staffId={selectedStaffId} onBack={resetStaffAction} /> : <Navigate to="/" />
   } />
   {/* Rotas para Pacientes */}
       <Route path="/patient/update" element={

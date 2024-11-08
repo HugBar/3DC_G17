@@ -85,18 +85,18 @@ const UpdateStaff = ({ staffId, onBack }) => {
       {errorMessage && <p className="error-message">{errorMessage}</p>}
       <form onSubmit={handleSubmit} className="staff-form">
         <div className="form-group">
-          <label>Email:</label>
-          <input type="email" name="email" value={staffData.email} onChange={handleChange} required />
+          <label htmlFor="email">Email:</label>
+          <input id="email" type="email" name="email" value={staffData.email} onChange={handleChange} required />
           {errors.email && <p className="error-message">{errors.email}</p>}
         </div>
         <div className="form-group">
-          <label>Phone Number:</label>
-          <input type="tel" name="phoneNumber" value={staffData.phoneNumber} onChange={handleChange} required />
+          <label htmlFor="phoneNumber">Phone Number:</label>
+          <input id="phoneNumber" type="tel" name="phoneNumber" value={staffData.phoneNumber} onChange={handleChange} required />
           {errors.phoneNumber && <p className="error-message">{errors.phoneNumber}</p>}
         </div>
         <div className="form-group">
-          <label>Specialization:</label>
-          <input type="text" name="specialization" value={staffData.specialization} onChange={handleChange} required />
+          <label htmlFor="specialization">Specialization:</label>
+          <input id="specialization" type="text" name="specialization" value={staffData.specialization} onChange={handleChange} required />
           {errors.specialization && <p className="error-message">{errors.specialization}</p>}
         </div>
 
@@ -105,8 +105,9 @@ const UpdateStaff = ({ staffId, onBack }) => {
           <div key={index} className="form-group slot-container">
             <div className="time-inputs">
               <div className="form-group">
-                <label>Start Time:</label>
+                <label htmlFor={`startTime-${index}`}>Start Time:</label>
                 <input
+                  id={`startTime-${index}`}
                   type="datetime-local"
                   name="startTime"
                   value={slot.startTime}
@@ -118,8 +119,9 @@ const UpdateStaff = ({ staffId, onBack }) => {
                 )}
               </div>
               <div className="form-group">
-                <label>End Time:</label>
+                <label htmlFor={`endTime-${index}`}>End Time:</label>
                 <input
+                  id={`endTime-${index}`}
                   type="datetime-local"
                   name="endTime"
                   value={slot.endTime}
@@ -146,11 +148,9 @@ const UpdateStaff = ({ staffId, onBack }) => {
         </div>
 
         <div className="button-group">
-          {/* Back Button */}
           <button type="button" onClick={onBack} className="back-button submit-button">
             Back
           </button>
-          {/* Update Button */}
           <button type="submit" className="submit-button">
             Update
           </button>
