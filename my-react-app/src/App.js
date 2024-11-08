@@ -139,15 +139,13 @@ const App = () => {
               )}
             </>
           )}
-          {isAuthenticated ? (
+          {isAuthenticated && (
             <button 
               onClick={handleLogoutAndReset} 
               className="nav-link logout-button"
             >
               Logout
             </button>
-          ) : (
-            <Link to="/login" className="nav-link">Login</Link>
           )}
         </nav>
       </header>
