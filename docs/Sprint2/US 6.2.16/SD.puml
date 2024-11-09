@@ -1,0 +1,55 @@
+@startuml Remove Operation Request UI Sequence Diagram
+
+actor Doctor
+participant "OperationRequest\nListComponent" as UI
+participant "DeleteConfirmation\nComponent" as DC
+participant "OperationRequest\nService" as ORS
+participant "Backend API" as API
+database "Database" as DB
+
+activate Doctor
+Doctor -> UI: Click delete button
+activate UI
+
+UI -> DC: Show confirmation dialog
+activate DC
+
+alt Doctor confirms deletion
+    Doctor -> DC: Confirm deletion
+    
+    DC -> ORS: deleteOperationRequest(id)
+    activate ORS
+    
+    ORS -> ORS: getAuthToken()
+    ORS -> ORS: checkDoctorRole(token)
+    
+    ORS -> API: DELETE /api/operation-request/delete-operation-request/{id}
+    activate API
+    
+    API -> DB: Delete operation request
+    DB --> API: Confirm deletion
+    
+    API --> ORS: Return success
+    deactivate API
+    
+    ORS --> DC: Return success
+    deactivate ORS
+    
+    DC --> UI: onConfirm()
+    deactivate DC
+    
+    UI -> UI: Remove request from list
+    UI --> Doctor: Show success notification
+
+else Doctor clicks back button
+    Doctor -> DC: Click back button
+    DC -> UI: onCancel()
+    deactivate DC
+    UI -> UI: Hide confirmation dialog
+    UI --> Doctor: Return to operation request list
+end
+
+deactivate UI
+deactivate Doctor
+
+@enduml

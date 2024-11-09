@@ -1,0 +1,37 @@
+@startuml Remove Operation Request UI Class Diagram
+
+class OperationRequestListComponent {
+  - requests: OperationRequest[]
+  + handleDelete(id: string): void
+  + render(): JSX.Element
+}
+
+class OperationRequestDeleteConfirmation {
+  - operationRequestId: string
+  - onConfirm: () => void
+  - onCancel: () => void
+  + handleConfirmDelete(): Promise<void>
+  + render(): JSX.Element
+}
+
+class OperationRequestService {
+  + deleteOperationRequest(id: string): Promise<void>
+  - getAuthToken(): string
+  - checkDoctorRole(token: string): void
+}
+
+interface OperationRequest {
+  + id: string
+  + patientId: string
+  + doctorId: string
+  + operationTypeId: string
+  + deadline: string
+  + priority: string
+}
+
+OperationRequestListComponent --> OperationRequestDeleteConfirmation: uses
+OperationRequestListComponent --> OperationRequestService: uses
+OperationRequestDeleteConfirmation --> OperationRequestService: uses
+OperationRequestListComponent --> "0..*" OperationRequest: contains
+
+@enduml

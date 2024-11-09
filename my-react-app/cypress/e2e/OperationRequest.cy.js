@@ -80,7 +80,7 @@ describe('Operation Request Form', () => {
       cy.get('input[name="doctorId"]').should('have.value', '');
       cy.get('input[name="operationTypeId"]').should('have.value', '');
     });
-  
+    
     it('should handle network errors gracefully', () => {
       cy.intercept('POST', `${baseUrl}/create-operation-request`, {
         statusCode: 500,

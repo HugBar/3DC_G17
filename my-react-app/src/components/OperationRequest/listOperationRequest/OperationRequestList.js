@@ -1,8 +1,8 @@
-// src/components/OperationRequestList/OperationRequestList.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import operationRequestService from '../../../api/operationRequestService';
 import './OperationRequestList.css';
+import { act } from 'react';
 
 const OperationRequestList = ({ onDeleteOperationRequest }) => {
   const navigate = useNavigate();
@@ -19,8 +19,8 @@ const OperationRequestList = ({ onDeleteOperationRequest }) => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const urlFilters = {
-      doctorId: searchParams.get('doctorId') || '',
-      patientId: searchParams.get('patientId') || '',
+      doctorLicenseNumber: searchParams.get('doctorLicenseNumber') || '',
+      patientMedicalNumber: searchParams.get('patientMedicalNumber') || '',
       priority: searchParams.get('priority') || ''
     };
     setFilters(urlFilters);
@@ -37,35 +37,41 @@ const OperationRequestList = ({ onDeleteOperationRequest }) => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    const newFilters = { ...filters, [name]: value };
+    const newFilters = { ...filters, [name]: value || '' }; // Ensure empty string instead of undefined
     setFilters(newFilters);
     updateURLWithFilters(newFilters);
   };
 
   const clearFilters = () => {
-    const emptyFilters = { doctorId: '', patientId: '', priority: '' };
+    const emptyFilters = { doctorLicenseNumber: '', patientMedicalNumber: '', priority: '' };
     setFilters(emptyFilters);
     navigate('/operationrequest/filter'); // Clears the URL parameters
   };
 
-  const fetchOperationRequests = useCallback(async () => {
+  const fetchOperationRequests = async (filters) => {
     try {
       const data = await operationRequestService.getAllOperationRequests(filters);
-      setOperationRequestList(data);
-      setErrorMessage('');
+      // Batch state updates
+      await act(async () => {
+        setOperationRequestList(data);
+        setErrorMessage('');
+      });
     } catch (error) {
-      if (error.response && error.response.status === 404) {
-        setOperationRequestList([]);
-        setErrorMessage('No operation requests found.');
-      } else {
-        setErrorMessage('Error fetching operation requests.');
-      }
+      await act(async () => {
+        if (error.response && error.response.status === 404) {
+          setOperationRequestList([]);
+          setErrorMessage('No operation requests found.');
+        } else {
+          setOperationRequestList([]);
+          setErrorMessage('Error fetching operation requests.');
+        }
+      });
     }
-  }, [filters]);
+  };
 
   useEffect(() => {
-    fetchOperationRequests();
-  }, [fetchOperationRequests]);
+    fetchOperationRequests(filters);
+  }, [fetchOperationRequests, filters]);
 
   const handleRequestSelect = (requestId) => {
     const request = operationRequestList.find(req => req.id === requestId);
@@ -147,8 +153,8 @@ const OperationRequestList = ({ onDeleteOperationRequest }) => {
             <p><strong>Deadline:</strong> {new Date(selectedRequest.deadline).toLocaleString()}</p>
             <p><strong>Status:</strong> {selectedRequest.isScheduled ? 'Scheduled' : 'Not Scheduled'}</p>
             <div className="modal-actions">
-            <button onClick={handleDeleteClick} className="delete-button">Delete </button>
-            <button onClick={handleCloseDetails} className="back-button">Back to List</button>
+              <button onClick={handleDeleteClick} className="delete-button">Delete</button>
+              <button onClick={handleCloseDetails} className="back-button">Back to List</button>
             </div>
           </div>
         </div>
