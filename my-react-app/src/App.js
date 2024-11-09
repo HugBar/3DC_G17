@@ -15,7 +15,8 @@ import logo from './assets/hospital.png';
 import './App.css';
 import PatientList from './components/Patient/patientList/PatientList';
 import DeactivatedStaffList from './components/Staff/DeactivatedStaffList/DeactivatedStaffList';
-import DeletePatient from './components/Patient/deletePatient/DeletePatient';import ProtectedRoute from './context/ProtectedRoute';
+import DeletePatient from './components/Patient/deletePatient/DeletePatient';
+import ProtectedRoute from './context/ProtectedRoute';
 
 
 const App = () => {
