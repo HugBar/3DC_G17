@@ -1,0 +1,67 @@
+@startuml namespace
+title "Class diagram US 6.2.3 - Patient Account Deletion"
+
+class DeleteAccount {
+    -navigate: useNavigate
+    -showTokenModal: boolean
+    -token: string
+    -error: string
+    -successMessage: string
+    -isDeleted: boolean
+    -userEmail: string
+    +handleDeleteClick(): void
+    +handleConfirmDeletion(): void
+    +render(): JSX
+}
+
+class App {
+    -navigate: useNavigate
+    -isAdmin: boolean
+    -isDoctor: boolean
+    -isPatient: boolean
+    -isAuthenticated: boolean
+    -showStaffActions: boolean
+    -showPatientActions: boolean
+    -selectedStaffAction: string
+    -selectedPatientAction: string
+    +handleHomeClick(): void
+    +handleLogoutAndReset(): void
+    +handlePatientClick(): void
+    +render(): JSX
+}
+
+class PatientService {
+    -API_URL: string
+    +getAuthToken(): string
+    +requestAccountDeletion(): Promise
+    +confirmAccountDeletion(token: string): Promise
+    +getPatientProfile(patientEmail): Promise
+    +updatePatientProfile(patientEmail, updateData): Promise
+    +getAllPatients(filters, page, pageSize): Promise
+    +getPatientById(patientId): Promise
+    +deletePatient(patientId): Promise
+}
+
+class DeleteAccountCSS {
+    <<interface>>
+    +delete-account-container: style
+    +delete-account-title: style
+    +warning-text: style
+    +delete-button: style
+    +modal: style
+    +modal-content: style
+    +modal-title: style
+    +modal-buttons: style
+    +token-form: style
+    +token-input: style
+    +success-text: style
+    +error-message: style
+    +success-message: style
+}
+
+App --> DeleteAccount : uses
+DeleteAccount --> PatientService : uses
+DeleteAccount --> DeleteAccountCSS : styles
+PatientService ..> API : communicates with
+
+@enduml

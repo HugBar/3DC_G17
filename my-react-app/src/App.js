@@ -17,6 +17,8 @@ import PatientList from './components/Patient/patientList/PatientList';
 import DeactivatedStaffList from './components/Staff/DeactivatedStaffList/DeactivatedStaffList';
 import DeletePatient from './components/Patient/deletePatient/DeletePatient';
 import ProtectedRoute from './context/ProtectedRoute';
+import DeleteAccount from './components/Patient/deleteAccount/DeleteAccount';
+
 
 
 const App = () => {
@@ -132,6 +134,7 @@ const App = () => {
 
 
 
+
   return (
     <div>
       <header className="app-header">
@@ -234,15 +237,26 @@ const App = () => {
       {showPatientActions && (
         <div className="patient-action-bar">
           {isPatient && (
-          <button
-            onClick={() => {
-              setSelectedPatientAction('Update Profile');
-              navigate('/patient/update');
-            }}
-            className={`action-button ${selectedPatientAction === 'Update Profile' ? 'active' : ''}`}
-          >
-            Update Profile
-          </button>
+            <>
+              <button
+                onClick={() => {
+                  setSelectedPatientAction('Update Profile');
+                  navigate('/patient/update');
+                }}
+                className={`action-button ${selectedPatientAction === 'Update Profile' ? 'active' : ''}`}
+              >
+                Update Profile
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedPatientAction('Delete Account');
+                  navigate('/patient/delete-account');
+                }}
+                className={`action-button ${selectedPatientAction === 'Delete Account' ? 'active' : ''}`}
+              >
+                Delete Account
+              </button>
+            </>
           )}
           {isAdmin && (
             <button
@@ -351,6 +365,14 @@ const App = () => {
   {
   <Route path="/patient/delete/:id" element={isAdmin ? (<DeletePatient patientId={selectedPatientId} onDelete={handleDeletePatient} />) : <Navigate to="/" />} />
   }
+  {
+  <Route path="/patient/delete-account" element={ isPatient ? (
+    <ProtectedRoute requiredRole="patient">
+      <DeleteAccount />
+    </ProtectedRoute>
+  ) : <Navigate to="/" />
+} />
+}
 </Routes>
 
     </div>

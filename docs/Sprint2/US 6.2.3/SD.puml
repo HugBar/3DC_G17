@@ -1,0 +1,57 @@
+@startuml namespace "SDUS 6.2.3"
+title "Sequence Diagram US 6.2.3 - Patient Account Deletion"
+
+actor Patient
+participant DeleteAccount
+participant PatientService
+participant API
+participant Database
+
+
+Patient->DeleteAccount: Clica em "Delete My Account"
+activate Patient
+activate DeleteAccount
+DeleteAccount->PatientService: requestAccountDeletion()
+activate PatientService
+PatientService->PatientService: getAuthToken()
+PatientService->API: POST /api/patient/account-deletion-request
+activate API
+API->Database: SELECT * FROM Patients WHERE Email = {email}
+activate Database
+Database-->API: Retorna dados do paciente
+API->Database: INSERT INTO DeletionTokens (Token, PatientId, ExpiryDate)
+Database-->API: Confirma inserção
+deactivate Database
+API-->PatientService: Retorna sucesso
+deactivate API
+PatientService-->DeleteAccount: Retorna sucesso
+deactivate PatientService
+DeleteAccount->DeleteAccount: setShowTokenModal(true)
+DeleteAccount-->Patient: Exibe modal para token
+deactivate DeleteAccount
+Patient->DeleteAccount: Insere token e confirma
+activate DeleteAccount
+DeleteAccount->DeleteAccount: handleConfirmDeletion()
+DeleteAccount->PatientService: confirmAccountDeletion(token)
+activate PatientService
+PatientService->PatientService: getAuthToken()
+PatientService->API: DELETE /api/patient/confirm-account-deletion
+activate API
+API->Database: SELECT * FROM DeletionTokens WHERE Token = {token}
+activate Database
+Database-->API: Retorna token
+API->Database: UPDATE Patients SET IsDeleted = true WHERE Id = {id}
+Database-->API: Confirma atualização
+deactivate Database
+API-->PatientService: Retorna sucesso
+deactivate API
+PatientService-->DeleteAccount: Retorna sucesso
+deactivate PatientService
+DeleteAccount->DeleteAccount: setIsDeleted(true)
+DeleteAccount->DeleteAccount: setSuccessMessage()
+DeleteAccount-->Patient: Exibe mensagem de sucesso
+DeleteAccount-->Patient: Redireciona para login após 3s
+
+deactivate DeleteAccount
+deactivate Patient
+@enduml

@@ -143,6 +143,36 @@ const patientService = {
       throw error;
     }
 
+  },
+  requestAccountDeletion: async () => {
+    const token = getAuthToken();
+    try {
+      const response = await axios.post(`${API_URL}/account-deletion-request`, null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error requesting account deletion:', error);
+      throw error;
+    }
+  },
+
+  confirmAccountDeletion: async (token) => {
+    const authToken = getAuthToken();
+    try {
+      const response = await axios.delete(`${API_URL}/confirm-account-deletion`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+        data: { token }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error confirming account deletion:', error);
+      throw error;
+    }
   }
 };
 
