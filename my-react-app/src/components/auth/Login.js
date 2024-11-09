@@ -21,6 +21,7 @@ const Login = () => {
     try {
       const response = await loginApi(credentials);
       if (response) {
+        setCredentials({ email: '', password: '' });
         login(response);
         navigate('/');
       }
