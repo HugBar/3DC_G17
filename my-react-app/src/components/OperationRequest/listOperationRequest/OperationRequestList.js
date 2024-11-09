@@ -147,7 +147,7 @@ const OperationRequestList = ({ onDeleteOperationRequest }) => {
             <p><strong>Deadline:</strong> {new Date(selectedRequest.deadline).toLocaleString()}</p>
             <p><strong>Status:</strong> {selectedRequest.isScheduled ? 'Scheduled' : 'Not Scheduled'}</p>
             <div className="modal-actions">
-            <button onClick={handleDeleteClick} className="delete-button">Delete Operation Request</button>
+            <button onClick={handleDeleteClick} className="delete-button">Delete </button>
             <button onClick={handleCloseDetails} className="back-button">Back to List</button>
             </div>
           </div>

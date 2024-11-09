@@ -48,24 +48,58 @@ const CreateOperationRequest = () => {
       {errorMessage && <p className="error-message">{errorMessage}</p>}
       <form onSubmit={handleSubmit} className="operation-request-form">
         <div className="form-group">
-          <label>Patient ID:</label>
-          <input type="text" name="patientId" value={operationData.patientId} onChange={handleChange} required />
+          <label htmlFor="patientId">Patient ID:</label>
+          <input
+            id="patientId"
+            type="text"
+            name="patientId"
+            value={operationData.patientId}
+            onChange={handleChange}
+            required
+          />
         </div>
         <div className="form-group">
-          <label>Doctor ID:</label>
-          <input type="text" name="doctorId" value={operationData.doctorId} onChange={handleChange} required />
+          <label htmlFor="doctorId">Doctor ID:</label>
+          <input
+            id="doctorId"
+            type="text"
+            name="doctorId"
+            value={operationData.doctorId}
+            onChange={handleChange}
+            required
+          />
         </div>
         <div className="form-group">
-          <label>Operation Type ID:</label>
-          <input type="text" name="operationTypeId" value={operationData.operationTypeId} onChange={handleChange} required />
+          <label htmlFor="operationTypeId">Operation Type ID:</label>
+          <input
+            id="operationTypeId"
+            type="text"
+            name="operationTypeId"
+            value={operationData.operationTypeId}
+            onChange={handleChange}
+            required
+          />
         </div>
         <div className="form-group">
-          <label>Deadline:</label>
-          <input type="datetime-local" name="deadline" value={operationData.deadline} onChange={handleChange} required />
+          <label htmlFor="deadline">Deadline:</label>
+          <input
+            id="deadline"
+            type="datetime-local"
+            name="deadline"
+            value={operationData.deadline}
+            onChange={handleChange}
+            required
+          />
         </div>
         <div className="form-group">
-          <label>Priority:</label>
-          <select name="priority" value={operationData.priority} onChange={handleChange} required>
+          <label htmlFor="priority">Priority:</label>
+          <select
+            id="priority"
+            name="priority"
+            value={operationData.priority}
+            onChange={handleChange}
+            required
+          >
             <option value="elective">Elective</option>
             <option value="urgent">Urgent</option>
             <option value="emergency">Emergency</option>

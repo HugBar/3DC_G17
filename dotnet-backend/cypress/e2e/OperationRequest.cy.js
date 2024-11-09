@@ -24,9 +24,9 @@ describe('Operation Request API E2E Tests with Authentication', () => {
         Authorization: authToken  // Using the token obtained from the login
       },
       body: {
-        patientId: '52b1284e-51e3-495b-91e3-43bfc9494a1f',  // Example Patient ID
-        doctorId: '1a400566-e29a-4153-8a15-143c88aeb78a',  // Example Doctor ID
-        operationTypeId: '95d7f561-a435-4c64-aacf-e7281e5605f2',  // Example Operation Type ID
+        patientId: 'b99fd2b1-20d1-4aeb-879e-e2d5f4debeda',  // Example Patient ID
+        doctorId: '0c40019b-1e02-42d3-9da8-0138c9825c17',  // Example Doctor ID
+        operationTypeId: 'c86233e0-82ca-499b-af0b-854ed601fe5a',  // Example Operation Type ID
         deadline: '2024-12-01T00:00:00Z',  // Sample future deadline
         priority: 'urgent'  // Valid priority value
       }

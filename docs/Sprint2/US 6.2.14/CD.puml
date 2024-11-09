@@ -1,0 +1,51 @@
+@startuml Create Operation Request UI Frontend Class Diagram
+
+' React Components
+class CreateOperationRequest {
+  - operationData: OperationData
+  - successMessage: string
+  - errorMessage: string
+  + handleChange(e: Event): void
+  + handleSubmit(e: Event): void
+  + clearForm(): void
+  + render(): JSX.Element
+}
+
+class OperationRequestService {
+  + createOperationRequest(operationData: OperationData): Promise<any>
+  + getAllOperationRequests(filters: any): Promise<any>
+  + deleteOperationRequest(id: string): Promise<void>
+  + getOperationRequestById(id: string): Promise<any>
+  - getAuthToken(): string
+  - checkDoctorRole(token: string): void
+}
+
+class FormValidation {
+  + errors: ValidationErrors
+  + validate(data: any): boolean
+}
+
+' Data Types
+class OperationData {
+  + patientId: string
+  + doctorId: string
+  + operationTypeId: string
+  + deadline: string
+  + priority: string
+}
+
+class ValidationErrors {
+  + patientId?: string
+  + doctorId?: string
+  + operationTypeId?: string
+  + deadline?: string
+  + priority?: string
+}
+
+' Relationships
+CreateOperationRequest --> OperationRequestService: uses
+CreateOperationRequest --> FormValidation: uses
+CreateOperationRequest --> OperationData: manages
+FormValidation --> ValidationErrors: produces
+
+@enduml
