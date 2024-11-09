@@ -1,0 +1,66 @@
+@startuml namespace "SD US 6.2.12"
+title "SequenceDiagram 6.2.12 - Staff Deactivation"
+
+actor Admin
+participant StaffList
+participant DeactivateStaff
+participant StaffService
+participant API
+participant Database
+
+activate Admin
+Admin->>StaffList: Seleciona staff na lista
+activate StaffList
+StaffList->>StaffList: handleStaffSelect(staffId)
+StaffList->>StaffService: getStaffById(staffId)
+activate StaffService
+StaffService->>API: GET /api/staff/get-staff-profile/{id}
+activate API
+API->>Database: SELECT * FROM Staff WHERE Id = {id}  // Linha de consulta à base de dados
+activate Database
+Database->>API: Retorna dados do staff
+deactivate Database
+API-->>StaffService: Retorna dados do staff
+deactivate API
+StaffService-->>StaffList: Retorna detalhes do staff
+deactivate StaffService
+StaffList-->>Admin: Exibe modal com detalhes
+deactivate StaffList
+Admin->>StaffList: Clica em "Deactivate Staff"
+activate StaffList
+StaffList->>DeactivateStaff: Navigate to /staff/deactivate/{id}
+deactivate StaffList
+activate DeactivateStaff
+DeactivateStaff-->Admin: Exibe modal de confirmação
+deactivate DeactivateStaff
+
+alt Admin confirma desativação
+    Admin->>DeactivateStaff: Clica em "Deactivate"
+    activate DeactivateStaff
+    DeactivateStaff->>StaffService: deactivateStaff(staffId)
+    activate StaffService
+    StaffService->>StaffService: getAuthToken()
+    StaffService->>StaffService: checkAdminRole(token)
+    StaffService->>API: PATCH /api/staff/{id}/deactivate
+    activate API
+    API->>Database: UPDATE Staff SET IsDeactivated = true WHERE Id = {id}  // Linha de atualização na base de dados
+    deactivate Database
+    API-->>StaffService: Retorna sucesso
+    deactivate API
+    StaffService-->>DeactivateStaff: Retorna sucesso
+    deactivate StaffService
+    DeactivateStaff->>DeactivateStaff: setSuccessMessage()
+    DeactivateStaff->>DeactivateStaff: Exibe mensagem de sucesso
+    DeactivateStaff->>StaffList: Navigate to /staff/filter após 3 segundos
+else Admin cancela desativação
+    Admin->>DeactivateStaff: Clica em "Back"
+    DeactivateStaff->>StaffList: Navigate to /staff/filter
+    deactivate DeactivateStaff
+end
+
+activate StaffList
+StaffList->>StaffList: Atualiza lista de staff
+StaffList-->>Admin: Exibe lista atualizada
+deactivate StaffList
+deactivate Admin
+@enduml

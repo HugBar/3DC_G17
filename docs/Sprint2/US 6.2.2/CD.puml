@@ -69,5 +69,5 @@ class UpdatePatient {
     UpdatePatient ..> PatientData : implements
     App --> UpdatePatient : routes to
     PatientService ..> PatientData : handles
-@endmul
+    
 @enduml

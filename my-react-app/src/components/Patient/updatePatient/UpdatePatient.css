@@ -21,6 +21,7 @@
 .form-group {
   margin-bottom: 15px;
   width: 100%;
+  position: relative;
 }
 
 .form-group label {
@@ -37,8 +38,61 @@
   border-radius: 4px;
 }
 
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #364953;
+  box-shadow: 0 0 0 2px rgba(54, 73, 83, 0.2);
+}
+
+.field-error-message,
+.success-message,
+.error-message {
+  font-size: 14px;
+  margin-top: 5px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  animation: fadeInOut 3s ease-in-out forwards;
+  width: 100%;
+}
+
+.field-error-message {
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+
+.field-error-message::before {
+  content: "⚠️";
+  margin-right: 8px;
+}
+
+.success-message {
+  color: #28a745;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+}
+
+.success-message::before {
+  content: "✅";
+  margin-right: 8px;
+}
+
+.error-message {
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+
+.error-message::before {
+  content: "⚠️";
+  margin-right: 8px;
+}
+
 .update-button {
-  background-color: #364953; /* Cor de fundo do botão de logout */
+  background-color: #364953;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -49,13 +103,13 @@
 }
 
 .update-button:hover {
-  background-color: #151c20; /* Cor mais escura ao passar o mouse */
+  background-color: #151c20;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .update-button:active {
-  transform: scale(0.95); /* Efeito de "pressionado" */
+  transform: scale(0.95);
 }
 
 .modal {
@@ -68,6 +122,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
 
 .modal-content {
@@ -100,30 +155,38 @@
   background-color: #0056b3;
 }
 
-.success-message,
-.error-message {
-  font-weight: bold;
-  margin-top: 20px;
-  text-align: center;
-  animation: fadeOut 5s forwards; 
-}
-
-.success-message {
-  color: green;
-}
-
-.error-message {
-  color: red;
-}
-
-@keyframes fadeOut {
+@keyframes fadeInOut {
   0% {
-    opacity: 1;
+    opacity: 0;
+    transform: translateY(-10px);
   }
-  80% {
+  10% {
     opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(0);
   }
   100% {
     opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 768px) {
+  .update-profile-container {
+    margin: 20px auto;
+    padding: 15px;
+  }
+
+  .form-group {
+    margin-bottom: 10px;
+  }
+
+  .success-message,
+  .error-message,
+  .field-error-message {
+    width: calc(100% - 20px);
   }
 }
