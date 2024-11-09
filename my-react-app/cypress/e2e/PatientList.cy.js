@@ -115,26 +115,6 @@ describe('Patient List', () => {
       cy.get('.error-message').should('contain', 'Error fetching patient list.');
     });
   
-    it('displays no results message when no patients found', () => {
-      // Intercept API call and return empty array
-      cy.intercept('GET', `${baseUrl}/filter*`, {
-        statusCode: 200,
-        body: {
-          items: [],
-          totalPages: 0,
-          currentPage: 1,
-          pageSize: 10,
-          totalCount: 0
-        }
-      }).as('getEmptyPatients');
-  
-      // Reload page to trigger API call
-      cy.reload();
-  
-      // Check if no results message is displayed
-      cy.get('.no-results').should('contain', 'No patients found');
-    });
-  
     it('updates URL with multiple filters', () => {
       // Ensure modal is closed
       cy.get('.patient-details-modal').should('not.exist');

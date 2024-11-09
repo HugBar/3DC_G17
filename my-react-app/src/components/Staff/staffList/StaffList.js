@@ -9,6 +9,9 @@ const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
   const location = useLocation();
   const [staffList, setStaffList] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 2; // Mesmo tamanho usado no PatientList
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [filters, setFilters] = useState({
     firstName: '',
@@ -17,9 +20,11 @@ const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
     specialization: ''
   });
 
-  // Sincronizar URL com filtros quando o componente monta
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
+    const page = parseInt(searchParams.get('page')) || 1;
+    setCurrentPage(page);
+    
     const urlFilters = {
       firstName: searchParams.get('firstName') || '',
       lastName: searchParams.get('lastName') || '',
@@ -29,14 +34,13 @@ const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
     setFilters(urlFilters);
   }, [location.search]);
 
-  const updateURLWithFilters = useCallback((currentFilters) => {
+  const updateURLWithFilters = useCallback((currentFilters, page) => {
     const params = new URLSearchParams();
     Object.entries(currentFilters).forEach(([key, value]) => {
       if (value) params.append(key, value);
     });
-    const newURL = `/staff/filter?${params.toString()}`;
-    // Usar replace para não criar múltiplas entradas no histórico
-    navigate(newURL, { replace: true });
+    params.append('page', page.toString());
+    navigate(`/staff/filter?${params.toString()}`, { replace: true });
   }, [navigate]);
 
   const handleFilterChange = (e) => {
@@ -46,25 +50,31 @@ const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
       [name]: value
     };
     setFilters(newFilters);
-    updateURLWithFilters(newFilters);
+    setCurrentPage(1); // Reset para primeira página ao filtrar
+    updateURLWithFilters(newFilters, 1);
   };
 
   const clearFilters = () => {
-    const emptyFilters = {
+    setFilters({
       firstName: '',
       lastName: '',
       email: '',
-      specialization: '',
-      phoneNumber: ''
-    };
-    setFilters(emptyFilters);
-    navigate('/staff/filter'); // Limpa os parâmetros da URL
+      specialization: ''
+    });
+    setCurrentPage(1);
+    navigate('/staff/filter');
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    updateURLWithFilters(filters, newPage);
   };
 
   const fetchStaffList = useCallback(async () => {
     try {
-      const data = await staffService.getAllStaff(filters);
-      setStaffList(data);
+      const response = await staffService.getAllStaff(filters, currentPage, pageSize);
+      setStaffList(response.items);
+      setTotalPages(response.totalPages);
       setErrorMessage('');
     } catch (error) {
       if (error.response && error.response.status === 404) {
@@ -74,7 +84,7 @@ const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
         setErrorMessage('Error fetching staff list.');
       }
     }
-  }, [filters]);
+  }, [filters, currentPage, pageSize]);
 
   useEffect(() => {
     fetchStaffList();
@@ -143,6 +153,7 @@ const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
         <button onClick={clearFilters} className="clear-filters-button">
           Clear Filters
         </button>
+
       </div>
 
       {errorMessage && <p className="error-message">{errorMessage}</p>}
@@ -163,6 +174,28 @@ const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
         {staffList.length === 0 && !errorMessage && (
           <p className="no-results">No staff members found</p>
         )}
+      </div>
+
+      <div className="pagination-controls">
+        <button 
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage <= 1}
+          className="pagination-button"
+        >
+          Previous
+        </button>
+        
+        <span className="page-info">
+          Page {currentPage} of {totalPages}
+        </span>
+        
+        <button 
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages}
+          className="pagination-button"
+        >
+          Next
+        </button>
       </div>
 
       {selectedStaff && (
