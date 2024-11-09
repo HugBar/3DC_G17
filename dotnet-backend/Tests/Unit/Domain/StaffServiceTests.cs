@@ -234,16 +234,16 @@ namespace DDDSample1.Tests.Unit.Domain
 
             _mockStaffRepo.Setup(repo => repo.GetFilteredStaffAsync(It.Is<StaffFilterDto>(f =>
                 f.FirstName == filter.FirstName
-            ))).ReturnsAsync(staffs.Where(s => s.FirstName == filter.FirstName).ToList());
+            ), 1, 10)).ReturnsAsync((staffs.Where(s => s.FirstName == filter.FirstName).ToList(), staffs.Count));
 
             // Act
-            var result = await _staffService.getStaffFilteredAsync(filter);
+            var result = await _staffService.getStaffFilteredAsync(filter, 1, 10);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Single(result);
-            Assert.All(result, s => Assert.Equal("John", s.FirstName));
-            _mockStaffRepo.Verify(repo => repo.GetFilteredStaffAsync(It.IsAny<StaffFilterDto>()), Times.Once);
+            Assert.Single(result.Items);
+            Assert.All(result.Items, s => Assert.Equal("John", s.FirstName));
+            _mockStaffRepo.Verify(repo => repo.GetFilteredStaffAsync(It.IsAny<StaffFilterDto>(), 1, 10), Times.Once);
         }
     }
 }

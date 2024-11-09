@@ -235,11 +235,11 @@ namespace DDDSample1.Domain.StaffData
             await _emailService.SendEmailAsync(staff.Email, subject, body);
         }
 
-        public async Task<IEnumerable<StaffDto>> getStaffFilteredAsync(StaffFilterDto filter)
+        public async Task<PagedResult<StaffDto>> getStaffFilteredAsync(StaffFilterDto filter, int pageNumber, int pageSize)
         {
-            var staffs = await _staffRepo.GetFilteredStaffAsync(filter);
+            var (staffs, totalCount) = await _staffRepo.GetFilteredStaffAsync(filter, pageNumber, pageSize);
 
-            return staffs.Select(s => new StaffDto(
+            var dtos = staffs.Select(s => new StaffDto(
                 s.Id,
                 s.FirstName,
                 s.LastName,
@@ -249,7 +249,15 @@ namespace DDDSample1.Domain.StaffData
                 s.LicenseNumber,
                 s.Active,
                 s.AvailabilitySlots
-            )).ToList();
+                )).ToList();
+
+            return new PagedResult<StaffDto>
+            {
+                Items = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+            };
         }
 
         public async Task<bool> DeleteAsync(string id)

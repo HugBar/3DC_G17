@@ -10,7 +10,7 @@ const PatientList = ({onSelectPatient}) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const pageSize = 1;
+  const pageSize = 2;
   
   const [filters, setFilters] = useState({
     firstName: '',
@@ -156,7 +156,7 @@ const PatientList = ({onSelectPatient}) => {
 
       {errorMessage && <div className="error-message">{errorMessage}</div>}
 
-      {patientList && patientList.length > 0 ? (
+      {patientList && patientList.length > 0 && (
         <div className="patient-grid">
           {patientList.map((patient) => (
             <div 
@@ -171,10 +171,7 @@ const PatientList = ({onSelectPatient}) => {
               <p><strong>Date of Birth:</strong> {patient?.dateOfBirth || 'Not available'}</p>
             </div>
           ))}
-        </div>
-      ) : (
-        <div className="no-results">
-          {errorMessage || 'No patients found'}
+          
         </div>
       )}
 

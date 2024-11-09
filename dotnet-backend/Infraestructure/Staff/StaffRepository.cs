@@ -87,52 +87,39 @@ namespace DDDSample1.Infrastructure.Staffs
                                  .ToListAsync();
         }
 
-        public async Task<List<Staff>> GetFilteredStaffAsync(StaffFilterDto filter)
+         public async Task<(List<Staff> Items, int TotalCount)> GetFilteredStaffAsync(
+        StaffFilterDto filters,
+        int pageNumber,
+        int pageSize)
         {
-            var staffs = _context.Staffs.AsQueryable();
+        var query = _context.Staffs
+            .AsQueryable();
 
-            if (!string.IsNullOrEmpty(filter.FirstName))
-            {
-                staffs = staffs.Where(s => s.FirstName.StartsWith(filter.FirstName));
-            }
+        // Aplicar filtros
+        if (!string.IsNullOrWhiteSpace(filters.FirstName))
+            query = query.Where(s => s.FirstName.Contains(filters.FirstName));
+        
+        if (!string.IsNullOrWhiteSpace(filters.LastName))
+            query = query.Where(s => s.LastName.Contains(filters.LastName));
+        
+        if (!string.IsNullOrWhiteSpace(filters.Email))
+            query = query.Where(s => s.Email.Contains(filters.Email));
+        
+        if (!string.IsNullOrWhiteSpace(filters.Specialization))
+            query = query.Where(s => s.Specialization.Contains(filters.Specialization));
 
-            if (!string.IsNullOrEmpty(filter.LastName))
-            {
-                staffs = staffs.Where(s => s.LastName.StartsWith(filter.LastName));
-            }
+        // Obter contagem total antes da paginação
+        var totalCount = await query.CountAsync();
 
-            if (!string.IsNullOrEmpty(filter.Email))
-            {
-                staffs = staffs.Where(s => s.Email.StartsWith(filter.Email));
-            }
+        // Aplicar paginação
+        var items = await query
+            .OrderBy(s => s.FirstName) // Ordenação padrão
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
 
-            if (filter.PhoneNumber != null)
-            {
-                throw new ArgumentException("Filtering by PhoneNumber is not allowed.");
-            }
-
-            if (!string.IsNullOrEmpty(filter.Specialization))
-            {
-                staffs = staffs.Where(s => s.Specialization.StartsWith(filter.Specialization));
-            }
-
-            if (!string.IsNullOrEmpty(filter.LicenseNumber))
-            {
-                staffs = staffs.Where(s => s.LicenseNumber.StartsWith(filter.LicenseNumber));
-            }
-
-            if (filter.Active)
-            {
-                throw new ArgumentException("Filtering by Active is not allowed.");
-            }
-
-            if (filter.AvailabilitySlots != null)
-            {
-                throw new ArgumentException("Filtering by AvailabilitySlots is not allowed.");
-            }
-
-            return await staffs.Where(s => s.Active).ToListAsync();
-        }
+        return (items, totalCount);
+    }
 
 
 
