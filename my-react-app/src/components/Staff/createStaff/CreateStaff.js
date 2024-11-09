@@ -82,28 +82,63 @@ const CreateStaff = () => {
       {errorMessage && <p className="error-message">{errorMessage}</p>}
       <form onSubmit={handleSubmit} className="staff-form">
         <div className="form-group">
-          <label>First Name:</label>
-          <input type="text" name="firstName" value={staffData.firstName} onChange={handleChange} required />
+          <label htmlFor="firstName">First Name:</label>
+          <input
+            id="firstName"
+            name="firstName"
+            type="text"
+            value={staffData.firstName}
+            onChange={handleChange}
+            required
+          />
           {errors.firstName && <p className="error-message">{errors.firstName}</p>}
         </div>
         <div className="form-group">
-          <label>Last Name:</label>
-          <input type="text" name="lastName" value={staffData.lastName} onChange={handleChange} required />
+          <label htmlFor="lastName">Last Name:</label>
+          <input
+            id="lastName"
+            name="lastName"
+            type="text"
+            value={staffData.lastName}
+            onChange={handleChange}
+            required
+          />
           {errors.lastName && <p className="error-message">{errors.lastName}</p>}
         </div>
         <div className="form-group">
-          <label>Email:</label>
-          <input type="email" name="email" value={staffData.email} onChange={handleChange} required />
+          <label htmlFor="email">Email:</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={staffData.email}
+            onChange={handleChange}
+            required
+          />
           {errors.email && <p className="error-message">{errors.email}</p>}
         </div>
         <div className="form-group">
-          <label>Phone Number:</label>
-          <input type="tel" name="phoneNumber" value={staffData.phoneNumber} onChange={handleChange} required />
+          <label htmlFor="phoneNumber">Phone Number:</label>
+          <input
+            id="phoneNumber"
+            name="phoneNumber"
+            type="tel"
+            value={staffData.phoneNumber}
+            onChange={handleChange}
+            required
+          />
           {errors.phoneNumber && <p className="error-message">{errors.phoneNumber}</p>}
         </div>
         <div className="form-group">
-          <label>Specialization:</label>
-          <input type="text" name="specialization" value={staffData.specialization} onChange={handleChange} required />
+          <label htmlFor="specialization">Specialization:</label>
+          <input
+            id="specialization"
+            name="specialization"
+            type="text"
+            value={staffData.specialization}
+            onChange={handleChange}
+            required
+          />
           {errors.specialization && <p className="error-message">{errors.specialization}</p>}
         </div>
         
@@ -112,10 +147,11 @@ const CreateStaff = () => {
   <div key={index} className="form-group slot-container">
     <div className="time-inputs">
       <div className="form-group">
-        <label>Start Time:</label>
+        <label htmlFor={`startTime-${index}`}>Start Time:</label>
         <input
-          type="datetime-local"
+          id={`startTime-${index}`}
           name="startTime"
+          type="datetime-local"
           value={slot.startTime}
           onChange={(e) => handleSlotChange(index, e)}
           required
@@ -125,10 +161,11 @@ const CreateStaff = () => {
         )}
       </div>
       <div className="form-group">
-        <label>End Time:</label>
+        <label htmlFor={`endTime-${index}`}>End Time:</label>
         <input
-          type="datetime-local"
+          id={`endTime-${index}`}
           name="endTime"
+          type="datetime-local"
           value={slot.endTime}
           onChange={(e) => handleSlotChange(index, e)}
           required

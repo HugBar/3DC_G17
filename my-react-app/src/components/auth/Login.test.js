@@ -38,7 +38,7 @@ describe('Login Component', () => {
   });
 
   test('shows error message on invalid login attempt', async () => {
-    const consoleErrorMock = jest.spyOn(console, 'error').mockImplementation(() => {}); // Mock console.error
+    const consoleErrorMock = jest.spyOn(console, 'error').mockImplementation(() => {});
     loginApi.mockRejectedValue(new Error('Invalid credentials'));
 
     render(
@@ -56,10 +56,10 @@ describe('Login Component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /login/i }));
 
-    const errorMessage = await screen.findByText(/invalid email or password/i);
+    const errorMessage = await screen.findByText('Error logging in.');
     expect(errorMessage).toBeInTheDocument();
 
-    consoleErrorMock.mockRestore(); 
+    consoleErrorMock.mockRestore();
   });
 
   test('navigates to home on successful login', async () => {

@@ -1,0 +1,55 @@
+@startuml Update Staff UI Frontend Class Diagram
+
+' React Components
+class UpdateStaff {
+  - staffData: StaffData
+  - successMessage: string
+  - errorMessage: string
+  + handleChange(e: Event): void
+  + handleSlotChange(index: number, e: Event): void
+  + addSlot(): void
+  + removeSlot(index: number): void
+  + handleSubmit(e: Event): void
+  + render(): JSX.Element
+}
+
+class StaffService {
+  + getStaffById(staffId: string): Promise<StaffDto>
+  + updateStaff(staffId: string, updateData: UpdateStaffDto): Promise<StaffDto>
+  - getAuthToken(): string
+  - checkAdminRole(token: string): void
+}
+
+class FormValidation {
+  + errors: ValidationErrors
+  + validate(data: any): boolean
+}
+
+' Data Types
+class StaffData {
+  + email: string
+  + phoneNumber: string
+  + specialization: string
+  + availabilitySlots: AvailabilitySlot[]
+}
+
+class AvailabilitySlot {
+  + startTime: string
+  + endTime: string
+}
+
+class ValidationErrors {
+  + email?: string
+  + phoneNumber?: string
+  + specialization?: string
+  + availabilitySlots?: {[key: string]: string}
+}
+
+' Relationships
+UpdateStaff --> StaffService: uses
+UpdateStaff --> FormValidation: uses
+UpdateStaff --> StaffData: manages
+StaffData --> AvailabilitySlot: contains
+FormValidation --> ValidationErrors: produces
+
+@enduml

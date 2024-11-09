@@ -5,7 +5,7 @@ import StaffList from './StaffList';
 import staffService from '../../../api/staffService';
 import userEvent from '@testing-library/user-event';
 
-jest.mock('../../api/staffService', () => ({
+jest.mock('../../../api/staffService', () => ({
   __esModule: true,
   default: {
     getAllStaff: jest.fn(),

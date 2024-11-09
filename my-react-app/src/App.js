@@ -54,11 +54,6 @@ const App = () => {
     navigate('/patient/update');
   };*/
 
-  const handleSelectOperationRequestForDeletion = (requestId) => {
-    setSelectedOperationRequestId(requestId);
-    setSelectedOperationRequest('Delete Operation Requests');
-  };
-
   const resetOperationRequestAction = () => {
     setSelectedOperationRequestId(null);
     setSelectedOperationRequest(null);

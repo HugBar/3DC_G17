@@ -25,11 +25,8 @@ const Login = () => {
         navigate('/');
       }
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        setErrorMessage('Invalid email or password.');
-      } else {
-        console.error('Login error:', error);
-      }
+      setErrorMessage('Error logging in.');
+      console.error('Login error:', error);
     }
   };
 

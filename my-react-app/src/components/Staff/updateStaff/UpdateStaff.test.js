@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import UpdateStaff from './UpdateStaff';
-import staffService from '../../api/staffService';
+import staffService from '../../../api/staffService';
 
-jest.mock('../../api/staffService', () => ({
+jest.mock('../../../api/staffService', () => ({
   __esModule: true,
   default: {
     getStaffById: jest.fn(),

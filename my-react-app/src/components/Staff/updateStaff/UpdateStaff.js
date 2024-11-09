@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import staffService from '../../../api/staffService';
 import useFormValidation from '../../../hooks/useFormValidation';
 import './UpdateStaff.css';
 
-const UpdateStaff = ({ staffId, onBack }) => {
+const UpdateStaff = ({ onBack }) => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+
   const [staffData, setStaffData] = useState({
     email: '',
     phoneNumber: '',
@@ -18,16 +22,31 @@ const UpdateStaff = ({ staffId, onBack }) => {
   useEffect(() => {
     const fetchStaffData = async () => {
       try {
-        const data = await staffService.getStaffById(staffId);
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+
+        if (!id) {
+          setErrorMessage('Staff ID is required');
+          return;
+        }
+
+        const data = await staffService.getStaffById(id);
         setStaffData(data);
       } catch (error) {
         console.error('Error fetching staff data:', error);
-        setErrorMessage('Error fetching staff data.');
+        if (error.response?.status === 401) {
+          navigate('/login');
+        } else {
+          setErrorMessage('Error fetching staff data. Please try again later.');
+        }
       }
     };
 
     fetchStaffData();
-  }, [staffId]);
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,7 +85,7 @@ const UpdateStaff = ({ staffId, onBack }) => {
     e.preventDefault();
     if (validate(staffData)) {
       try {
-        await staffService.updateStaff(staffId, staffData);
+        await staffService.updateStaff(id, staffData);
         setSuccessMessage('Staff updated successfully!');
         setErrorMessage('');
       } catch (error) {
