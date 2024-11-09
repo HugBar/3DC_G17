@@ -15,6 +15,7 @@ import logo from './assets/hospital.png';
 import './App.css';
 import PatientList from './components/Patient/patientList/PatientList';
 import DeactivatedStaffList from './components/Staff/DeactivatedStaffList/DeactivatedStaffList';
+import ProtectedRoute from './context/ProtectedRoute';
 
 
 const App = () => {
@@ -255,6 +256,7 @@ const App = () => {
       )}
 
 <Routes>
+  {/* Public Routes */}
   <Route path="/" element={
     <div className="main-content">
       <h1 className="welcome-title">Welcome to<br/>Hospital Management</h1>
@@ -268,60 +270,78 @@ const App = () => {
   } />
   <Route path="/login" element={<Login />} />
   
-  {/* Staff Routes */}
+  {/* Admin Routes */}
   <Route path="/staff/create" element={
-    isAdmin ? <CreateStaff /> : <Navigate to="/" />
+    <ProtectedRoute requiredRole="admin">
+      <CreateStaff />
+    </ProtectedRoute>
   } />
   <Route path="/staff/filter" element={
-    isAdmin ? <StaffList onSelectStaff={handleSelectStaff} onDeactivateStaff={handleDeactivateStaff} /> : <Navigate to="/" />
+    <ProtectedRoute requiredRole="admin">
+      <StaffList onSelectStaff={handleSelectStaff} onDeactivateStaff={handleDeactivateStaff} />
+    </ProtectedRoute>
   } />
   <Route path="/staff/update/:id" element={
-    isAdmin ? <UpdateStaff staffId={selectedStaffId} onBack={resetStaffAction} /> : <Navigate to="/" />
+    <ProtectedRoute requiredRole="admin">
+      <UpdateStaff staffId={selectedStaffId} onBack={resetStaffAction} />
+    </ProtectedRoute>
   } />
   <Route path="/staff/deactivate/:id" element={
-    isAdmin ? <DeactivateStaff staffId={selectedStaffId} onBack={resetStaffAction} /> : <Navigate to="/" />
+    <ProtectedRoute requiredRole="admin">
+      <DeactivateStaff staffId={selectedStaffId} onBack={resetStaffAction} />
+    </ProtectedRoute>
+  } />
+  <Route path="/staff/deactivated-staffs" element={
+    <ProtectedRoute requiredRole="admin">
+      <DeactivatedStaffList onSelectStaff={handleSelectStaff} onDeactivateStaff={handleDeactivateStaff} />
+    </ProtectedRoute>
+  } />
+  <Route path="/patient/list" element={
+    <ProtectedRoute requiredRole="admin">
+      <PatientList onSelectPatient={handleSelectPatientFromList}/>
+    </ProtectedRoute>
   } />
   
-  {/* Operation Request Routes */}
+  {/* Doctor Routes */}
   <Route path="/operation/request" element={
-    isDoctor ? <CreateOperationRequest /> : <Navigate to="/" />
+    <ProtectedRoute requiredRole="doctor">
+      <CreateOperationRequest />
+    </ProtectedRoute>
   } />
   <Route path="/operationrequest/filter" element={
-    isDoctor ? (
-      <OperationRequestList onSelectOperationRequest={handleSelectOperationRequestForDetails} onDeleteOperationRequest={handleDeleteOperationRequest}  />
-    ) : <Navigate to="/" />
+    <ProtectedRoute requiredRole="doctor">
+      <OperationRequestList 
+        onSelectOperationRequest={handleSelectOperationRequestForDetails} 
+        onDeleteOperationRequest={handleDeleteOperationRequest} 
+      />
+    </ProtectedRoute>
   } />
   <Route path="/operation/delete/:id" element={
-  isDoctor ? (
-    selectedOperationRequestId ? (
+    <ProtectedRoute requiredRole="doctor">
       <OperationRequestDeleteConfirmation
         operationRequestId={selectedOperationRequestId}
         onConfirm={resetOperationRequestAction}
         onCancel={resetOperationRequestAction}
       />
-    ) : (
-      <OperationRequestList onSelectOperationRequest={handleSelectOperationRequestForDeletion} />
-    )
-  ) : <Navigate to="/" />
-} />
-  <Route path="/staff/deactivate/:id" element={
-    isAdmin ? <DeactivateStaff staffId={selectedStaffId} onBack={resetStaffAction} /> : <Navigate to="/" />
+    </ProtectedRoute>
   } />
-  <Route path="/staff/deactivated-staffs" element={
-    isAdmin ? <DeactivatedStaffList onSelectStaff={handleSelectStaff} onDeactivateStaff={handleDeactivateStaff} /> : <Navigate to="/" />
+
+  {/* Patient Routes */}
+  <Route path="/patient/update" element={
+    <ProtectedRoute requiredRole="patient">
+      <UpdatePatient />
+    </ProtectedRoute>
   } />
-  {/* Rotas para Pacientes */}
-      <Route path="/patient/update" element={
-      isAuthenticated && isPatient ? <UpdatePatient /> : <Navigate to="/" />
-  } />
+  
+  {/* Admin Patient Routes */}
   <Route path="/patient/admin/edit-patient-profile/:id" element={
-    // Azevedo depois tens e alterar UpdatePatient para o AdminUpdatePatient, quando criares o componente
-    isAdmin ? <UpdatePatient patientId={selectedPatientId} onBack={resetPatientAction} /> : <Navigate to="/" />
+    <ProtectedRoute requiredRole="admin">
+      <UpdatePatient patientId={selectedPatientId} onBack={resetPatientAction} />
+    </ProtectedRoute>
   } />
+
+  {/* Catch-all route for 404 */}
   <Route path="*" element={<NotFound />} />
-  <Route path="/patient/list" element={
-    isAdmin ? <PatientList onSelectPatient={handleSelectPatientFromList}/> : <Navigate to="/" />
-  } />
 </Routes>
 
     </div>
