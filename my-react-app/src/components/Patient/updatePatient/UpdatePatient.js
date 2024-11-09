@@ -19,6 +19,8 @@ const UpdatePatient = ({ patientEmail, onBack }) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,6 +31,7 @@ const UpdatePatient = ({ patientEmail, onBack }) => {
         setOriginalData(data);
       } catch (error) {
         console.error('Failed to fetch patient data:', error);
+        setErrorMessage('Failed to fetch patient data');
       }
     };
 
@@ -36,59 +39,62 @@ const UpdatePatient = ({ patientEmail, onBack }) => {
   }, [patientEmail]);
 
   useEffect(() => {
-    if (successMessage || errorMessage) {
+    if (successMessage || errorMessage || Object.keys(fieldErrors).length > 0) {
       const timer = setTimeout(() => {
         setSuccessMessage('');
         setErrorMessage('');
-      }, 5000);
+        setFieldErrors({});
+        setIsSubmitted(false);
+      }, 3000);
 
       return () => clearTimeout(timer);
     }
-  }, [successMessage, errorMessage]);
+  }, [successMessage, errorMessage, fieldErrors]);
 
-const handleChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setPatientData({ ...patientData, [name]: value });
   };
 
-  const validateFields = () => {
-    if (patientData.email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(patientData.email)) {
-      return 'Por favor, insira um email válido.';
-    }
-    if (patientData.phoneNumber && !/^\d{9}$/.test(patientData.phoneNumber)) {
-      return 'O número de telefone deve ter exatamente 9 dígitos.';
-    }
-    if (patientData.firstName && patientData.firstName.length > 100) {
-      return 'O primeiro nome não pode ter mais de 100 caracteres.';
-    }
-    if (patientData.lastName && patientData.lastName.length > 100) {
-      return 'O sobrenome não pode ter mais de 100 caracteres.';
-    }
-    if (patientData.gender && patientData.gender.length > 50) {
-      return 'O gênero não pode ter mais de 50 caracteres.';
-    }
-    if (patientData.contactInfo && patientData.contactInfo.length > 500) {
-      return 'As informações de contato não podem ter mais de 500 caracteres.';
-    }
-    if (patientData.emergencyContact && patientData.emergencyContact.length > 500) {
-      return 'As informações de contato de emergência não podem ter mais de 500 caracteres.';
-    }
-    if (patientData.medicalHistory && patientData.medicalHistory.length > 1000) {
-      return 'O histórico médico não pode ter mais de 1000 caracteres.';
-    }
-    if (patientData.medicalNr && !/^MED-[A-Z0-9]{8}$/.test(patientData.medicalNr)) {
-      return 'Formato de número médico inválido. Deve ser "MED-" seguido de 8 caracteres alfanuméricos.';
-    }
-    return null;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationError = validateFields();
-    if (validationError) {
-      setErrorMessage(validationError);
+    setIsSubmitted(true);
+    
+    // Validar todos os campos
+    const errors = {};
+    if (patientData.email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(patientData.email)) {
+      errors.email = 'Please enter a valid email.';
+    }
+    if (patientData.phoneNumber && !/^\d{9}$/.test(patientData.phoneNumber)) {
+      errors.phoneNumber = 'Phone number must be exactly 9 digits.';
+    }
+    if (patientData.firstName && patientData.firstName.length > 100) {
+      errors.firstName = 'First name cannot exceed 100 characters.';
+    }
+    if (patientData.lastName && patientData.lastName.length > 100) {
+      errors.lastName = 'Last name cannot exceed 100 characters.';
+    }
+    if (patientData.gender && patientData.gender.length > 50) {
+      errors.gender = 'Gender cannot exceed 50 characters.';
+    }
+    if (patientData.contactInfo && patientData.contactInfo.length > 500) {
+      errors.contactInfo = 'Contact information cannot exceed 500 characters.';
+    }
+    if (patientData.emergencyContact && patientData.emergencyContact.length > 500) {
+      errors.emergencyContact = 'Emergency contact information cannot exceed 500 characters.';
+    }
+    if (patientData.medicalHistory && patientData.medicalHistory.length > 1000) {
+      errors.medicalHistory = 'Medical history cannot exceed 1000 characters.';
+    }
+
+    setFieldErrors(errors);
+
+    // Se houver erros, não continua com a submissão
+    if (Object.keys(errors).length > 0) {
       return;
     }
+
+    // Verifica se houve alterações
     const updatedFields = {};
     let emailChanged = false;
 
@@ -102,24 +108,26 @@ const handleChange = (e) => {
     }
 
     if (Object.keys(updatedFields).length === 0) {
-      setErrorMessage('Nenhuma alteração detetada');
+      setErrorMessage('No changes detected');
       return;
     }
 
     try {
       await patientService.updatePatientProfile(patientEmail, updatedFields);
-      setSuccessMessage('Perfil atualizado com sucesso');
-      setErrorMessage(''); // Limpa a mensagem de erro
+      setSuccessMessage('Profile updated successfully');
+      setErrorMessage('');
+      setIsSubmitted(false);
+      setFieldErrors({});
       
       if (emailChanged) {
         setShowModal(true);
       }
     } catch (error) {
-      console.error('Falha ao atualizar o perfil:', error);
+      console.error('Failed to update profile:', error);
       if (error.response && error.response.data) {
-        setErrorMessage(error.response.data); // Exibe a mensagem de erro do backend
+        setErrorMessage(error.response.data);
       } else {
-        setErrorMessage('Falha ao atualizar o perfil');
+        setErrorMessage('Failed to update profile');
       }
     }
   };
@@ -132,8 +140,6 @@ const handleChange = (e) => {
 
   return (
     <div className="update-profile-container">
-      <div className="navbar">
-      </div>
       <h2>Update Profile</h2>
       <form className="update-profile-form" onSubmit={handleSubmit}>
         <div className="form-group">
@@ -144,6 +150,9 @@ const handleChange = (e) => {
             value={patientData.email}
             onChange={handleChange}
           />
+          {isSubmitted && fieldErrors.email && (
+            <div className="field-error-message">{fieldErrors.email}</div>
+          )}
         </div>
         <div className="form-group">
           <label>Phone Number:</label>
@@ -153,6 +162,9 @@ const handleChange = (e) => {
             value={patientData.phoneNumber}
             onChange={handleChange}
           />
+          {isSubmitted && fieldErrors.phoneNumber && (
+            <div className="field-error-message">{fieldErrors.phoneNumber}</div>
+          )}
         </div>
         <div className="form-group">
           <label>First Name:</label>
@@ -162,6 +174,9 @@ const handleChange = (e) => {
             value={patientData.firstName}
             onChange={handleChange}
           />
+          {isSubmitted && fieldErrors.firstName && (
+            <div className="field-error-message">{fieldErrors.firstName}</div>
+          )}
         </div>
         <div className="form-group">
           <label>Last Name:</label>
@@ -171,6 +186,9 @@ const handleChange = (e) => {
             value={patientData.lastName}
             onChange={handleChange}
           />
+          {isSubmitted && fieldErrors.lastName && (
+            <div className="field-error-message">{fieldErrors.lastName}</div>
+          )}
         </div>
         <div className="form-group">
           <label>Date of Birth:</label>
@@ -189,6 +207,9 @@ const handleChange = (e) => {
             value={patientData.gender}
             onChange={handleChange}
           />
+          {isSubmitted && fieldErrors.gender && (
+            <div className="field-error-message">{fieldErrors.gender}</div>
+          )}
         </div>
         <div className="form-group">
           <label>Contact Info:</label>
@@ -198,6 +219,9 @@ const handleChange = (e) => {
             value={patientData.contactInfo}
             onChange={handleChange}
           />
+          {isSubmitted && fieldErrors.contactInfo && (
+            <div className="field-error-message">{fieldErrors.contactInfo}</div>
+          )}
         </div>
         <div className="form-group">
           <label>Emergency Contact:</label>
@@ -207,6 +231,9 @@ const handleChange = (e) => {
             value={patientData.emergencyContact}
             onChange={handleChange}
           />
+          {isSubmitted && fieldErrors.emergencyContact && (
+            <div className="field-error-message">{fieldErrors.emergencyContact}</div>
+          )}
         </div>
         <div className="form-group">
           <label>Medical History:</label>
@@ -215,6 +242,9 @@ const handleChange = (e) => {
             value={patientData.medicalHistory}
             onChange={handleChange}
           />
+          {isSubmitted && fieldErrors.medicalHistory && (
+            <div className="field-error-message">{fieldErrors.medicalHistory}</div>
+          )}
         </div>
         <button type="submit" className="update-button">Update</button>
       </form>
@@ -224,16 +254,11 @@ const handleChange = (e) => {
           {successMessage}
         </div>
       )}
-      {errorMessage && (
-     <div className="error-message">
-       {errorMessage}
-        </div>
-      )}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
-            <h3>Alteração de Email</h3>
-            <p>Os dados foram alterados com sucesso. Será necessário fazer login novamente. Obrigado!</p>
+            <h3>Email Change</h3>
+            <p>Data has been updated successfully. You will need to login again. Thank you!</p>
             <button onClick={handleModalClose}>OK</button>
           </div>
         </div>

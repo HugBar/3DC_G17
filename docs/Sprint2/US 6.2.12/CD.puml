@@ -1,0 +1,76 @@
+@startuml namespace "CD US 6.2.12"
+title "Class diagram US 6.2.12 - Staff Deactivation"
+
+class DeactivateStaff {
+    -staffId: string
+    -successMessage: string
+    -errorMessage: string
+    +handleDeactivate(): void
+    +render(): JSX
+}
+
+class StaffList {
+    -navigate: useNavigate
+    -location: useLocation
+    -staffList: array
+    -errorMessage: string
+    -selectedStaff: object
+    -filters: object
+    -currentPage: number
+    -totalPages: number
+    -pageSize: number
+    +handleFilterChange(event): void
+    +updateURL(filters, page): void
+    +clearFilters(): void
+    +handlePageChange(newPage): void
+    +handleStaffSelect(staffId): void
+    +handleDeactivateClick(staffId): void
+    +fetchStaffList(): void
+    +render(): JSX
+}
+
+class App {
+    -navigate: useNavigate
+    -isAdmin: boolean
+    -isDoctor: boolean
+    -isPatient: boolean
+    -isAuthenticated: boolean
+    -showStaffActions: boolean
+    -selectedStaffAction: string
+    -selectedStaffId: string
+    +handleHomeClick(): void
+    +handleStaffClick(): void
+    +handleLogoutAndReset(): void
+    +resetStaffAction(): void
+    +handleDeactivateStaff(staffId): void
+    +render(): JSX
+}
+
+class StaffService {
+    -API_URL: string
+    +getAuthToken(): string
+    +checkAdminRole(token): void
+    +getAllStaff(filters): Promise
+    +getStaffById(staffId): Promise
+    +deactivateStaff(staffId): Promise
+    +getDeactivatedStaff(): Promise
+}
+
+class DeactivateStaffCSS {
+    <<interface>>
+    +deactivate-staff-container: style
+    +deactivate-button: style
+    +back-button: style
+    +success-message: style
+    +error-message: style
+    +button-group: style
+}
+
+App --> StaffList : uses
+App --> DeactivateStaff : uses
+StaffList --> StaffService : uses
+DeactivateStaff --> StaffService : uses
+DeactivateStaff --> DeactivateStaffCSS : styles
+StaffList ..> DeactivateStaff : navigates to
+
+@enduml
