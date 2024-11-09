@@ -76,6 +76,10 @@ const PatientList = ({onSelectPatient}) => {
     }
   };
 
+  const handleDeleteClick = (patientId) => {
+    navigate(`/patient/delete/${patientId}`);
+  };
+
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -186,10 +190,13 @@ const PatientList = ({onSelectPatient}) => {
               <p><strong>Date of Birth:</strong> {selectedPatient?.dateOfBirth || 'Not available'}</p>
               <p><strong>Gender:</strong> {selectedPatient?.gender || 'Not available'}</p>
               <p><strong>Emergency Contact:</strong> {selectedPatient?.emergencyContact || 'Not available'}</p>
-            </div>
+              </div>
             <div className="modal-actions">
               <button onClick={handleSelectPatient} className="update-button">
                 Update Patient
+              </button>
+              <button onClick={() => handleDeleteClick(selectedPatient.id)} className="delete-button">
+                Delete Patient
               </button>
               <button onClick={() => setSelectedPatient(null)} className="close-button">
                 Close

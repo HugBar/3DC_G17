@@ -121,6 +121,28 @@ const patientService = {
       console.error('Error fetching patient details:', error);
       throw error;
     }
+  },
+
+  deletePatient: async (patientId) => {
+    const token = getAuthToken();
+    checkAdminRole(token);
+  
+    const deleteDto = { ConfirmDeletion: true };
+  
+    try {
+      const response = await axios.delete(`${API_URL}/delete-patient/${patientId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        data: deleteDto, 
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting patient:', error.response?.data || error.message);
+      throw error;
+    }
+
   }
 };
 

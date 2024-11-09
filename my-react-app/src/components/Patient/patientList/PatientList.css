@@ -241,3 +241,25 @@
     font-weight: bold;
   }
   
+  .delete-button {
+    background-color: #364953; 
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .delete-button:hover {
+    background-color: #151c20; 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .delete-button:active {
+    transform: scale(0.95); 
+  }
+
+  

@@ -15,7 +15,7 @@ import logo from './assets/hospital.png';
 import './App.css';
 import PatientList from './components/Patient/patientList/PatientList';
 import DeactivatedStaffList from './components/Staff/DeactivatedStaffList/DeactivatedStaffList';
-import ProtectedRoute from './context/ProtectedRoute';
+import DeletePatient from './components/Patient/deletePatient/DeletePatient';import ProtectedRoute from './context/ProtectedRoute';
 
 
 const App = () => {
@@ -30,7 +30,7 @@ const App = () => {
   const [selectedStaffId, setSelectedStaffId] = useState(null);
   const [selectedOperationRequest, setSelectedOperationRequest] = useState(null);
   const [selectedOperationRequestId, setSelectedOperationRequestId] = useState(null);
-  const [selectedOperationRequestIdForDetails, setSelectedOperationRequestIdForDetails] = useState(null);
+  const [/*selectedOperationRequestIdForDetails*/, setSelectedOperationRequestIdForDetails] = useState(null);
  
 
   const handleHomeClick = () => {
@@ -48,10 +48,10 @@ const App = () => {
     setSelectedStaffAction('Update Staff');
     navigate(`/staff/update/${staffId}`);
   };
-  const handleSelectPatient = () => {
+  /*const handleSelectPatient = () => {
     setSelectedPatientAction('Update Profile');
     navigate('/patient/update');
-  };
+  };*/
 
   const handleSelectOperationRequestForDeletion = (requestId) => {
     setSelectedOperationRequestId(requestId);
@@ -86,10 +86,10 @@ const App = () => {
     setSelectedOperationRequestIdForDetails(requestId);
   };
   
-  const resetOperationRequestDetails = () => {
+  /*const resetOperationRequestDetails = () => {
     setSelectedOperationRequestIdForDetails(null);
     navigate('/staff/list');
-  };
+  };*/
 
   const handleLogoutAndReset = () => {
     logout();
@@ -126,6 +126,13 @@ const App = () => {
     setSelectedOperationRequest('Delete Operation Request');
     navigate(`/operation/delete/${requestId}`);
   };
+
+  const handleDeletePatient = (patientId) => {
+    setSelectedPatientId(patientId);
+    setSelectedPatientAction('Delete Patient');
+    navigate(`/patient/delete/${patientId}`);
+  };
+
 
 
 
@@ -342,6 +349,12 @@ const App = () => {
 
   {/* Catch-all route for 404 */}
   <Route path="*" element={<NotFound />} />
+  <Route path="/patient/list" element={
+    isAdmin ? <PatientList onSelectPatient={handleSelectPatientFromList}/> : <Navigate to="/" />
+  } />
+  {
+  <Route path="/patient/delete/:id" element={isAdmin ? (<DeletePatient patientId={selectedPatientId} onDelete={handleDeletePatient} />) : <Navigate to="/" />} />
+  }
 </Routes>
 
     </div>
