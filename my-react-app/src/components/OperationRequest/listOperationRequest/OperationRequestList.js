@@ -48,10 +48,9 @@ const OperationRequestList = ({ onDeleteOperationRequest }) => {
     navigate('/operationrequest/filter'); // Clears the URL parameters
   };
 
-  const fetchOperationRequests = async (filters) => {
+  const fetchOperationRequests = useCallback(async (filters) => {
     try {
       const data = await operationRequestService.getAllOperationRequests(filters);
-      // Batch state updates
       await act(async () => {
         setOperationRequestList(data);
         setErrorMessage('');
@@ -67,7 +66,8 @@ const OperationRequestList = ({ onDeleteOperationRequest }) => {
         }
       });
     }
-  };
+  }, []);
+  
 
   useEffect(() => {
     fetchOperationRequests(filters);
