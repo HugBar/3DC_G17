@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import CreateStaff from './components/Staff/createStaff/CreateStaff';
@@ -130,6 +130,18 @@ const App = () => {
     setSelectedPatientAction('Delete Patient');
     navigate(`/patient/delete/${patientId}`);
   };
+
+  useEffect(() => {
+    window.addEventListener('beforeunload', () => {
+      localStorage.clear();
+    });
+
+    return () => {
+      window.removeEventListener('beforeunload', () => {
+        localStorage.clear();
+      });
+    };
+  }, []);
 
 
 
