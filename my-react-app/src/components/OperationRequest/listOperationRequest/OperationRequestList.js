@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import operationRequestService from '../../../api/operationRequestService';
 import './OperationRequestList.css';
-import { act } from 'react';
 
 const OperationRequestList = ({ onDeleteOperationRequest }) => {
   const navigate = useNavigate();
@@ -45,26 +44,22 @@ const OperationRequestList = ({ onDeleteOperationRequest }) => {
   const clearFilters = () => {
     const emptyFilters = { doctorLicenseNumber: '', patientMedicalNumber: '', priority: '' };
     setFilters(emptyFilters);
-    navigate('/operationrequest/filter'); // Clears the URL parameters
+    navigate('/operationrequest/filter');
   };
 
   const fetchOperationRequests = useCallback(async (filters) => {
     try {
       const data = await operationRequestService.getAllOperationRequests(filters);
-      await act(async () => {
-        setOperationRequestList(data);
-        setErrorMessage('');
-      });
+      setOperationRequestList(data);
+      setErrorMessage('');
     } catch (error) {
-      await act(async () => {
-        if (error.response && error.response.status === 404) {
-          setOperationRequestList([]);
-          setErrorMessage('No operation requests found.');
-        } else {
-          setOperationRequestList([]);
-          setErrorMessage('Error fetching operation requests.');
-        }
-      });
+      if (error.response && error.response.status === 404) {
+        setOperationRequestList([]);
+        setErrorMessage('No operation requests found.');
+      } else {
+        setOperationRequestList([]);
+        setErrorMessage('Error fetching operation requests.');
+      }
     }
   }, []);
   
@@ -143,7 +138,7 @@ const OperationRequestList = ({ onDeleteOperationRequest }) => {
 
       {selectedRequest && (
         <div className="operation-request-details-modal">
-          <div className="modal-content">
+          <div className="modal-content" data-testid="modal-content">
             <h2>Operation Request Details</h2>
             <p><strong>ID:</strong> {selectedRequest.id}</p>
             <p><strong>Patient Medical Number:</strong> {selectedRequest.patientMedicalNumber}</p>
