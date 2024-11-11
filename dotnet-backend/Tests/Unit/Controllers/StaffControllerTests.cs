@@ -219,34 +219,64 @@ namespace DDDSample1.Tests.Unit.Controllers
             {
                 Specialization = "Doctor"
             };
-            var staffs = new List<Staff>
+
+            // Criar lista completa de staff
+            var allStaffs = new List<Staff>
             {
-                new Staff("staff-123", "John", "Doe", "john.doe@example.com", "123456789", "Medic", "LIC-12345"),
-                new Staff("staff-456", "Jane", "Doe", "jane.doe@example.com", "987654321", "Doctor", "LIC-67890")
+                new Staff("staff-123", "John", "Doe", "john.doe@example.com", "123456789", "Doctor", "LIC-12345"),
+                new Staff("staff-456", "Jane", "Doe", "jane.doe@example.com", "987654321", "Nurse", "LIC-67890"),
+                new Staff("staff-789", "Jim", "Beam", "jim.beam@example.com", "111222333", "Medic", "LIC-78901"),
+                new Staff("staff-101", "Jill", "Hill", "jill.hill@example.com", "444555666", "Medic", "LIC-10101")
             };
-            _mockStaffRepo.Setup(r => r.GetFilteredStaffAsync(filter)).ReturnsAsync(staffs.Where(s => s.Specialization == filter.Specialization).ToList());
+
+            // Criar lista filtrada (apenas Doctors)
+            var filteredStaffs = allStaffs.Where(s => s.Specialization == filter.Specialization).ToList();
+
+            // Criar PagedResult com apenas os staffs filtrados
+            var pagedResult = new PagedResult<Staff>
+            {
+                Items = filteredStaffs, // Apenas os staffs que correspondem ao filtro
+                PageNumber = 1,
+                PageSize = 10,
+                TotalCount = filteredStaffs.Count,
+            };
+
+            // Setup do mock para retornar apenas os resultados filtrados
+            _mockStaffRepo.Setup(r => r.GetFilteredStaffAsync(
+                It.Is<StaffFilterDto>(f => f.Specialization == filter.Specialization),
+                It.IsAny<int>(),
+                It.IsAny<int>()))
+                .ReturnsAsync((filteredStaffs, filteredStaffs.Count));
 
             // Act
-            var result = await _controller.GetStaffs(filter);
+            var result = await _controller.GetStaffs(filter, 1, 10);
 
             // Assert
-            var actionResult = Assert.IsType<ActionResult<IEnumerable<StaffDto>>>(result);
+            var actionResult = Assert.IsType<ActionResult<PagedResult<StaffDto>>>(result);
             var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-            var returnStaffs = Assert.IsType<List<StaffDto>>(okResult.Value);
-            Assert.Single(returnStaffs);
-            Assert.All(returnStaffs, s => Assert.Equal("Doctor", s.Specialization));
+            var returnValue = Assert.IsType<PagedResult<StaffDto>>(okResult.Value);
+            
+            Assert.Single(returnValue.Items);
+            Assert.All(returnValue.Items, s => Assert.Equal("Doctor", s.Specialization));
+            Assert.Equal(1, returnValue.PageNumber);
+            Assert.Equal(10, returnValue.PageSize);
+            Assert.Equal(1, returnValue.TotalCount);
+            Assert.Equal(1, returnValue.TotalPages);
 
-            _mockStaffRepo.Verify(r => r.GetFilteredStaffAsync(filter), Times.Once);
+            _mockStaffRepo.Verify(r => r.GetFilteredStaffAsync(filter, 1, 10), Times.Once);
         }
 
         [Fact]
         public async Task GetStaffs_ReturnsNotFound_WhenNoStaffsFound()
         {
             var filter = new StaffFilterDto { Specialization = "Doctor" };
-            _mockStaffRepo.Setup(r => r.GetFilteredStaffAsync(filter)).ReturnsAsync(new List<Staff>());
+            var emptyResult = new List<Staff>();
 
-            var result = await _controller.GetStaffs(filter);
-            var actionResult = Assert.IsType<ActionResult<IEnumerable<StaffDto>>>(result);
+            _mockStaffRepo.Setup(r => r.GetFilteredStaffAsync(filter, 1, 10))
+                .ReturnsAsync((emptyResult, 0));
+
+            var result = await _controller.GetStaffs(filter, 1, 10);
+            var actionResult = Assert.IsType<ActionResult<PagedResult<StaffDto>>>(result);
             Assert.IsType<NotFoundResult>(result.Result);
         }
 

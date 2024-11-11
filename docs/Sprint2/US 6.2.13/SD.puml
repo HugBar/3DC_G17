@@ -1,0 +1,66 @@
+@startuml StaffList Sequence Diagram
+title "Staff List Management Flow"
+
+actor Admin
+participant StaffList
+participant StaffService
+participant API
+participant Database
+
+activate Admin
+Admin -> StaffList: Access staff list page
+activate StaffList
+
+StaffList -> StaffList: Load URL filters
+StaffList -> StaffService: getAllStaff(filters)
+activate StaffService
+
+StaffService -> API: GET /api/staff/filter
+activate API
+API -> Database: SELECT * FROM Staff WHERE filters
+activate Database
+Database --> API: Return filtered staff
+deactivate Database
+API --> StaffService: Return response
+deactivate API
+
+StaffService --> StaffList: Return staff data
+deactivate StaffService
+StaffList -> StaffList: setStaffList(data)
+StaffList --> Admin: Display staff list
+
+alt Apply Filter
+    Admin -> StaffList: Enter filter criteria
+    StaffList -> StaffList: handleFilterChange(event)
+    StaffList -> StaffList: updateURLWithFilters(filters)
+    StaffList -> StaffService: getAllStaff(newFilters)
+end
+
+alt Select Staff Member
+    Admin -> StaffList: Click staff card
+    StaffList -> StaffService: getStaffById(staffId)
+    activate StaffService
+    StaffService -> API: GET /api/staff/{id}
+    API -> Database: SELECT * FROM Staff WHERE Id = {id}
+    Database --> API: Return staff details
+    API --> StaffService: Return staff data
+    StaffService --> StaffList: Return staff details
+    deactivate StaffService
+    StaffList -> StaffList: setSelectedStaff(staffDetails)
+    StaffList --> Admin: Display staff modal
+end
+
+alt Update Staff
+    Admin -> StaffList: Click "Update Staff"
+    StaffList -> StaffList: handleUpdateClick()
+    StaffList -> Admin: Navigate to update page
+else Deactivate Staff
+    Admin -> StaffList: Click "Deactivate Staff"
+    StaffList -> StaffList: handleDeactivateClick()
+    StaffList -> Admin: Trigger deactivation flow
+end
+
+deactivate StaffList
+deactivate Admin
+
+@enduml

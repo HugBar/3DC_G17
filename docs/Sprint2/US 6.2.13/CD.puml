@@ -1,0 +1,55 @@
+@startuml StaffList Class Diagram
+
+class StaffList {
+  - navigate: useNavigate
+  - location: useLocation
+  - staffList: Staff[]
+  - errorMessage: string
+  - selectedStaff: Staff | null
+  - filters: StaffFilters
+  
+  + handleFilterChange(event: Event): void
+  + updateURLWithFilters(filters: StaffFilters): void
+  + clearFilters(): void
+  + handleStaffSelect(staffId: string): void
+  + handleUpdateClick(): void
+  + handleDeactivateClick(): void
+  + handleCloseDetails(): void
+  + fetchStaffList(): Promise<void>
+}
+
+class Staff {
+  + id: string
+  + firstName: string
+  + lastName: string
+  + email: string
+  + phoneNumber: string
+  + specialization: string
+  + licenseNumber: string
+  + availabilitySlots: AvailabilitySlot[]
+}
+
+class StaffFilters {
+  + firstName: string
+  + lastName: string
+  + email: string
+  + specialization: string
+}
+
+class AvailabilitySlot {
+  + startTime: Date
+  + endTime: Date
+}
+
+class StaffService {
+  + getAllStaff(filters: StaffFilters): Promise<Staff[]>
+  + getStaffById(id: string): Promise<Staff>
+  + deactivateStaff(id: string): Promise<void>
+}
+
+StaffList --> Staff: displays
+StaffList --> StaffFilters: uses
+StaffList --> StaffService: uses
+Staff --> AvailabilitySlot: contains
+
+@enduml

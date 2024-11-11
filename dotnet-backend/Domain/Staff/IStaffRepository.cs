@@ -16,7 +16,11 @@ namespace DDDSample1.Domain.StaffData
         Task<Staff> UpdateAsync(Staff staff);
         Task<List<Staff>> GetActiveStaffAsync();
         Task<bool> ExistsAsync(string staffId);
-        Task<List<Staff>> GetFilteredStaffAsync(StaffFilterDto filter);
+        Task<(List<Staff> Items, int TotalCount)> GetFilteredStaffAsync(
+        StaffFilterDto filters,
+        int pageNumber,
+        int pageSize
+    );
 
         Task<List<Staff>> GetDeactivatedStaffAsync();
     }

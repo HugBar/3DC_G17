@@ -94,7 +94,7 @@ const staffService = {
     }
   },
 
-  getAllStaff: async (filters = {}) => {
+  getAllStaff: async (filters = {}, page = 1, pageSize = 2) => {
     const token = getAuthToken();
     checkAdminRole(token);
 
@@ -104,22 +104,34 @@ const staffService = {
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
-
+      params.append('pageNumber', page.toString());
+      params.append('pageSize', pageSize.toString());
+      
       const response = await axios.get(`${API_URL}/filter?${params.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      return response.data;
-    } catch (error) {
-      if (error.response) {
-        console.error('Error response:', error.response.data);
-        console.error('Error status:', error.response.status);
-      } else if (error.request) {
-        console.error('Error request:', error.request);
-      } else {
-        console.error('Error message:', error.message);
+      
+      if (response.data && typeof response.data === 'object') {
+        return {
+          items: response.data.items || response.data,
+          totalPages: response.data.totalPages || 0,
+          currentPage: response.data.pageNumber || page,
+          pageSize: response.data.pageSize || pageSize,
+          totalCount: response.data.totalCount || 0
+        };
       }
+      
+      return {
+        items: [],
+        totalPages: 1,
+        currentPage: page,
+        pageSize: pageSize,
+        totalCount: 0
+      };
+    } catch (error) {
+      console.error('Error in getAllStaff:', error);
       throw error;
     }
   },

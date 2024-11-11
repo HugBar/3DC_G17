@@ -144,12 +144,13 @@ namespace DDDSample1.Controllers
 
         [HttpGet("filter")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<IEnumerable<StaffDto>>> GetStaffs([FromQuery] StaffFilterDto filter)
+        public async Task<ActionResult<PagedResult<StaffDto>>> GetStaffs([FromQuery] StaffFilterDto filter, int pageNumber=1, int pageSize=2)
         {
             try
-            {
-                var staffs = await _staffService.getStaffFilteredAsync(filter);
-                if (!staffs.Any())
+            {   
+                Console.WriteLine("Filter:-----------------------------------------------------------------------------");
+                var staffs = await _staffService.getStaffFilteredAsync(filter, pageNumber, pageSize);
+                if (staffs.Items == null || !staffs.Items.Any())
                 {
                     return NotFound();
                 }
