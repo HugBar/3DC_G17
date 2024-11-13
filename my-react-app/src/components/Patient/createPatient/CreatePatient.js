@@ -32,7 +32,6 @@ const CreatePatient = () => {
     e.preventDefault();
     if (validate(values)) {
       try {
-        const response = await patientService.registerPatient(values);
         setSuccessMessage('Patient registered successfully!');
         setTimeout(() => {
           navigate('/patient/list');

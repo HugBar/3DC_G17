@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import CreateStaff from './components/Staff/createStaff/CreateStaff';
@@ -52,10 +52,6 @@ const App = () => {
     setSelectedStaffAction('Update Staff');
     navigate(`/staff/update/${staffId}`);
   };
-  /*const handleSelectPatient = () => {
-    setSelectedPatientAction('Update Profile');
-    navigate('/patient/update');
-  };*/
 
   const resetOperationRequestAction = () => {
     setSelectedOperationRequestId(null);
@@ -85,10 +81,6 @@ const App = () => {
     setSelectedOperationRequestIdForDetails(requestId);
   };
   
-  /*const resetOperationRequestDetails = () => {
-    setSelectedOperationRequestIdForDetails(null);
-    navigate('/staff/list');
-  };*/
 
   const handleLogoutAndReset = () => {
     logout();
