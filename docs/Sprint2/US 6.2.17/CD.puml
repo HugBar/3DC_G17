@@ -1,0 +1,50 @@
+@startuml Operation Request List UI Class Diagram
+
+class OperationRequestList {
+  - navigate: useNavigate
+  - location: useLocation
+  - operationRequestList: OperationRequest[]
+  - errorMessage: string
+  - selectedRequest: OperationRequest
+  - filters: RequestFilters
+  + handleFilterChange(event): void
+  + clearFilters(): void
+  + handleRequestSelect(requestId): void
+  + handleCloseDetails(): void
+  + handleDeleteClick(): void
+  + fetchOperationRequests(filters): void
+}
+
+class OperationRequestService {
+  - API_URL: string
+  + getAuthToken(): string
+  + checkDoctorRole(token): void
+  + getAllOperationRequests(filters): Promise<OperationRequest[]>
+  + deleteOperationRequest(id): Promise<void>
+  + getOperationRequestById(id): Promise<OperationRequest>
+}
+
+class RequestFilters {
+  + doctorLicenseNumber: string
+  + patientMedicalNumber: string
+  + priority: string
+}
+
+class OperationRequest {
+  + id: string
+  + doctorId: string
+  + patientId: string
+  + operationTypeId: string
+  + priority: string
+  + deadline: Date
+  + isScheduled: boolean
+  + doctorLicenseNumber: string
+  + doctorName: string
+  + patientMedicalNumber: string
+}
+
+OperationRequestList --> OperationRequestService: uses
+OperationRequestList --> RequestFilters: manages
+OperationRequestList --> "0..*" OperationRequest: displays
+
+@enduml

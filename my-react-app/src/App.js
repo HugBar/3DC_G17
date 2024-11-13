@@ -132,17 +132,6 @@ const App = () => {
     navigate(`/patient/delete/${patientId}`);
   };
 
-  useEffect(() => {
-    window.addEventListener('beforeunload', () => {
-      localStorage.clear();
-    });
-
-    return () => {
-      window.removeEventListener('beforeunload', () => {
-        localStorage.clear();
-      });
-    };
-  }, []);
 
 
 
