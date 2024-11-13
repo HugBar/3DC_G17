@@ -18,6 +18,7 @@ import DeactivatedStaffList from './components/Staff/DeactivatedStaffList/Deacti
 import DeletePatient from './components/Patient/deletePatient/DeletePatient';
 import ProtectedRoute from './context/ProtectedRoute';
 import DeleteAccount from './components/Patient/deleteAccount/DeleteAccount';
+import CreatePatient from './components/Patient/createPatient/CreatePatient';
 
 
 
@@ -271,6 +272,16 @@ const App = () => {
             </>
           )}
           {isAdmin && (
+            <>
+            <button
+              onClick={() => {
+                setSelectedPatientAction('Create Patient');
+                navigate('/patient/create');
+              }}
+              className={`action-button ${selectedPatientAction === 'Create Patient' ? 'active' : ''}`}
+            >
+              Create Patient
+            </button>
             <button
               onClick={() => {
                 setSelectedPatientAction('View Patients');
@@ -280,6 +291,8 @@ const App = () => {
             >
               View Patients
             </button>
+            
+            </>
           )}
         </div>
       )}
@@ -356,6 +369,11 @@ const App = () => {
   } />
 
   {/* Patient Routes */}
+  <Route path="/Patient/create" element={
+    <ProtectedRoute requiredRole="admin">
+      <CreatePatient />
+    </ProtectedRoute>
+  } />
   <Route path="/patient/update" element={
     <ProtectedRoute requiredRole="patient">
       <UpdatePatient />
