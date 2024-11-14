@@ -92,7 +92,7 @@ namespace DDDSample1.Infrastructure.Staffs
         int pageNumber,
         int pageSize)
         {
-        var query = _context.Staffs
+        var query = _context.Staffs.Where(s => s.Active)
             .AsQueryable();
 
         // Aplicar filtros

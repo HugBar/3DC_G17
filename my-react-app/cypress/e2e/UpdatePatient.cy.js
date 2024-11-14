@@ -3,8 +3,21 @@
     const frontendUrl = 'http://localhost:3000';
     let authToken;
     let patientId;
-    const patientEmail = "patienttest@test.com";
-    const patientPhone = "961234567";
+  
+    // Função para gerar email único
+    const generateUniqueEmail = () => {
+      const timestamp = new Date().getTime();
+      return `patienttest_${timestamp}@testupdate.com`;
+    };
+  
+    // Função para gerar número de telefone único
+    const generateUniquePhone = () => {
+      const timestamp = new Date().getTime().toString().slice(-9);
+      return timestamp.padStart(9, '9');
+    };
+  
+    const patientEmail = generateUniqueEmail();
+    const patientPhone = generateUniquePhone();
   
     before(() => {
       // Login como admin
@@ -21,7 +34,7 @@
         // Criar paciente de teste
         return cy.request({
           method: 'POST',
-          url: baseUrl, // Endpoint correto do PatientController
+          url: baseUrl,
           headers: {
             'Authorization': `Bearer ${authToken}`,
             'Content-Type': 'application/json'
@@ -38,6 +51,7 @@
         });
       }).then((patientResponse) => {
         patientId = patientResponse.body.id;
+        cy.log(`Created patient with email: ${patientEmail} and phone: ${patientPhone}`);
   
         // Login como o paciente criado
         return cy.request({
