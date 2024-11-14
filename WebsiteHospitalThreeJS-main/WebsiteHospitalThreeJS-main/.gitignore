@@ -2,3 +2,4 @@
 /obj/
 .DS_Store
 node_modules/
+three.js-master/
