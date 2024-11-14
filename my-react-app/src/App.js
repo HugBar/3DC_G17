@@ -141,6 +141,12 @@ const App = () => {
           <Link to="/" onClick={handleHomeClick} className="nav-link">Home</Link>
           {isAuthenticated && (
             <>
+              <button
+                  onClick={() => navigate('/hospital-3d')} 
+                  className="nav-button"
+              >
+                  View Hospital 3D
+              </button>
               {(isAdmin || isDoctor) && (
                 <button 
                   onClick={handleStaffClick}
