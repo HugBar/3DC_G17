@@ -81,7 +81,10 @@ describe('Patient List', () => {
       cy.get('.pagination-controls').should('exist');
       
       // Test next page
-      cy.get('.pagination-button').contains('Next').click();
+      cy.get('.pagination-button')
+  .contains('Next')
+        .should('not.be.disabled')
+        .click();
       cy.url().should('include', 'page=2');
   
       // Test previous page
