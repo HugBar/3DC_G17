@@ -1,21 +1,26 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import staffService from '../../../api/staffService';
 import './deactivateStaff.css';
 
-const DeactivateStaff = ({ staffId, onBack }) => {
+const DeactivateStaff = ({ onBack }) => {
+  const { id } = useParams();
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleDeactivate = async () => {
-    if (!staffId) {
+    if (!id) {
       setErrorMessage('No staff member selected to deactivate.');
       return;
     }
 
     try {
-      await staffService.deactivateStaff(staffId);
+      await staffService.deactivateStaff(id);
       setSuccessMessage('Staff member successfully deactivated.');
       setErrorMessage('');
+      setTimeout(() => {
+        onBack();
+      }, 2000);
     } catch (error) {
       setErrorMessage('Error deactivating staff member.');
       setSuccessMessage('');

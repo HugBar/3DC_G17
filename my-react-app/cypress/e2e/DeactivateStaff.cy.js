@@ -90,19 +90,30 @@ it('should display the deactivate staff page correctly', () => {
 });
 
 it('should successfully deactivate staff member', () => {
-    // Configurar interceptação antes de qualquer ação
-    cy.intercept('PATCH', `${baseUrl}/${staffId}/deactivate`).as('deactivateRequest');
+    // Log para debug
+    cy.log('Starting deactivation test with staffId:', staffId);
+
+    // Interceptar a requisição PATCH com a URL exata
+    cy.intercept({
+        method: 'PATCH',
+        url: `${baseUrl}/${staffId}/deactivate`,
+        headers: {
+            'Authorization': `Bearer ${authToken}`
+        }
+    }).as('deactivateRequest');
     
-    // Verificar se o staffId está presente
-    cy.wrap(staffId).should('not.be.undefined');
-    
-    // Clicar no botão de desativar
-    cy.get('.deactivate-button').click();
-    
-    // Esperar pela requisição e verificar a resposta
+    // Clicar no botão
+    cy.get('.deactivate-button')
+        .should('be.visible')
+        .click();
+
+    // Esperar pela requisição
     cy.wait('@deactivateRequest', { timeout: 15000 })
-        .its('response.statusCode')
-        .should('equal', 200);
+        .then((interception) => {
+            // Verificar se a requisição foi feita corretamente
+            expect(interception.request.headers).to.have.property('authorization');
+            expect(interception.response.statusCode).to.equal(200);
+        });
 
     // Verificar mensagem de sucesso
     cy.get('.success-message')
@@ -111,15 +122,22 @@ it('should successfully deactivate staff member', () => {
 });
 
 it('should handle network errors gracefully', () => {
-    // Configurar interceptação com erro
-    cy.intercept('PATCH', `${baseUrl}/${staffId}/deactivate`, {
+    // Interceptar e simular erro
+    cy.intercept({
+        method: 'PATCH',
+        url: `${baseUrl}/${staffId}/deactivate`,
+        headers: {
+            'Authorization': `Bearer ${authToken}`
+        }
+    }, {
         statusCode: 500,
-        body: { message: 'Internal Server Error' },
-        delay: 100
+        body: { message: 'Internal Server Error' }
     }).as('deactivateError');
 
-    // Clicar no botão de desativar
-    cy.get('.deactivate-button').click();
+    // Clicar no botão
+    cy.get('.deactivate-button')
+        .should('be.visible')
+        .click();
 
     // Verificar mensagem de erro
     cy.get('.error-message')
@@ -158,4 +176,5 @@ after(() => {
             });
         }
     }
+        
 });
