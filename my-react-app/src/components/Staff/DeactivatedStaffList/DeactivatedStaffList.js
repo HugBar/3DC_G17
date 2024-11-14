@@ -19,9 +19,12 @@ const DeactivatedStaffList = () => {
       setDeactivatedStaff(data);
       setErrorMessage('');
     } catch (error) {
-      console.error('Error fetching deactivated staff:', error);
-      setErrorMessage('Error fetching deactivated staff list.');
-      setDeactivatedStaff([]);
+      if (error.response && error.response.status === 404) {
+        setErrorMessage('No deactivated staff members found.');
+        setDeactivatedStaff([]);
+      } else {
+        setErrorMessage('Error fetching deactivated staff list.');
+      }
     }
   };
 

@@ -20,7 +20,7 @@ namespace DDDSample1.Infrastructure.PatientData
 
         public async Task<(List<Patient> Patients, int TotalCount)> GetFilteredPatientAsync(PatientFilterDTO filter, int pageNumber, int pageSize)
         {
-            var query = _context.Patients.AsQueryable();
+            var query = _context.Patients.Where(p => p.IsAnonymized == false).AsQueryable();
 
             if (filter.FirstName != null)
             {
