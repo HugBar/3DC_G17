@@ -311,7 +311,7 @@ const App = () => {
   } />
   <Route path="/staff/deactivate/:id" element={
     <ProtectedRoute requiredRole="admin">
-      <DeactivateStaff staffId={selectedStaffId} onBack={resetStaffAction} />
+      <DeactivateStaff onBack={resetStaffAction} />
     </ProtectedRoute>
   } />
   <Route path="/staff/deactivated-staffs" element={
