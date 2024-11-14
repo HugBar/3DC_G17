@@ -41,7 +41,6 @@ public class UpdatePatientDto : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        // You can add custom validation logic here if needed
         yield break;
     }
 }

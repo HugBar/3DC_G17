@@ -431,7 +431,6 @@ namespace DDDSample1.Domain.PatientData
 
             try
             {
-                // Store contact information for final email
                 var contactInfo = new
                 {
                     Email = patient.Email,
@@ -441,13 +440,10 @@ namespace DDDSample1.Domain.PatientData
 
                 await _unitOfWork.BeginTransactionAsync();
 
-                // Anonymize the patient data
                 patient.Anonymize();
 
-                // ADICIONAR ESTA LINHA - Salva as alterações no repositório
                 await _repository.UpdateAsync(patient);
 
-                // Log the anonymization
                 await _loggingService.LogChangeAsync(
                     "Patient data anonymized",
                     patient.UserId,
@@ -455,7 +451,6 @@ namespace DDDSample1.Domain.PatientData
                     null
                 );
 
-                // Delete the user account but keep the anonymized patient record
                 var user = await _userManager.FindByEmailAsync(email);
                 if (user != null)
                 {
@@ -466,7 +461,6 @@ namespace DDDSample1.Domain.PatientData
 
                 await _unitOfWork.CommitTransactionAsync();
 
-                // Send final email using stored contact information
                 string subject = "Account Deletion Complete";
                 string body = $"Dear {contactInfo.FirstName} {contactInfo.LastName},\n\n" +
                              $"Your account has been successfully deleted and your personal information has been anonymized in our system.\n" +
