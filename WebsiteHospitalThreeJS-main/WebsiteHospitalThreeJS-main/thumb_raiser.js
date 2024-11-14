@@ -537,7 +537,7 @@ export default class ThumbRaiser {
             const cameraView = this.getPointedViewport(this.mousePosition);
             if (cameraView != "none") {
                 if (cameraView == "mini-map") { // Mini-map camera selected
-                    if (event.buttons == 1) { // Primary button down
+                    if (event.buttons == 2) { // Right button down
                         this.dragMiniMap = true;
                     }
                 }
@@ -545,17 +545,17 @@ export default class ThumbRaiser {
                     const cameraIndex = ["fixed", "first-person", "third-person", "top"].indexOf(cameraView);
                     this.view.options.selectedIndex = cameraIndex;
                     this.setActiveViewCamera([this.fixedViewCamera, this.firstPersonViewCamera, this.thirdPersonViewCamera, this.topViewCamera][cameraIndex]);
-                    if (event.buttons == 1) { // Primary button down
+                    if (event.buttons == 2) { // Right button down
                         this.changeCameraDistance = true;
                     }
-                    else { // Secondary button down
+                    else { // Left button down
                         this.changeCameraOrientation = true;
                     }
                 }
             }
         }
     }
-
+    
     mouseMove(event) {
         if (event.buttons == 1 || event.buttons == 2) { // Primary or secondary button down
             if (this.changeCameraDistance || this.changeCameraOrientation || this.dragMiniMap) { // Mouse action in progress
@@ -563,9 +563,9 @@ export default class ThumbRaiser {
                 const newMousePosition = new THREE.Vector2(event.clientX, window.innerHeight - event.clientY - 1);
                 const mouseIncrement = newMousePosition.clone().sub(this.mousePosition);
                 this.mousePosition = newMousePosition;
-                if (event.buttons == 1) { // Primary button down
+                if (event.buttons == 2) { // Right button down
                     if (this.changeCameraDistance) {
-                        this.activeViewCamera.updateDistance(-0.05 * (mouseIncrement.x + mouseIncrement.y));
+                        this.activeViewCamera.updateDistance(-0.03 * (mouseIncrement.x + mouseIncrement.y));
                         this.displayPanel();
                     }
                     else if (this.dragMiniMap) {
@@ -576,22 +576,23 @@ export default class ThumbRaiser {
                         this.miniMapCamera.viewport.y += mouseIncrement.y / (window.innerHeight - height);
                     }
                 }
-                else { // Secondary button down
+                else { // Left button down
                     if (this.changeCameraOrientation) {
-                        this.activeViewCamera.updateOrientation(mouseIncrement.multiply(new THREE.Vector2(-0.5, 0.5)));
+                        this.activeViewCamera.updateOrientation(mouseIncrement.multiply(new THREE.Vector2(-0.3, 0.3)));
                         this.displayPanel();
                     }
                 }
             }
         }
     }
-
+    
     mouseUp(event) {
         // Reset mouse move action
         this.dragMiniMap = false;
         this.changeCameraDistance = false;
         this.changeCameraOrientation = false;
     }
+    
 
     mouseWheel(event) {
         // Prevent the mouse wheel from scrolling the document's content
@@ -604,7 +605,7 @@ export default class ThumbRaiser {
             const cameraIndex = ["fixed", "first-person", "third-person", "top"].indexOf(cameraView);
             this.view.options.selectedIndex = cameraIndex;
             const activeViewCamera = [this.fixedViewCamera, this.firstPersonViewCamera, this.thirdPersonViewCamera, this.topViewCamera][cameraIndex];
-            activeViewCamera.updateZoom(-0.001 * event.deltaY);
+            activeViewCamera.updateZoom(-0.0005 * event.deltaY);
             this.setActiveViewCamera(activeViewCamera);
         }
     }

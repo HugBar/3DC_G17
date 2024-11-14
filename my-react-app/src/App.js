@@ -19,6 +19,7 @@ import DeletePatient from './components/Patient/deletePatient/DeletePatient';
 import ProtectedRoute from './context/ProtectedRoute';
 import DeleteAccount from './components/Patient/deleteAccount/DeleteAccount';
 import CreatePatient from './components/Patient/createPatient/CreatePatient';
+import Hospital3DView from './components/Hospital/Hospital3DView';
 
 
 
@@ -222,6 +223,15 @@ const App = () => {
               >
                 Manage Operation Requests
               </button>
+              <button
+                onClick={() => {
+                  setSelectedOperationRequest('View Hospital 3D');
+                  navigate('/hospital-3d');
+                }}
+                className={`action-button ${selectedOperationRequest === 'View Hospital 3D' ? 'active' : ''}`}
+              >
+                View Hospital 3D
+              </button>
             </>
           )}
           
@@ -348,6 +358,7 @@ const App = () => {
       />
     </ProtectedRoute>
   } />
+  <Route path="/hospital-3d" element={<Hospital3DView />} />
 
   {/* Patient Routes */}
   <Route path="/Patient/create" element={
@@ -384,6 +395,7 @@ const App = () => {
   ) : <Navigate to="/" />
 } />
 }
+  <Route path="/hospital-3d" element={<Hospital3DView />} />
 </Routes>
 
     </div>
