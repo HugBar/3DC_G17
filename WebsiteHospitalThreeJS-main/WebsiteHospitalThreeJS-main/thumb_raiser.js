@@ -237,8 +237,7 @@ export default class ThumbRaiser {
             new THREE.Vector3(3, 1.5, 2.5),
             new THREE.Vector3(-3, 1.5, 2.5),
             new THREE.Vector3(6, 1.5, 2.5),
-            new THREE.Vector3(6, 1.5, -2.5),     // Example position - adjust these coordinates
-            // Add more positions as needed
+            new THREE.Vector3(6, 1.5, -2.5),   
         ];
 
         ceilingLightPositions.forEach(position => {
