@@ -13,7 +13,7 @@
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 import Orientation from "./orientation.js";
-import { generalData, mazeData, playerData, lightsData, fogData, cameraData , chairData, plantData, medicalEquipmentData, patientData} from "./default_data.js";
+import { generalData, mazeData, playerData, lightsData, fogData, cameraData , chairData, plantData, medicalEquipmentData, patientData, doorData} from "./default_data.js";
 import { merge } from "./merge.js";
 import Maze from "./hospital.js";
 import Player from "./player.js";
@@ -26,6 +26,7 @@ import Chair from "./chair.js";
 import Plant from "./plant.js";
 import MedicalEquipment from "./medicalEquipment.js";
 import Patient from "./patient.js";
+import Door from "./door.js";
 /*
  * generalParameters = {
  *  setDevicePixelRatio: Boolean
@@ -222,6 +223,46 @@ export default class ThumbRaiser {
             this.scene3D.add(patient.object);
         });
 
+        // Create the doors
+        this.doors = [];
+        doorData.forEach(doorParams => {
+            const door = new Door(doorParams);
+            this.doors.push(door);
+            this.scene3D.add(door.object);
+        });
+
+        this.ceilingLights = [];
+        const ceilingLightPositions = [
+            new THREE.Vector3(0, 1.5, 2.5),
+            new THREE.Vector3(3, 1.5, 2.5),
+            new THREE.Vector3(-3, 1.5, 2.5),
+            new THREE.Vector3(6, 1.5, 2.5),
+            new THREE.Vector3(6, 1.5, -2.5),     // Example position - adjust these coordinates
+            // Add more positions as needed
+        ];
+
+        ceilingLightPositions.forEach(position => {
+            // Create point light with increased intensity and distance
+            const light = new THREE.PointLight(0xFFFFFF, 2.5, 15); // Increased intensity to 2.5 and distance to 15
+            light.position.copy(position);
+            light.castShadow = true;
+            
+            // Configure shadow properties
+            light.shadow.mapSize.width = 512;  // Increased shadow map size
+            light.shadow.mapSize.height = 512;
+            light.shadow.camera.near = 0.1;
+            light.shadow.camera.far = 15;
+            
+            // Optional: Add light bulb representation
+            const lightBulb = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0xFFFFFF })
+            );
+            lightBulb.position.copy(position);
+            
+            this.ceilingLights.push({ light });
+            this.scene3D.add(light);
+        });
 
         // Create the lights
         this.lights = new Lights(this.lightsParameters);
@@ -526,7 +567,11 @@ export default class ThumbRaiser {
             else if (event.code == this.player.keyCodes.thumbsUp) {
                 this.player.keyStates.thumbsUp = state;
             }
+            else if (event.code === this.player.keyCodes.door && state) { // Only on key press, not release
+                this.tryToggleDoor();
+            }
         }
+
     }
 
     mouseDown(event) {
@@ -555,6 +600,27 @@ export default class ThumbRaiser {
             }
         }
     }
+    tryToggleDoor() {
+        let closestDoor = null;
+        let closestDistance = 1.5; // Adjust as needed for range
+    
+        this.maze.doors.forEach(door => {
+            const doorBox = new THREE.Box3().setFromObject(door.object); // Bounding box for door
+            const playerBox = new THREE.Box3().setFromObject(this.player.object); // Bounding box for player
+    
+            const distance = this.player.position.distanceTo(door.object.position); // Direct distance check
+    
+            // Check if bounding boxes intersect OR if player is within closestDistance
+            if (doorBox.intersectsBox(playerBox) || distance < closestDistance) {
+                closestDoor = door;
+            }
+        });
+    
+        if (closestDoor) {
+            closestDoor.toggleDoor();
+        }
+    }
+    
     
     mouseMove(event) {
         if (event.buttons == 1 || event.buttons == 2) { // Primary or secondary button down
@@ -833,6 +899,13 @@ export default class ThumbRaiser {
                 this.renderer.render(this.scene3D, this.miniMapCamera.object);
                 this.renderer.render(this.scene2D, this.camera2D);
             }
+
+// Replace lines 845-866 with:
+if (this.maze.doors) {
+    this.maze.doors.forEach(door => {
+        door.update();
+    });
+}
         }
     }
 }

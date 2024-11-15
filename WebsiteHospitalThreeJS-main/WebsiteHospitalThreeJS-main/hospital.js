@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import Ground from "./ground.js";
 import Wall from "./wall.js";
+import Door from "./door.js";
 
 /*
  * parameters = {
@@ -13,6 +14,9 @@ import Wall from "./wall.js";
 export default class Maze {
     constructor(parameters) {
         this.onLoad = function (description) {
+            // Add this near the start of onLoad
+            this.doors = [];  // Array to store all doors
+
             // Store the maze's map and size
             this.map = description.map;
             this.size = description.size;
@@ -46,7 +50,23 @@ export default class Maze {
                      *          2          |    Yes     |     No
                      *          3          |    Yes     |    Yes
                      */
-                    if (description.map[j][i] == 2 || description.map[j][i] == 3) {
+                    if (description.map[j][i] == 4) {
+                        // Create a door instead of a wall
+                        const door = new Door({
+                            url: "./models/gltf/Door/Door.glb",
+                            credits: "Hospital door model",
+                            scale: new THREE.Vector3(0.00137, 0.00137, 0.00137),
+                            position: new THREE.Vector3(i - description.size.width / 2.0 +0.015,
+                                0,
+                                j - description.size.height / 2.0 
+                            ),
+                            rotation: new THREE.Vector3(0, Math.PI, 0),
+                            color: 0x8B4513
+                        });
+                        this.doors.push(door);  // Add door to array
+                        this.object.add(door.object);
+                    }
+                    else if (description.map[j][i] == 2 || description.map[j][i] == 3) {
                         wallObject = this.wall.object.clone();
                         wallObject.position.set(i - description.size.width / 2.0 + 0.5, 0.5, j - description.size.height / 2.0);
                         this.object.add(wallObject);
