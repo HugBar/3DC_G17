@@ -1,0 +1,63 @@
+@startuml Login Sequence Diagram
+title "User Login Flow"
+
+actor User
+participant Login
+participant AuthContext
+participant LoginAPI
+participant API
+database Database
+
+activate User
+
+User -> Login: Access login page
+activate Login
+
+User -> Login: Enter credentials
+Login -> Login: handleChange(event)
+Login -> Login: setCredentials(newCredentials)
+
+User -> Login: Submit form
+activate Login
+Login -> Login: handleSubmit(event)
+Login -> Login: preventDefault()
+
+Login -> LoginAPI: loginApi(credentials)
+activate LoginAPI
+
+LoginAPI -> API: POST /api/auth/login
+activate API
+
+API -> Database: Validate credentials
+activate Database
+Database --> API: Return user data
+deactivate Database
+
+alt Invalid Credentials
+    API --> LoginAPI: Return error
+    LoginAPI --> Login: Throw error
+    Login -> Login: setErrorMessage("Error logging in")
+    Login -> Login: console.error(error)
+    Login --> User: Display error message
+else Success
+    API --> LoginAPI: Return auth token & user info
+    deactivate API
+    LoginAPI --> Login: Return response
+    deactivate LoginAPI
+    
+    Login -> Login: setCredentials({ email: '', password: '' })
+    
+    Login -> AuthContext: login(response)
+    activate AuthContext
+    AuthContext -> AuthContext: Set auth state
+    AuthContext --> Login: Update complete
+    deactivate AuthContext
+    
+    Login -> Login: navigate('/')
+    Login --> User: Redirect to home page
+end
+
+deactivate Login
+deactivate User
+
+@enduml

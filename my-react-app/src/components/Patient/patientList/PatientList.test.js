@@ -119,7 +119,9 @@ describe('PatientList Component', () => {
     });
 
     test('handles patient selection', async () => {
+        // Mock the getPatientById function
         patientService.getPatientById.mockResolvedValue(mockPatients[0]);
+        
         const mockOnSelectPatient = jest.fn();
 
         render(
@@ -128,11 +130,13 @@ describe('PatientList Component', () => {
             </BrowserRouter>
         );
 
+        // Wait for the patient card to be present
         const patientCard = await screen.findByTestId('patient-card');
         await act(async () => {
             fireEvent.click(patientCard);
         });
 
+        // Wait for the async operation to complete
         await waitFor(() => {
             expect(patientService.getPatientById).toHaveBeenCalledWith(1);
         });
