@@ -1,161 +1,215 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import StaffList from './StaffList';
 import staffService from '../../../api/staffService';
+import { act } from 'react';
 import userEvent from '@testing-library/user-event';
 
-jest.mock('../../../api/staffService', () => ({
-  __esModule: true,
-  default: {
-    getAllStaff: jest.fn(),
-    getStaffById: jest.fn()
-  }
-}));
+// Mock the staffService
+jest.mock('../../../api/staffService');
 
+// Mock useNavigate
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({
-    search: '',
-    pathname: '/staff/filter'
-  })
+    ...jest.requireActual('react-router-dom'),
+    useNavigate: () => mockNavigate,
+    useLocation: () => ({
+        search: '',
+        pathname: '/staff/filter'
+    })
 }));
 
-const mockStaffData = [
-  {
-    id: 1,
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    specialization: 'Cardiology',
-    phoneNumber: '123456789'
-  },
-  {
-    id: 2,
-    firstName: 'Jane',
-    lastName: 'Smith',
-    email: 'jane@example.com',
-    specialization: 'Neurology',
-    phoneNumber: '987654321'
-  }
+const mockStaffMembers = [
+    {
+        id: 1,
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john@example.com',
+        specialization: 'Cardiology',
+        phoneNumber: '123456789',
+        licenseNumber: 'LIC123',
+        availabilitySlots: [
+            {
+                startTime: '2024-03-20T10:00:00',
+                endTime: '2024-03-20T12:00:00'
+            }
+        ]
+    }
 ];
 
 describe('StaffList Component', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    staffService.getAllStaff.mockResolvedValue(mockStaffData);
-  });
-
-  const renderStaffList = () => {
-    return render(
-      <BrowserRouter>
-        <StaffList onSelectStaff={jest.fn()} />
-      </BrowserRouter>
-    );
-  };
-
-  test('renders staff list component with filters', async () => {
-    await act(async () => {
-      renderStaffList();
-    });
-    
-    expect(screen.getByPlaceholderText('First Name')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Last Name')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Email')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Specialization')).toBeInTheDocument();
-    expect(screen.getByText('Clear Filters')).toBeInTheDocument();
-  });
-
-  test('displays staff members after loading', async () => {
-    await act(async () => {
-      renderStaffList();
-    });
-    
-    expect(await screen.findByText('John Doe')).toBeInTheDocument();
-    expect(await screen.findByText('Jane Smith')).toBeInTheDocument();
-  });
-
-  test('filters update URL and trigger new search', async () => {
-    await act(async () => {
-      renderStaffList();
-    });
-    const user = userEvent.setup();
-
-    const firstNameInput = screen.getByPlaceholderText('First Name');
-    await user.type(firstNameInput, 'John');
-
-    expect(mockNavigate).toHaveBeenCalledWith(
-      '/staff/filter?firstName=John',
-      expect.any(Object)
-    );
-  });
-
-  test('clear filters resets all inputs and URL', async () => {
-    await act(async () => {
-      renderStaffList();
-    });
-    const user = userEvent.setup();
-
-    const firstNameInput = screen.getByPlaceholderText('First Name');
-    await user.type(firstNameInput, 'John');
-    
-    const clearButton = screen.getByText('Clear Filters');
-    await user.click(clearButton);
-
-    expect(firstNameInput.value).toBe('');
-    expect(mockNavigate).toHaveBeenCalledWith('/staff/filter');
-  });
-
-  test('shows error message when API call fails', async () => {
-    staffService.getAllStaff.mockRejectedValue(new Error('API Error'));
-    
-    await act(async () => {
-      renderStaffList();
+    beforeEach(() => {
+        jest.clearAllMocks();
+        staffService.getAllStaff.mockResolvedValue({
+            items: mockStaffMembers,
+            totalPages: 1
+        });
     });
 
-    expect(await screen.findByText('Error fetching staff list.')).toBeInTheDocument();
-  });
+    test('renders staff list successfully', async () => {
+        render(
+            <BrowserRouter>
+                <StaffList />
+            </BrowserRouter>
+        );
 
-  test('shows no results message when no staff found', async () => {
-    staffService.getAllStaff.mockResolvedValue([]);
-    
-    await act(async () => {
-      renderStaffList();
+        await waitFor(() => {
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
+        });
+
+        expect(screen.getByText('Email:')).toBeInTheDocument();
+        expect(screen.getByText('john@example.com')).toBeInTheDocument();
+        expect(screen.getByText('Specialization:')).toBeInTheDocument();
+        expect(screen.getByText('Cardiology')).toBeInTheDocument();
     });
 
-    expect(await screen.findByText('No staff members found')).toBeInTheDocument();
-  });
+    test('handles filter changes', async () => {
+        render(
+            <BrowserRouter>
+                <StaffList />
+            </BrowserRouter>
+        );
 
-  test('opens staff details modal when clicking on a staff member', async () => {
-    staffService.getStaffById.mockResolvedValue(mockStaffData[0]);
-    
-    await act(async () => {
-      renderStaffList();
+        const firstNameInput = screen.getByPlaceholderText('First Name');
+        await act(async () => {
+            fireEvent.change(firstNameInput, { target: { value: 'John' } });
+        });
+
+        expect(mockNavigate).toHaveBeenCalledWith(
+            expect.stringContaining('firstName=John'),
+            expect.any(Object)
+        );
     });
-    const user = userEvent.setup();
 
-    await screen.findByText('John Doe');
-    await user.click(screen.getByText('John Doe'));
+    test('handles clear filters', async () => {
+        render(
+            <BrowserRouter>
+                <StaffList />
+            </BrowserRouter>
+        );
 
-    expect(screen.getByText('Staff Details')).toBeInTheDocument();
-    expect(screen.getByText('Update Staff')).toBeInTheDocument();
-    expect(screen.getByText('Close')).toBeInTheDocument();
-  });
+        const clearButton = screen.getByText('Clear Filters');
+        await act(async () => {
+            fireEvent.click(clearButton);
+        });
 
-  test('closes modal when clicking close button', async () => {
-    staffService.getStaffById.mockResolvedValue(mockStaffData[0]);
-    
-    await act(async () => {
-      renderStaffList();
+        expect(mockNavigate).toHaveBeenCalledWith('/staff/filter');
     });
-    const user = userEvent.setup();
 
-    await screen.findByText('John Doe');
-    await user.click(screen.getByText('John Doe'));
-    await user.click(screen.getByText('Close'));
+    test('handles pagination', async () => {
+        staffService.getAllStaff.mockResolvedValue({
+            items: mockStaffMembers,
+            totalPages: 2
+        });
 
-    expect(screen.queryByText('Staff Details')).not.toBeInTheDocument();
-  });
+        render(
+            <BrowserRouter>
+                <StaffList />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
+        });
+
+        const nextButton = screen.getByText('Next');
+        await act(async () => {
+            fireEvent.click(nextButton);
+        });
+
+        expect(mockNavigate).toHaveBeenCalledWith(
+            expect.stringContaining('page=2'),
+            expect.any(Object)
+        );
+    });
+
+    test('handles staff selection and modal display', async () => {
+        staffService.getStaffById.mockResolvedValue(mockStaffMembers[0]);
+        const mockOnSelectStaff = jest.fn();
+
+        render(
+            <BrowserRouter>
+                <StaffList onSelectStaff={mockOnSelectStaff} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
+        });
+
+        await act(async () => {
+            fireEvent.click(screen.getByText('John Doe'));
+        });
+
+        expect(screen.getByText('Staff Details')).toBeInTheDocument();
+        expect(screen.getByText('Update Staff')).toBeInTheDocument();
+        expect(screen.getByText('Deactivate Staff')).toBeInTheDocument();
+    });
+
+    test('handles error state', async () => {
+        staffService.getAllStaff.mockRejectedValue({
+            response: { status: 404 }
+        });
+
+        render(
+            <BrowserRouter>
+                <StaffList />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('No staff members found.')).toBeInTheDocument();
+        });
+    });
+
+    test('handles update staff button click', async () => {
+        staffService.getStaffById.mockResolvedValue(mockStaffMembers[0]);
+        const mockOnSelectStaff = jest.fn();
+
+        render(
+            <BrowserRouter>
+                <StaffList onSelectStaff={mockOnSelectStaff} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
+        });
+
+        await act(async () => {
+            fireEvent.click(screen.getByText('John Doe'));
+        });
+
+        await act(async () => {
+            fireEvent.click(screen.getByText('Update Staff'));
+        });
+
+        expect(mockOnSelectStaff).toHaveBeenCalledWith(1);
+    });
+
+    test('handles deactivate staff button click', async () => {
+        staffService.getStaffById.mockResolvedValue(mockStaffMembers[0]);
+        const mockOnDeactivateStaff = jest.fn();
+
+        render(
+            <BrowserRouter>
+                <StaffList onDeactivateStaff={mockOnDeactivateStaff} />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
+        });
+
+        await act(async () => {
+            fireEvent.click(screen.getByText('John Doe'));
+        });
+
+        await act(async () => {
+            fireEvent.click(screen.getByText('Deactivate Staff'));
+        });
+
+        expect(mockOnDeactivateStaff).toHaveBeenCalledWith(1);
+    });
 });
