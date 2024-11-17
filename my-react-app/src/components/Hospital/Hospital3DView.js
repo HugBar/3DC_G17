@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { } from 'react';
 
 const Hospital3DView = () => {
   const containerStyle = {

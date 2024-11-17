@@ -61,16 +61,16 @@ alt Select Patient
     User -> PatientList: Click patient card
     PatientList -> PatientService: getPatientById(patientId)
     activate PatientService
+    PatientService -> API: GET /api/patient/{id}
+        API -> Database: Query patient details
+        Database --> API: Return patient details
+        API --> PatientService: Return response
 
     alt Patient Not Found
         PatientService --> PatientList: Throw error
         PatientList -> PatientList: setErrorMessage("Error fetching patient details")
         PatientList --> User: Display error message
     else Success
-        PatientService -> API: GET /api/patient/{id}
-        API -> Database: Query patient details
-        Database --> API: Return patient details
-        API --> PatientService: Return response
         PatientService --> PatientList: Return patient details
         PatientList -> PatientList: setSelectedPatient(patientDetails)
         PatientList --> User: Display patient modal
