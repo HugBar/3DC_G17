@@ -1,29 +1,33 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, useParams } from 'react-router-dom';
 import DeactivateStaff from './deactivateStaff';
 import staffService from '../../../api/staffService';
 
-jest.mock('../../../api/staffService', () => ({
-  __esModule: true,
-  default: {
-    deactivateStaff: jest.fn(),
-    getStaffById: jest.fn()
-  }
+// Mock do react-router-dom
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useParams: jest.fn()
 }));
 
-const mockStaffId = '123';
-const mockOnBack = jest.fn();
+// Mock do staffService
+jest.mock('../../../api/staffService', () => ({
+  deactivateStaff: jest.fn()
+}));
 
 describe('DeactivateStaff Component', () => {
+  const mockStaffId = '123';
+  const mockOnBack = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
+    useParams.mockReturnValue({ id: mockStaffId });
   });
 
   const renderDeactivateStaff = () => {
     return render(
       <BrowserRouter>
-        <DeactivateStaff staffId={mockStaffId} onBack={mockOnBack} />
+        <DeactivateStaff onBack={mockOnBack} />
       </BrowserRouter>
     );
   };
@@ -37,7 +41,8 @@ describe('DeactivateStaff Component', () => {
   });
 
   test('exibe mensagem de erro quando nenhum staff é selecionado', async () => {
-    render(<DeactivateStaff staffId={null} onBack={mockOnBack} />);
+    useParams.mockReturnValue({ id: null });
+    renderDeactivateStaff();
 
     await act(async () => {
       fireEvent.click(screen.getByText('Deactivate'));
@@ -74,5 +79,22 @@ describe('DeactivateStaff Component', () => {
     
     fireEvent.click(screen.getByText('Back'));
     expect(mockOnBack).toHaveBeenCalled();
+  });
+
+  test('redireciona após desativação bem-sucedida', async () => {
+    jest.useFakeTimers();
+    staffService.deactivateStaff.mockResolvedValue({});
+    renderDeactivateStaff();
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Deactivate'));
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(2000);
+    });
+
+    expect(mockOnBack).toHaveBeenCalled();
+    jest.useRealTimers();
   });
 });

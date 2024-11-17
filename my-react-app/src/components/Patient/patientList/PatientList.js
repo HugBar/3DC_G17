@@ -107,6 +107,9 @@ const PatientList = ({onSelectPatient}) => {
     try {
       const patientDetails = await patientService.getPatientById(patientId);
       setSelectedPatient(patientDetails);
+      if (onSelectPatient) {
+        onSelectPatient(patientId);
+      }
     } catch (error) {
       setErrorMessage('Error fetching patient details.');
     }
@@ -163,6 +166,7 @@ const PatientList = ({onSelectPatient}) => {
               key={patient.id} 
               className={`patient-card ${selectedPatient?.id === patient.id ? 'selected' : ''}`}
               onClick={() => handlePatientSelect(patient.id)}
+              data-testid="patient-card"
             >
               <h3>{`${patient.firstName} ${patient.lastName}`}</h3>
               <p><strong>Medical Record #:</strong> {patient.medicalNr}</p>
