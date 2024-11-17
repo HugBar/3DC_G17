@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor , within} from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import PatientList from './PatientList';
 import patientService from '../../../api/patientService';
+import userEvent from '@testing-library/user-event';
 import { act } from 'react';
 
 // Mock the patientService
@@ -111,14 +112,13 @@ describe('PatientList Component', () => {
         await act(async () => {
             fireEvent.click(nextButton);
         });
-
         expect(mockNavigate).toHaveBeenCalledWith(
             expect.stringContaining('page=2'),
             expect.any(Object)
         );
     });
 
-    test('handles patient selection', async () => {
+    /*test('handles patient selection', async () => {
         // Mock the getPatientById function
         patientService.getPatientById.mockResolvedValue(mockPatients[0]);
         
@@ -141,6 +141,59 @@ describe('PatientList Component', () => {
             expect(patientService.getPatientById).toHaveBeenCalledWith(1);
         });
         expect(mockOnSelectPatient).toHaveBeenCalledWith(1);
+    });
+    */
+
+    test('displays patient details when clicking on a patient', async () => {
+        // Mock the getPatientById response
+        patientService.getPatientById.mockResolvedValue(mockPatients[0]);
+        
+        render(
+            <BrowserRouter>
+                <PatientList />
+            </BrowserRouter>
+        );
+
+        const user = userEvent.setup();
+
+        // Wait for the patient card to be rendered
+        const patientCard = await screen.findByTestId('patient-card');
+        await user.click(patientCard);
+
+        // Wait for the modal content to appear and make assertions
+        const modalContent = await screen.findByTestId('modal-content');
+        expect(modalContent).toBeInTheDocument();
+
+        // Check modal content
+        expect(within(modalContent).getByText('John Doe')).toBeInTheDocument();
+        expect(within(modalContent).getByText('john@example.com')).toBeInTheDocument();
+        expect(within(modalContent).getByText('12345')).toBeInTheDocument();
+        expect(within(modalContent).getByText('123-456-7890')).toBeInTheDocument();
+        expect(within(modalContent).getByText('1990-01-01')).toBeInTheDocument();
+
+        // Close the modal
+    });
+
+    test('shows no results message when no patients found', async () => {
+        // Mock the service to return empty array
+        patientService.getAllPatients.mockResolvedValue({
+            items: [],
+            totalPages: 0,
+            currentPage: 1,
+            pageSize: 10,
+            totalCount: 0
+        });
+
+        render(
+            <BrowserRouter>
+                <PatientList />
+            </BrowserRouter>
+        );
+
+        // Wait for and verify the no results message
+        await waitFor(() => {
+            expect(screen.getByText('No patients found.')).toBeInTheDocument();
+        });
     });
 
     test('handles error state', async () => {

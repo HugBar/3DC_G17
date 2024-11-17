@@ -156,8 +156,11 @@ const PatientList = ({onSelectPatient}) => {
         </button>
       </div>
       
-
       {errorMessage && <div className="error-message">{errorMessage}</div>}
+
+      {!errorMessage && patientList && patientList.length === 0 && (
+        <p className="no-results">No patients found.</p>
+      )}
 
       {patientList && patientList.length > 0 && (
         <div className="patient-grid">
@@ -175,13 +178,12 @@ const PatientList = ({onSelectPatient}) => {
               <p><strong>Date of Birth:</strong> {patient?.dateOfBirth || 'Not available'}</p>
             </div>
           ))}
-          
         </div>
       )}
 
       {selectedPatient && (
         <div className="patient-details-modal">
-          <div className="modal-content">
+          <div className="modal-content" data-testid="modal-content">
             <h3>Patient Details</h3>
             <div className="details-grid">
               <p><strong>Name:</strong> {selectedPatient.firstName} {selectedPatient.lastName}</p>
