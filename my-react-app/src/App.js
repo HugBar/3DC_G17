@@ -20,7 +20,7 @@ import ProtectedRoute from './context/ProtectedRoute';
 import DeleteAccount from './components/Patient/deleteAccount/DeleteAccount';
 import CreatePatient from './components/Patient/createPatient/CreatePatient';
 import Hospital3DView from './components/Hospital/Hospital3DView';
-
+import AppointmentScheduler from './components/Appointments/AppointmentScheduler';
 
 
 const App = () => {
@@ -153,6 +153,14 @@ const App = () => {
                   className={`nav-button ${showStaffActions ? 'active' : ''}`}
                 >
                   Staff
+                </button>
+              )}
+              {isAdmin && (
+                <button 
+                  onClick={() => navigate('/appointments')}
+                  className="nav-button"
+                >
+                  Appointments
                 </button>
               )}
               {(isPatient || isAdmin) && (
@@ -340,6 +348,14 @@ const App = () => {
       <PatientList onSelectPatient={handleSelectPatientFromList}/>
     </ProtectedRoute>
   } />
+  <Route 
+  path="/appointments" 
+  element={
+    <ProtectedRoute requiredRole="admin">
+      <AppointmentScheduler />
+    </ProtectedRoute>
+  } 
+/>
   
   {/* Doctor Routes */}
   <Route path="/operation/request" element={
