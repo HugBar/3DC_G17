@@ -13,6 +13,8 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 
 namespace DDDSample1.Controllers
 {
@@ -23,19 +25,28 @@ namespace DDDSample1.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<GoogleAuthController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public GoogleAuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILogger<GoogleAuthController> logger)
+        public GoogleAuthController(
+            UserManager<ApplicationUser> userManager, 
+            SignInManager<ApplicationUser> signInManager, 
+            ILogger<GoogleAuthController> logger,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            _configuration = configuration;
         }
 
         [HttpGet("google-login")]
         public IActionResult GoogleLogin()
         {
-            _logger.LogInformation("Initiating Google login...");
-            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse") };
+            _logger.LogInformation("Initiating Google login for patient...");
+            var properties = new AuthenticationProperties { 
+                RedirectUri = Url.Action("GoogleResponse"),
+                Items = { { "role", "Patient" } }
+            };
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
@@ -44,64 +55,74 @@ namespace DDDSample1.Controllers
         {
             try
             {
-                _logger.LogInformation("Handling Google response...");
-
-                // Authenticate using the external scheme
                 var authenticateResult = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
-
                 if (!authenticateResult.Succeeded)
                 {
-                    var failureMessage = authenticateResult.Failure?.Message ?? "Unknown reason";
-                    _logger.LogError($"Google authentication failed. Reason: {failureMessage}");
-                    return BadRequest($"Google authentication failed. Reason: {failureMessage}");
+                    return BadRequest("Google authentication failed");
                 }
 
                 var emailClaim = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
                 var nameClaim = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
 
-                _logger.LogInformation($"User authenticated. Email: {emailClaim}, Name: {nameClaim}");
-
-                // Find or create the user in your Identity system
                 var user = await _userManager.FindByEmailAsync(emailClaim);
                 if (user == null)
                 {
-                    user = new ApplicationUser { UserName = emailClaim, Email = emailClaim };
+                    user = new ApplicationUser { 
+                        UserName = emailClaim, 
+                        Email = emailClaim,
+                        EmailConfirmed = true 
+                    };
                     var result = await _userManager.CreateAsync(user);
                     if (!result.Succeeded)
                     {
-                        _logger.LogError($"Failed to create user. Errors: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                        return BadRequest($"Failed to create user. Errors: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                        return BadRequest(result.Errors);
                     }
                 }
 
-                // Check if the user is already in the "Patient" role
-                if (!await _userManager.IsInRoleAsync(user, "Admin"))
+                if (!await _userManager.IsInRoleAsync(user, "Patient"))
                 {
-                    var roleResult = await _userManager.AddToRoleAsync(user, "Admin");
+                    var roleResult = await _userManager.AddToRoleAsync(user, "Patient");
                     if (!roleResult.Succeeded)
                     {
-                        _logger.LogError($"Failed to add user to role 'Patient'. Errors: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
-                        return BadRequest($"Failed to add user to role 'Patient'. Errors: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                        return BadRequest("Failed to assign Patient role");
                     }
-
-                    _logger.LogInformation($"User {user.Email} was successfully assigned the role 'Patient'.");
                 }
 
-                // Sign in the user
-                await _signInManager.SignInAsync(user, isPersistent: false);
+                // Generate JWT token for the patient
+                var token = GenerateJwtToken(user);
 
-                return Ok("Google authentication successful.");
+                // Return token in a way that can be captured by the frontend
+                return Redirect($"http://localhost:3000/auth/callback?token={token}");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error during Google response: {ex.Message}");
+                _logger.LogError($"Error during Google authentication: {ex.Message}");
                 return BadRequest($"Authentication failed: {ex.Message}");
             }
         }
 
+        private string GenerateJwtToken(ApplicationUser user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(ClaimTypes.Role, "Patient"),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
 
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddHours(3),
+                signingCredentials: creds
+            );
 
-
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
     }
 }

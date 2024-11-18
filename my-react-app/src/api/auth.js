@@ -13,23 +13,15 @@ export const login = async (credentials) => {
   }
 };
 
-export const googleLogin = () => {
-  try {
-    // Redirect to the Google login endpoint
-    window.location.href = `${GOOGLE_AUTH_URL}/google-login`;
-  } catch (error) {
-    console.error('Error initiating Google login:', error);
-    throw error;
-  }
+export const initiateGoogleLogin = () => {
+  window.location.href = `${GOOGLE_AUTH_URL}/google-login`;
 };
 
-// Optional: Add a method to handle the Google response
-export const handleGoogleResponse = async (code) => {
-  try {
-    const response = await axios.get(`${GOOGLE_AUTH_URL}/google-response?code=${code}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error handling Google response:', error);
-    throw error;
+export const handleGoogleCallback = async (token) => {
+  if (!token) {
+    throw new Error('No token received');
   }
+  
+  localStorage.setItem('authToken', token);
+  return token;
 };

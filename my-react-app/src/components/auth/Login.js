@@ -1,13 +1,12 @@
-// src/components/auth/Login.js
-import React, { useState } from 'react';
+// src/components/Login/Login.js
+import React, { useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { login as loginApi, googleLogin } from '../../api/auth';
-
+import { login as loginApi, initiateGoogleLogin} from '../../api/auth';
 import './Login.css';
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login} = useAuth();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
@@ -33,12 +32,7 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    try {
-      googleLogin();
-    } catch (error) {
-      setErrorMessage('Error initiating Google login.');
-      console.error('Google login error:', error);
-    }
+    initiateGoogleLogin();
   };
 
   return (
@@ -72,23 +66,16 @@ const Login = () => {
         </div>
         <button type="submit" className="login-button">Login</button>
         
-        <div className="separator">
-          <span>OR</span>
+        <div className="separator"> 
         </div>
-
-        <button 
-          type="button" 
-          onClick={handleGoogleLogin}
-          className="google-login-button"
-        >
-          <img 
-            src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" 
-            alt="Google logo" 
-            className="google-icon"
-          />
-          Sign in with Google
-        </button>
       </form>
+      <div className="divider">OR</div>
+      <button 
+        onClick={handleGoogleLogin}
+        className="google-login-button"
+      >
+        Login with Google
+      </button>
     </div>
   );
 };
