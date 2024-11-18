@@ -33,7 +33,7 @@ const AppointmentScheduler = () => {
         
         if (!response.ok) throw new Error('Failed to fetch scheduling data');
         
-        const data = await response.json();
+        //const data = await response.json();
         // TODO: Send data to Prolog scheduler
         setSuccessMessage('Schedule generated successfully!');
     } catch (error) {
