@@ -61,6 +61,56 @@ const patientService = {
     }
   },
 
+  updateAdminPatientProfile: async (id, updateData) => {
+    const token = getAuthToken();
+    checkAdminRole(token);
+    
+    const patchData = [];
+    
+    if (updateData.phoneNumber !== undefined) {
+        patchData.push({ op: "replace", path: "/phoneNumber", value: updateData.phoneNumber });
+    }
+    if (updateData.firstName !== undefined) {
+        patchData.push({ op: "replace", path: "/firstName", value: updateData.firstName });
+    }
+    if (updateData.lastName !== undefined) {
+        patchData.push({ op: "replace", path: "/lastName", value: updateData.lastName });
+    }
+    if (updateData.dateOfBirth !== undefined) {
+        patchData.push({ op: "replace", path: "/dateOfBirth", value: updateData.dateOfBirth });
+    }
+    if (updateData.gender !== undefined) {
+        patchData.push({ op: "replace", path: "/gender", value: updateData.gender });
+    }
+    if (updateData.emergencyContact !== undefined) {
+        patchData.push({ op: "replace", path: "/emergencyContact", value: updateData.emergencyContact });
+    }
+    if (updateData.medicalHistory !== undefined) {
+        patchData.push({ op: "replace", path: "/medicalHistory", value: updateData.medicalHistory });
+    }
+
+    try {
+        const response = await axios.patch(`${API_URL}/admin/edit-patient-profile/${id}`, patchData, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json-patch+json',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        if (error.response) {
+            console.error('Error response:', error.response.data);
+            console.error('Error status:', error.response.status);
+        } else if (error.request) {
+            console.error('Error request:', error.request);
+        } else {
+            console.error('Error message:', error.message);
+        }
+        throw error;
+    }
+},
+
+
   getAllPatients: async (filters = {}, page = 1, pageSize = 1) => {
     const token = getAuthToken();
     checkAdminRole(token);

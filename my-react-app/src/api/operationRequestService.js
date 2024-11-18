@@ -51,6 +51,57 @@ const operationRequestService = {
       throw error;
     }
   },
+  updateOperationRequest: async (id, updateData) => {
+    const token = getAuthToken();
+    checkDoctorRole(token); // Changed to doctor role since operation requests are managed by doctors
+    
+    const patchData = [];
+    
+    // Change fields to match OperationRequest structure
+    if (updateData.operationTypeId !== undefined) {
+      patchData.push({ 
+        op: "replace", 
+        path: "/operationTypeId", 
+        value: updateData.operationTypeId 
+      });
+    }
+    if (updateData.deadline !== undefined) {
+      patchData.push({ 
+        op: "replace", 
+        path: "/deadline", 
+        value: updateData.deadline 
+      });
+    }
+    if (updateData.priority !== undefined) {
+      patchData.push({ 
+        op: "replace", 
+        path: "/priority", 
+        value: updateData.priority 
+      });
+    }
+  
+    try {
+      const response = await axios.patch(`${API_URL}${id}`, patchData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json-patch+json',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+      throw error;
+    }
+  },
+  
+  
 
   getAllOperationRequests: async (filters = {}) => {
     const token = getAuthToken();

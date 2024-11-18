@@ -1,0 +1,175 @@
+.update-profile-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .update-profile-container h2 {
+    color: #333;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-size: 1.8rem;
+  }
+  
+  .update-profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .form-group label {
+    font-weight: 600;
+    color: #444;
+    font-size: 0.95rem;
+  }
+  
+  .form-group label::after {
+    content: " *";
+    color: #dc3545;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  }
+  
+  .form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+  
+  .field-error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    justify-content: flex-end;
+  }
+  
+  .update-button,
+  .back-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .update-button {
+    background-color: #4a90e2;
+    color: white;
+  }
+  
+  .update-button:hover {
+    background-color: #357abd;
+  }
+  
+  .back-button {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .back-button:hover {
+    background-color: #5a6268;
+  }
+  
+  .success-message,
+  .error-message {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+    text-align: center;
+    font-weight: 500;
+  }
+  
+  .success-message {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+  
+  .error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+  
+  @media (max-width: 768px) {
+    .update-profile-container {
+      margin: 1rem;
+      padding: 1rem;
+    }
+  
+    .button-group {
+      flex-direction: column;
+    }
+  
+    .update-button,
+    .back-button {
+      width: 100%;
+    }
+  }
+  
+  /* Disabled state styles */
+  .form-group input:disabled,
+  .form-group select:disabled,
+  .form-group textarea:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+  }
+  
+  /* Required field indicator */
+  .required-field {
+    color: #dc3545;
+    margin-left: 4px;
+  }
+  
+  /* Loading state */
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+  }
+  
+  /* Form section dividers */
+  .form-section {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Hover effects */
+  .form-group input:hover:not(:disabled),
+  .form-group select:hover:not(:disabled),
+  .form-group textarea:hover:not(:disabled) {
+    border-color: #b8b8b8;
+  }
+  

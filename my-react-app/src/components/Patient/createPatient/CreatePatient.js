@@ -47,10 +47,11 @@ const CreatePatient = () => {
       {successMessage && <div className="success-message">{successMessage}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>First Name:</label>
+          <label htmlFor="firstName">First Name:</label>
           <input
-            type="text"
+            id="firstName"
             name="firstName"
+            type="text"
             value={values.firstName}
             onChange={handleChange}
             className={errors.firstName ? 'error' : ''}
@@ -59,10 +60,11 @@ const CreatePatient = () => {
         </div>
 
         <div className="form-group">
-          <label>Last Name:</label>
+          <label htmlFor="lastName">Last Name:</label>
           <input
-            type="text"
+            id="lastName"
             name="lastName"
+            type="text"
             value={values.lastName}
             onChange={handleChange}
             className={errors.lastName ? 'error' : ''}
@@ -71,8 +73,9 @@ const CreatePatient = () => {
         </div>
 
         <div className="form-group">
-          <label>Email:</label>
+          <label htmlFor="email">Email:</label>
           <input
+            id="email"
             type="email"
             name="email"
             value={values.email}
@@ -83,8 +86,9 @@ const CreatePatient = () => {
         </div>
 
         <div className="form-group">
-          <label>Phone Number:</label>
+          <label htmlFor="phoneNumber">Phone Number:</label>
           <input
+            id="phoneNumber"
             type="text"
             name="phoneNumber"
             value={values.phoneNumber}
@@ -96,8 +100,9 @@ const CreatePatient = () => {
         </div>
 
         <div className="form-group">
-          <label>Date of Birth:</label>
+          <label htmlFor="dateOfBirth">Date of Birth:</label>
           <input
+            id="dateOfBirth"
             type="date"
             name="dateOfBirth"
             value={values.dateOfBirth}
@@ -108,8 +113,9 @@ const CreatePatient = () => {
         </div>
 
         <div className="form-group">
-          <label>Gender:</label>
+          <label htmlFor="gender">Gender:</label>
           <select
+            id="gender"
             name="gender"
             value={values.gender}
             onChange={handleChange}
@@ -124,8 +130,9 @@ const CreatePatient = () => {
         </div>
 
         <div className="form-group">
-          <label>Contact Info:</label>
+          <label htmlFor="contactInfo">Contact Info:</label>
           <textarea
+            id="contactInfo"
             name="contactInfo"
             value={values.contactInfo}
             onChange={handleChange}
@@ -135,8 +142,9 @@ const CreatePatient = () => {
         </div>
 
         <div className="form-group">
-          <label>Emergency Contact:</label>
+          <label htmlFor="emergencyContact">Emergency Contact:</label>
           <textarea
+            id="emergencyContact"
             name="emergencyContact"
             value={values.emergencyContact}
             onChange={handleChange}

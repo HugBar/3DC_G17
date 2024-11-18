@@ -47,6 +47,14 @@ const OperationRequestList = ({ onDeleteOperationRequest }) => {
     navigate('/operationrequest/filter');
   };
 
+  const handleSelectRequest = (request) => {
+    setSelectedRequest(request);
+    if (request) {
+      navigate(`/operationrequest/update/${request.id}`);
+    }
+  };
+  
+
   const fetchOperationRequests = useCallback(async (filters) => {
     try {
       const data = await operationRequestService.getAllOperationRequests(filters);
@@ -149,6 +157,10 @@ const OperationRequestList = ({ onDeleteOperationRequest }) => {
             <p><strong>Status:</strong> {selectedRequest.isScheduled ? 'Scheduled' : 'Not Scheduled'}</p>
             <div className="modal-actions">
               <button onClick={handleDeleteClick} className="delete-button">Delete</button>
+              <button onClick={() => handleSelectRequest(selectedRequest)} className="update-button">
+  Update Request
+</button>
+
               <button onClick={handleCloseDetails} className="back-button">Back to List</button>
             </div>
           </div>
