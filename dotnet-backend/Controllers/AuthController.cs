@@ -147,7 +147,7 @@ namespace DDDSample1.Controllers
                 }
 
                 var result = await _authService.ConfirmResetPasswordAsync(model.Email, model.Token, model.NewPassword);
-                
+
                 if (result)
                 {
                     _logger.LogInformation($"Password reset successful for user {model.Email}");
@@ -158,7 +158,7 @@ namespace DDDSample1.Controllers
                     return BadRequest("Failed to reset password. Invalid token or token expired.");
                 }
             }
-                catch (InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
                 _logger.LogWarning($"Password reset validation failed for user {model.Email}: {ex.Message}");
                 return BadRequest(ex.Message);
