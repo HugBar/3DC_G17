@@ -65,6 +65,23 @@ const Login = () => {
           />
         </div>
         <button type="submit" className="login-button">Login</button>
+        
+        <div className="separator">
+          <span>OR</span>
+        </div>
+
+        <button 
+          type="button" 
+          onClick={handleGoogleLogin}
+          className="google-login-button"
+        >
+          <img 
+            src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" 
+            alt="Google logo" 
+            className="google-icon"
+          />
+          Sign in with Google
+        </button>
       </form>
       <div className="divider">OR</div>
       <button 

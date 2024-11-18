@@ -107,9 +107,6 @@ const PatientList = ({onSelectPatient}) => {
     try {
       const patientDetails = await patientService.getPatientById(patientId);
       setSelectedPatient(patientDetails);
-      if (onSelectPatient) {
-        onSelectPatient(patientId);
-      }
     } catch (error) {
       setErrorMessage('Error fetching patient details.');
     }

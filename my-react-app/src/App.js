@@ -22,6 +22,8 @@ import CreatePatient from './components/Patient/createPatient/CreatePatient';
 import Hospital3DView from './components/Hospital/Hospital3DView';
 import AppointmentScheduler from './components/Appointments/AppointmentScheduler';
 import AuthCallback from './components/auth/AuthCallback';
+import EditPatientProfile from './components/Patient/editPatientProfile/EditPatientProfile';
+import UpdateOperationRequest from './components/OperationRequest/updateOperationRequest/UpdateOperationRequest'
 
 
 const App = () => {
@@ -240,15 +242,6 @@ const App = () => {
               >
                 Manage Operation Requests
               </button>
-              <button
-                onClick={() => {
-                  setSelectedOperationRequest('View Hospital 3D');
-                  navigate('/hospital-3d');
-                }}
-                className={`action-button ${selectedOperationRequest === 'View Hospital 3D' ? 'active' : ''}`}
-              >
-                View Hospital 3D
-              </button>
             </>
           )}
           
@@ -374,6 +367,15 @@ const App = () => {
       />
     </ProtectedRoute>
   } />
+<Route 
+  path="/operationrequest/update/:id" 
+  element={
+    <ProtectedRoute requiredRole="doctor">
+      <UpdateOperationRequest onBack={() => navigate('/operationrequest/filter')} />
+    </ProtectedRoute>
+  } 
+/>
+
   <Route path="/operation/delete/:id" element={
     <ProtectedRoute requiredRole="doctor">
       <OperationRequestDeleteConfirmation
@@ -400,7 +402,7 @@ const App = () => {
   {/* Admin Patient Routes */}
   <Route path="/patient/admin/edit-patient-profile/:id" element={
     <ProtectedRoute requiredRole="admin">
-      <UpdatePatient patientId={selectedPatientId} onBack={resetPatientAction} />
+      <EditPatientProfile patientId={selectedPatientId} onBack={resetPatientAction} />
     </ProtectedRoute>
   } />
 
