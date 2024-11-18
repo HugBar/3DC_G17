@@ -142,9 +142,6 @@ obtain_better_sol(Room, Day, BestOperationRoomSchedule, BestDoctorsSchedule, Fin
     document_results(NumSurgeries, Complexity),
     (obtain_better_sol1(Room, Day); true),
     retract(better_sol(Day, Room, BestOperationRoomSchedule, BestDoctorsSchedule, FinalOperationTime)),
-    write('Final Result: BestOperationRoomSchedule='), write(BestOperationRoomSchedule), nl,
-    write('BestDoctorsSchedule='), write(BestDoctorsSchedule), nl,
-    write('FinalOperationTime='), write(FinalOperationTime), nl,
     get_time(Tf),
     SolutionGenerationTime is Tf - Ti,
     write('Tempo de geracao da solucao:'), write(SolutionGenerationTime), nl.
