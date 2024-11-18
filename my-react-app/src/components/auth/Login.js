@@ -1,12 +1,12 @@
 // src/components/Login/Login.js
-import React, { useState } from 'react';
+import React, { useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { login as loginApi } from '../../api/auth';
+import { login as loginApi, initiateGoogleLogin} from '../../api/auth';
 import './Login.css';
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login} = useAuth();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
@@ -29,6 +29,10 @@ const Login = () => {
       setErrorMessage('Error logging in.');
       console.error('Login error:', error);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    initiateGoogleLogin();
   };
 
   return (
@@ -62,6 +66,13 @@ const Login = () => {
         </div>
         <button type="submit" className="login-button">Login</button>
       </form>
+      <div className="divider">OR</div>
+      <button 
+        onClick={handleGoogleLogin}
+        className="google-login-button"
+      >
+        Login with Google
+      </button>
     </div>
   );
 };

@@ -21,6 +21,7 @@ import DeleteAccount from './components/Patient/deleteAccount/DeleteAccount';
 import CreatePatient from './components/Patient/createPatient/CreatePatient';
 import Hospital3DView from './components/Hospital/Hospital3DView';
 import AppointmentScheduler from './components/Appointments/AppointmentScheduler';
+import AuthCallback from './components/auth/AuthCallback';
 
 
 const App = () => {
@@ -125,10 +126,12 @@ const App = () => {
     navigate(`/patient/delete/${patientId}`);
   };
 
-
-
-
-
+  const showPatientActionsOnLogin = () => {
+    setShowPatientActions(true);
+    setShowStaffActions(false);
+    setSelectedPatientAction(null);
+    setSelectedStaffAction(null);
+  };
 
   return (
     <div>
@@ -418,6 +421,9 @@ const App = () => {
 } />
 }
   <Route path="/hospital-3d" element={<Hospital3DView />} />
+  <Route path="/auth/callback" element={
+    <AuthCallback onLoginSuccess={showPatientActionsOnLogin} />
+  } />
 </Routes>
 
     </div>
