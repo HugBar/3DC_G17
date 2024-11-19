@@ -20,7 +20,7 @@ const Hospital3DView = () => {
   return (
     <div style={containerStyle}>
       <iframe
-        src="http://127.0.0.1:8081/Thumb_Raiser.html"
+        src="WebsiteHospitalThreeJS-main/Hospital_3D_module.html"
         style={frameStyle}
         title="Hospital 3D View"
         allow="fullscreen"
