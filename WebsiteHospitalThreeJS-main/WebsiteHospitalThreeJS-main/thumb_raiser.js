@@ -13,7 +13,7 @@
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 import Orientation from "./orientation.js";
-import { generalData, mazeData, playerData, lightsData, fogData, cameraData , chairData, plantData, medicalEquipmentData, patientData, doorData} from "./default_data.js";
+import { generalData, mazeData, playerData, lightsData, fogData, cameraData , chairData, plantData, medicalEquipmentData, patientData, doorData, doctorData, deskData } from "./default_data.js";
 import { merge } from "./merge.js";
 import Maze from "./hospital.js";
 import Player from "./player.js";
@@ -27,6 +27,10 @@ import Plant from "./plant.js";
 import MedicalEquipment from "./medicalEquipment.js";
 import Patient from "./patient.js";
 import Door from "./door.js";
+import Doctor from './doctor.js';
+import Desk from "./desk.js";
+
+
 /*
  * generalParameters = {
  *  setDevicePixelRatio: Boolean
@@ -154,7 +158,7 @@ import Door from "./door.js";
  */
 
 export default class ThumbRaiser {
-    constructor(generalParameters, mazeParameters, playerParameters, lightsParameters, fogParameters, fixedViewCameraParameters, firstPersonViewCameraParameters, thirdPersonViewCameraParameters, topViewCameraParameters, miniMapCameraParameters, chairParameters, plantParameters,medicalEquipmentParameters, patientParameters) {
+    constructor(generalParameters, mazeParameters, playerParameters, lightsParameters, fogParameters, fixedViewCameraParameters, firstPersonViewCameraParameters, thirdPersonViewCameraParameters, topViewCameraParameters, miniMapCameraParameters, chairParameters, plantParameters,medicalEquipmentParameters, patientParameters, doctorParameters, deskParameters) {
         this.generalParameters = merge({}, generalData, generalParameters);
         this.mazeParameters = merge({}, mazeData, mazeParameters);
         this.playerParameters = merge({}, playerData, playerParameters);
@@ -169,6 +173,8 @@ export default class ThumbRaiser {
         this.miniMapCameraParameters = merge({}, cameraData, miniMapCameraParameters);
         this.medicalEquipmentParameters = merge({}, medicalEquipmentData, medicalEquipmentParameters);
         this.patientParameters = merge({}, patientData, patientParameters);
+        this.doctorParameters = merge({}, doctorData, doctorParameters);
+        this.deskParameters = merge({}, deskData, deskParameters);
 
         // Create a 2D scene (the viewports frames)
         this.scene2D = new THREE.Scene();
@@ -229,6 +235,22 @@ export default class ThumbRaiser {
             const door = new Door(doorParams);
             this.doors.push(door);
             this.scene3D.add(door.object);
+        });
+
+        // Create the doctor
+        this.doctors = [];
+        doctorData.forEach(doctorParams => {
+            const doctor = new Doctor(doctorParams);
+            this.doctors.push(doctor);
+            this.scene3D.add(doctor.object);
+        });
+        
+        // Create the desk
+        this.desks = [];
+        deskData.forEach(deskParams => {
+            const desk = new Desk(deskParams);
+            this.desks.push(desk);
+            this.scene3D.add(desk.object);
         });
 
         this.ceilingLights = [];
@@ -381,7 +403,6 @@ export default class ThumbRaiser {
 
         this.activeElement = document.activeElement;
 
-       
     }
 
     buildHelpPanel() {

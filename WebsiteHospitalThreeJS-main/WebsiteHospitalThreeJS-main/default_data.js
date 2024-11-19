@@ -177,8 +177,35 @@ export const patientData = [
         position: new THREE.Vector3(3.70, 0.4, 3.40),  // First room
         rotation: new THREE.Vector3(0, Math.PI / -2, 0) // rotate 180 degrees around Y axis
     },
+    
 
     // Você pode adicionar mais pacientes seguindo o mesmo padrão
+];
+export const doctorData = [
+    {
+        url: "./models/gltf/Doctor/Doctor.glb",
+        credits: "Hospital doctor model",
+        scale: new THREE.Vector3(0.005, 0.005, 0.005),
+        position: new THREE.Vector3(0.5, 0, 3.15),  // Position in the first room
+        rotation: new THREE.Vector3(0, Math.PI / 0.5, 0) // Rotate 180 degrees around Y axis
+    },
+    {
+        url: "./models/gltf/Doctor/Doctor.glb",
+        credits: "Hospital doctor model",
+        scale: new THREE.Vector3(0.005, 0.005, 0.005),
+        position: new THREE.Vector3(-2.50, 0, 3.15),  // Position in the second room
+        rotation: new THREE.Vector3(0, Math.PI / 0.5, 0) // Rotate 180 degrees around Y axis
+    },
+
+]; 
+export const deskData = [
+    {
+        url: "./models/gltf/Desk/Desk.glb",
+        credits: "Hospital desk model",
+        scale: new THREE.Vector3(0.003, 0.003, 0.003),
+        position: new THREE.Vector3(-5.46, 0, -1.35),
+        rotation: new THREE.Vector3(0, Math.PI / 2, 0)
+    }
 ];
 
 export const doorData = [

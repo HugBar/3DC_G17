@@ -1,21 +1,23 @@
 :- dynamic availability/3.
 :- dynamic agenda_staff/3.
 :- dynamic agenda_staff1/3.
-:- dynamic agenda_operation_room/3.
-:- dynamic agenda_operation_room1/3.
-:- dynamic better_sol/5.
+:-dynamic agenda_operation_room/3.
+:-dynamic agenda_operation_room1/3.
+:-dynamic better_sol/5.
+:- dynamic solution_counter/1.
+
+
+% For the Complexity Study
 
 agenda_staff(d001,20241028,[(720,790,m01),(1080,1140,c01)]).
 agenda_staff(d002,20241028,[(850,900,m02),(901,960,m02),(1380,1440,c02)]).
 agenda_staff(d003,20241028,[(720,790,m01),(910,980,m02)]).
+%agenda_staff(d004,20241028,[(850,900,m02),(940,980,c04)]).
 
 timetable(d001,20241028,(480,1200)).
 timetable(d002,20241028,(500,1440)).
 timetable(d003,20241028,(520,1320)).
-
-staff(d001,doctor,orthopaedist,[so2,so3,so4]).
-staff(d002,doctor,orthopaedist,[so2,so3,so4]).
-staff(d003,doctor,orthopaedist,[so2,so3,so4]).
+%timetable(d004,20241028,(620,1020)).´
 
 surgery(so2,45,60,45).
 surgery(so3,45,90,45).
@@ -26,6 +28,14 @@ surgery_id(so100002,so3).
 surgery_id(so100003,so4).
 surgery_id(so100004,so2).
 surgery_id(so100005,so4).
+surgery_id(so100006,so2).
+%surgery_id(so100007,so3).
+%surgery_id(so100008,so2).
+%surgery_id(so100009,so2).
+%surgery_id(so100010,so2).
+%surgery_id(so100011,so4).
+%surgery_id(so100012,so2).
+%surgery_id(so100013,so2).
 
 assignment_surgery(so100001,d001).
 assignment_surgery(so100002,d002).
@@ -34,8 +44,23 @@ assignment_surgery(so100004,d001).
 assignment_surgery(so100004,d002).
 assignment_surgery(so100005,d002).
 assignment_surgery(so100005,d003).
+assignment_surgery(so100006,d001).
+%assignment_surgery(so100007,d003).
+%assignment_surgery(so100008,d004).
+%assignment_surgery(so100008,d003).
+%assignment_surgery(so100009,d002).
+%assignment_surgery(so100009,d004).
+%assignment_surgery(so100010,d003).
+%assignment_surgery(so100011,d001).
+%assignment_surgery(so100012,d001).
+%assignment_surgery(so100013,d004).
+
+
+
+
 
 agenda_operation_room(or1,20241028,[(520,579,so100000),(1000,1059,so099999)]).
+
 
 free_agenda0([],[(0,1440)]).
 free_agenda0([(0,Tfin,_)|LT],LT1):-!,free_agenda1([(0,Tfin,_)|LT],LT1).
@@ -49,6 +74,7 @@ free_agenda1([(_,T,_),(T1,Tfin2,_)|LT],LT1):-Tx is T+1,T1==Tx,!,
 free_agenda1([(_,Tfin1,_),(Tin2,Tfin2,_)|LT],[(T1,T2)|LT1]):-T1 is Tfin1+1,T2 is Tin2-1,
     free_agenda1([(Tin2,Tfin2,_)|LT],LT1).
 
+
 adapt_timetable(D,Date,LFA,LFA2):-timetable(D,Date,(InTime,FinTime)),treatin(InTime,LFA,LFA1),treatfin(FinTime,LFA1,LFA2).
 
 treatin(InTime,[(In,Fin)|LFA],[(In,Fin)|LFA]):-InTime=<In,!.
@@ -60,6 +86,7 @@ treatfin(FinTime,[(In,Fin)|LFA],[(In,Fin)|LFA1]):-FinTime>=Fin,!,treatfin(FinTim
 treatfin(FinTime,[(In,_)|_],[]):-FinTime=<In,!.
 treatfin(FinTime,[(In,_)|_],[(In,FinTime)]).
 treatfin(_,[],[]).
+
 
 intersect_all_agendas([Name],Date,LA):-!,availability(Name,Date,LA).
 intersect_all_agendas([Name|LNames],Date,LI):-
@@ -74,16 +101,30 @@ intersect_2_agendas([D|LD],LA,LIT):-	intersect_availability(D,LA,LI,LA1),
 
 intersect_availability((_,_),[],[],[]).
 
-intersect_availability((_,Fim),[(Ini1,Fim1)|LD],[],[(Ini1,Fim1)|LD]):- Fim<Ini1,!.
+intersect_availability((_,Fim),[(Ini1,Fim1)|LD],[],[(Ini1,Fim1)|LD]):-
+		Fim<Ini1,!.
 
-intersect_availability((Ini,Fim),[(_,Fim1)|LD],LI,LA):- Ini>Fim1,!, intersect_availability((Ini,Fim),LD,LI,LA).
+intersect_availability((Ini,Fim),[(_,Fim1)|LD],LI,LA):-
+		Ini>Fim1,!,
+		intersect_availability((Ini,Fim),LD,LI,LA).
 
-intersect_availability((Ini,Fim),[(Ini1,Fim1)|LD],[(Imax,Fmin)],[(Fim,Fim1)|LD]):- Fim1>Fim,!, min_max(Ini,Ini1,_,Imax), min_max(Fim,Fim1,Fmin,_).
+intersect_availability((Ini,Fim),[(Ini1,Fim1)|LD],[(Imax,Fmin)],[(Fim,Fim1)|LD]):-
+		Fim1>Fim,!,
+		min_max(Ini,Ini1,_,Imax),
+		min_max(Fim,Fim1,Fmin,_).
 
-intersect_availability((Ini,Fim),[(Ini1,Fim1)|LD],[(Imax,Fmin)|LI],LA):- Fim>=Fim1,!, min_max(Ini,Ini1,_,Imax), min_max(Fim,Fim1,Fmin,_), intersect_availability((Fim1,Fim),LD,LI,LA).
+intersect_availability((Ini,Fim),[(Ini1,Fim1)|LD],[(Imax,Fmin)|LI],LA):-
+		Fim>=Fim1,!,
+		min_max(Ini,Ini1,_,Imax),
+		min_max(Fim,Fim1,Fmin,_),
+		intersect_availability((Fim1,Fim),LD,LI,LA).
+
 
 min_max(I,I1,I,I1):- I<I1,!.
 min_max(I,I1,I1,I).
+
+
+
 
 schedule_all_surgeries(Room,Day):-
     retractall(agenda_staff1(_,_,_)),
@@ -93,6 +134,7 @@ schedule_all_surgeries(Room,Day):-
     agenda_operation_room(Or,Date,Agenda),assert(agenda_operation_room1(Or,Date,Agenda)),
     findall(_,(agenda_staff1(D,Date,L),free_agenda0(L,LFA),adapt_timetable(D,Date,LFA,LFA2),assertz(availability(D,Date,LFA2))),_),
     findall(OpCode,surgery_id(OpCode,_),LOpCode),
+
     availability_all_surgeries(LOpCode,Room,Day),!.
 
 availability_all_surgeries([],_,_).
@@ -106,6 +148,8 @@ availability_all_surgeries([OpCode|LOpCode],Room,Day):-
     insert_agenda_doctors((TinS,TfinS,OpCode),Day,LDoctors),
     availability_all_surgeries(LOpCode,Room,Day).
 
+
+
 availability_operation(OpCode,Room,Day,LPossibilities,LDoctors):-surgery_id(OpCode,OpType),surgery(OpType,_,TSurgery,_),
     findall(Doctor,assignment_surgery(OpCode,Doctor),LDoctors),
     intersect_all_agendas(LDoctors,Day,LA),
@@ -114,74 +158,138 @@ availability_operation(OpCode,Room,Day,LPossibilities,LDoctors):-surgery_id(OpCo
     intersect_2_agendas(LA,LFAgRoom,LIntAgDoctorsRoom),
     remove_unf_intervals(TSurgery,LIntAgDoctorsRoom,LPossibilities).
 
+
 remove_unf_intervals(_,[],[]).
 remove_unf_intervals(TSurgery,[(Tin,Tfin)|LA],[(Tin,Tfin)|LA1]):-DT is Tfin-Tin+1,TSurgery=<DT,!,
     remove_unf_intervals(TSurgery,LA,LA1).
 remove_unf_intervals(TSurgery,[_|LA],LA1):- remove_unf_intervals(TSurgery,LA,LA1).
 
-schedule_first_interval(TSurgery,[(Tin,_)|_],(Tin,TfinS)):- TfinS is Tin + TSurgery - 1.
+
+schedule_first_interval(TSurgery,[(Tin,_)|_],(Tin,TfinS)):-
+    TfinS is Tin + TSurgery - 1.
 
 insert_agenda((TinS,TfinS,OpCode),[],[(TinS,TfinS,OpCode)]).
 insert_agenda((TinS,TfinS,OpCode),[(Tin,Tfin,OpCode1)|LA],[(TinS,TfinS,OpCode),(Tin,Tfin,OpCode1)|LA]):-TfinS<Tin,!.
 insert_agenda((TinS,TfinS,OpCode),[(Tin,Tfin,OpCode1)|LA],[(Tin,Tfin,OpCode1)|LA1]):-insert_agenda((TinS,TfinS,OpCode),LA,LA1).
 
 insert_agenda_doctors(_,_,[]).
-insert_agenda_doctors((TinS,TfinS,OpCode),Day,[Doctor|LDoctors]):- retract(agenda_staff1(Doctor,Day,Agenda)), insert_agenda((TinS,TfinS,OpCode),Agenda,Agenda1), assertz(agenda_staff1(Doctor,Day,Agenda1)), insert_agenda_doctors((TinS,TfinS,OpCode),Day,LDoctors).
+insert_agenda_doctors((TinS,TfinS,OpCode),Day,[Doctor|LDoctors]):-
+    retract(agenda_staff1(Doctor,Day,Agenda)),
+    insert_agenda((TinS,TfinS,OpCode),Agenda,Agenda1),
+    assert(agenda_staff1(Doctor,Day,Agenda1)),
+    insert_agenda_doctors((TinS,TfinS,OpCode),Day,LDoctors).
 
-% Predicado para calcular a complexidade do agendamento
-calculate_complexity(NumSurgeries, Complexity) :- Complexity is NumSurgeries * log(NumSurgeries).
 
-% Predicado para documentar os resultados da análise de complexidade
-document_results(NumSurgeries, Complexity) :- format('Número de cirurgias: ~w, Complexidade estimada: ~w~n', [NumSurgeries, Complexity]).
 
-obtain_better_sol(Room, Day, BestOperationRoomSchedule, BestDoctorsSchedule, FinalOperationTime) :-
-    get_time(Ti),           
+obtain_better_sol(Room,Day,AgOpRoomBetter,LAgDoctorsBetter,TFinOp):-
+		get_time(Ti),
+		(obtain_better_sol1(Room,Day);true),
+		retract(better_sol(Day,Room,AgOpRoomBetter,LAgDoctorsBetter,TFinOp)),
+		get_time(Tf),
+		_TimeToFind is Tf - Ti.
+
+
+obtain_better_sol1(Room,Day):-
+    asserta(better_sol(Day,Room,_,_,1441)),
+    findall(OpCode,surgery_id(OpCode,_),LOC),!,
+    permutation(LOC,LOpCode),
+    retractall(agenda_staff1(_,_,_)),
+    retractall(agenda_operation_room1(_,_,_)),
+    retractall(availability(_,_,_)),
+    findall(_,(agenda_staff(D,Day,Agenda),assertz(agenda_staff1(D,Day,Agenda))),_),
+    agenda_operation_room(Room,Day,Agenda),assert(agenda_operation_room1(Room,Day,Agenda)),
+    findall(_,(agenda_staff1(D,Day,L),free_agenda0(L,LFA),adapt_timetable(D,Day,LFA,LFA2),assertz(availability(D,Day,LFA2))),_),
+    availability_all_surgeries(LOpCode,Room,Day),
+    agenda_operation_room1(Room,Day,AgendaR),
+		update_better_sol(Day,Room,AgendaR,LOpCode),
+		fail.
+
+update_better_sol(Day,Room,Agenda,LOpCode):-
+                better_sol(Day,Room,_,_,FinTime),
+                reverse(Agenda,AgendaR),
+                evaluate_final_time(AgendaR,LOpCode,FinTime1),
+             FinTime1<FinTime,
+                retract(better_sol(_,_,_,_,_)),
+                findall(Doctor,assignment_surgery(_,Doctor),LDoctors1),
+                remove_equals(LDoctors1,LDoctors),
+                list_doctors_agenda(Day,LDoctors,LDAgendas),
+		asserta(better_sol(Day,Room,Agenda,LDAgendas,FinTime1)).
+
+evaluate_final_time([],_,1441).
+evaluate_final_time([(_,Tfin,OpCode)|_],LOpCode,Tfin):-member(OpCode,LOpCode),!.
+evaluate_final_time([_|AgR],LOpCode,Tfin):-evaluate_final_time(AgR,LOpCode,Tfin).
+
+list_doctors_agenda(_,[],[]).
+list_doctors_agenda(Day,[D|LD],[(D,AgD)|LAgD]):-agenda_staff1(D,Day,AgD),list_doctors_agenda(Day,LD,LAgD).
+
+remove_equals([],[]).
+remove_equals([X|L],L1):-member(X,L),!,remove_equals(L,L1).
+remove_equals([X|L],[X|L1]):-remove_equals(L,L1).
+
+% Modificado para ter apenas Room e Day como argumentos
+analyze_complexity(Room, Day) :-
+    % Calcular número de cirurgias
     findall(OpCode, surgery_id(OpCode, _), ListOfOperationCodes),
-    length(ListOfOperationCodes, NumSurgeries),
-    calculate_complexity(NumSurgeries, Complexity),
-    document_results(NumSurgeries, Complexity),
-    (obtain_better_sol1(Room, Day); true),
-    retract(better_sol(Day, Room, BestOperationRoomSchedule, BestDoctorsSchedule, FinalOperationTime)),
+    length(ListOfOperationCodes, NumOfSurgeries),
+    get_time(Ti),
+    
+    % Inicializar contador
+    retractall(solution_counter(_)),
+    assert(solution_counter(0)),
+    
+    % Para cada permutação válida, incrementa o contador
+    forall((
+        permutation(ListOfOperationCodes, LOpCode),
+        retractall(agenda_staff1(_,_,_)),
+        retractall(agenda_operation_room1(_,_,_)),
+        retractall(availability(_,_,_)),
+        findall(_,(agenda_staff(D,Day,Agenda1),assertz(agenda_staff1(D,Day,Agenda1))),_),
+        agenda_operation_room(Room,Day,Agenda2),
+        assert(agenda_operation_room1(Room,Day,Agenda2)),
+        findall(_,(agenda_staff1(D,Day,L),free_agenda0(L,LFA),adapt_timetable(D,Day,LFA,LFA2),
+        assertz(availability(D,Day,LFA2))),_),
+        availability_all_surgeries(LOpCode,Room,Day)
+    ), (
+        solution_counter(Count),
+        NewCount is Count + 1,
+        retractall(solution_counter(_)),
+        assert(solution_counter(NewCount))
+    )),
+    
+    % Obter o número final de soluções
+    solution_counter(NumOfSolutions),
+    
+    % Obter a melhor solução
+    obtain_better_sol(Room, Day, AgOpRoomBetter, _, FinalOperationTime),
+    
     get_time(Tf),
-    SolutionGenerationTime is Tf - Ti,
-    write('Tempo de geracao da solucao:'), write(SolutionGenerationTime), nl.
+    TimeToGenerate is Tf - Ti,
+    
+    % Arredondar TimeToGenerate para 2 casas decimais
+    TimeToGenerateRounded is round(TimeToGenerate * 100) / 100,
+    
+    % Imprimir tabela de estatísticas com formato corrigido
+    format('~n+---------------+---------------+---------------+---------------+~n', []),
+    format('| ~13s | ~13s | ~13s | ~13s |~n', 
+           ['Num Cirurgias', 'Num Soluções', 'Tempo Final', 'Tempo Geração']),
+    format('+---------------+---------------+---------------+---------------+~n', []),
+    format('| ~13w | ~13w | ~13w | ~13w |~n', 
+           [NumOfSurgeries, NumOfSolutions, FinalOperationTime, TimeToGenerateRounded]),
+    format('+---------------+---------------+---------------+---------------+~n~n', []),
+    
+    % Imprimir tabela do agendamento
+    format('Melhor Agendamento:~n', []),
+    format('+--------+--------+------------+~n', []),
+    format('| Início | Fim    | Cirurgia   |~n', []),
+    format('+--------+--------+------------+~n', []),
+    print_schedule_row(AgOpRoomBetter),
+    format('+--------+--------+------------+~n', []).
 
-obtain_better_sol1(Room, Day):-
-    asserta(better_sol(Day, Room, _, _, 1441)),
-    findall(OpCode, surgery_id(OpCode, _), LOC),!,
-    permutation(LOC, LOpCode),
-    retractall(agenda_staff1(_, _, _)),
-    retractall(agenda_operation_room1(_, _, _)),
-    retractall(availability(_, _, _)),
-    findall(_, (agenda_staff(D, Day, Agenda), assertz(agenda_staff1(D, Day, Agenda))), _),
-    agenda_operation_room(Room, Day, Agenda), assert(agenda_operation_room1(Room, Day, Agenda)),
-    findall(_, (agenda_staff1(D, Day, L), free_agenda0(L, LFA), adapt_timetable(D, Day, LFA, LFA2), assertz(availability(D, Day, LFA2))), _),
-    availability_all_surgeries(LOpCode, Room, Day),
-    agenda_operation_room1(Room, Day, AgendaR),
-    update_better_sol(Day, Room, AgendaR, LOpCode),
-    fail.
+% Predicado auxiliar para imprimir cada linha do agendamento
+print_schedule_row([]).
+print_schedule_row([(T1,T2,Code)|Rest]) :-
+    format('| ~6w | ~6w | ~10s |~n', [T1,T2,Code]),
+    print_schedule_row(Rest).
 
-update_better_sol(Day, Room, Agenda, LOpCode):-
-    better_sol(Day, Room, _, _, FinTime),
-    reverse(Agenda, AgendaR),
-    evaluate_final_time(AgendaR, LOpCode, FinTime1),
-    write('Analysing for LOpCode='), write(LOpCode), nl,
-    write('now: FinTime1='), write(FinTime1), write(' Agenda='), write(Agenda), nl,
-    FinTime1 < FinTime,
-    write('best solution updated'), nl,
-    retract(better_sol(_, _, _, _, _)),
-    findall(Doctor, assignment_surgery(_, Doctor), LDoctors1),
-    remove_equals(LDoctors1, LDoctors),
-    list_doctors_agenda(Day, LDoctors, LDAgendas),
-    asserta(better_sol(Day, Room, Agenda, LDAgendas, FinTime1)).
-
-evaluate_final_time([], _, 1441).
-evaluate_final_time([(_, Tfin, OpCode)|_], LOpCode, Tfin):- member(OpCode, LOpCode), !.
-evaluate_final_time([_|AgR], LOpCode, Tfin):- evaluate_final_time(AgR, LOpCode, Tfin).
-
-list_doctors_agenda(_, [], []).
-list_doctors_agenda(Day, [D|LD], [(D, AgD)|LAgD]):- agenda_staff1(D, Day, AgD), list_doctors_agenda(Day, LD, LAgD).
-
-remove_equals([], []).
-remove_equals([X|L], L1):- member(X, L), !, remove_equals(L, L1).
-remove_equals([X|L], [X|L1]):- remove_equals(L, L1).
+% Predicado auxiliar para manter o contador
+:- dynamic solution_counter/1.
