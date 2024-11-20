@@ -203,7 +203,7 @@ export const deskData = [
         url: "./models/gltf/Desk/Desk.glb",
         credits: "Hospital desk model",
         scale: new THREE.Vector3(0.003, 0.003, 0.003),
-        position: new THREE.Vector3(-5.46, 0, -1.35),
+        position: new THREE.Vector3(-5.46, 0, -2.35),
         rotation: new THREE.Vector3(0, Math.PI / 2, 0)
     }
 ];
