@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // Use named import
-import { CreateStaffDTO, StaffDTO } from '../dtos/StaffDTOs';
+import {  StaffDTO } from '../dtos/StaffDTOs';
 
 const API_URL = 'https://localhost:5001/api/staff';
 
@@ -84,7 +84,7 @@ const staffService = {
           'Content-Type': 'application/json-patch+json',
         },
       });
-      return response.data;
+      return StaffDTO.fromJSON(response.data);
     } catch (error) {
       if (error.response) {
         console.error('Error response:', error.response.data);
@@ -119,7 +119,7 @@ const staffService = {
       
       if (response.data && typeof response.data === 'object') {
         return {
-          items: response.data.items || response.data,
+          items: response.data.items.map(staff => StaffDTO.fromJSON(staff)),
           totalPages: response.data.totalPages || 0,
           currentPage: response.data.pageNumber || page,
           pageSize: response.data.pageSize || pageSize,
@@ -149,7 +149,7 @@ const staffService = {
           Authorization: `Bearer ${token}`,
         },
       });
-      return response.data;
+      return StaffDTO.fromJSON(response.data);
     } catch (error) {
       if (error.response) {
         console.error('Error response:', error.response.data);
@@ -172,7 +172,7 @@ const staffService = {
           Authorization: `Bearer ${token}`,
         },
       });
-      return response.data;
+      return true;
     } catch (error) {
       if (error.response) {
         console.error('Error response:', error.response.data);

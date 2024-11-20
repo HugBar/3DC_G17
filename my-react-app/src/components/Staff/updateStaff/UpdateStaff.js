@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import staffService from '../../../api/staffService';
+import { StaffDTO, AvailabilitySlotDTO } from '../../../dtos/StaffDTOs';
 import useFormValidation from '../../../hooks/useFormValidation';
 import './UpdateStaff.css';
 
@@ -34,7 +35,8 @@ const UpdateStaff = ({ onBack }) => {
         }
 
         const data = await staffService.getStaffById(id);
-        setStaffData(data);
+        const staffDTO = StaffDTO.fromJSON(data);
+        setStaffData(staffDTO);
       } catch (error) {
         console.error('Error fetching staff data:', error);
         if (error.response?.status === 401) {
@@ -59,17 +61,20 @@ const UpdateStaff = ({ onBack }) => {
   const handleSlotChange = (index, e) => {
     const { name, value } = e.target;
     const newSlots = [...staffData.availabilitySlots];
-    newSlots[index][name] = value;
-    setStaffData((prevData) => ({
+    newSlots[index] = new AvailabilitySlotDTO(
+      name === 'startTime' ? value : newSlots[index].startTime,
+      name === 'endTime' ? value : newSlots[index].endTime
+    );
+    setStaffData(prevData => ({
       ...prevData,
-      availabilitySlots: newSlots,
+      availabilitySlots: newSlots
     }));
   };
 
   const addSlot = () => {
     setStaffData((prevData) => ({
       ...prevData,
-      availabilitySlots: [...prevData.availabilitySlots, { startTime: '', endTime: '' }],
+      availabilitySlots: [...prevData.availabilitySlots, new AvailabilitySlotDTO('', '')],
     }));
   };
 

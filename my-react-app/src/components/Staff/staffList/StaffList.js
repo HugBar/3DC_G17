@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import staffService from '../../../api/staffService';
+import { StaffDTO } from '../../../dtos/StaffDTOs';
 import './StaffList.css';
 
 const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
@@ -73,7 +74,8 @@ const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
   const fetchStaffList = useCallback(async () => {
     try {
       const response = await staffService.getAllStaff(filters, currentPage, pageSize);
-      setStaffList(response.items);
+      const staffDTOs = response.items.map(staff => StaffDTO.fromJSON(staff));
+      setStaffList(staffDTOs);
       setTotalPages(response.totalPages);
       setErrorMessage('');
     } catch (error) {
@@ -92,8 +94,9 @@ const StaffList = ({ onSelectStaff, onDeactivateStaff }) => {
 
   const handleStaffSelect = async (staffId) => {
     try {
-      const staffDetails = await staffService.getStaffById(staffId);
-      setSelectedStaff(staffDetails);
+      const staffData = await staffService.getStaffById(staffId);
+      const staffDTO = StaffDTO.fromJSON(staffData);
+      setSelectedStaff(staffDTO);
     } catch (error) {
       setErrorMessage('Error fetching staff details.');
     }
