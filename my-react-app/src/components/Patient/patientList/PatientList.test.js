@@ -29,6 +29,16 @@ const mockPatients = [
 ];
 
 describe('PatientList Component', () => {
+    beforeAll(() => {
+        jest.spyOn(console, 'log').mockImplementation(() => {});
+        jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterAll(() => {
+        console.log.mockRestore();
+        console.error.mockRestore();
+    });
+
     beforeEach(() => {
         // Clear all mocks before each test
         jest.clearAllMocks();

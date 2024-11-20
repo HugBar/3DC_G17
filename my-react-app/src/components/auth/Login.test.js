@@ -34,7 +34,11 @@ describe('Login Component', () => {
 
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { 
+      name: 'Login',
+      type: 'submit',
+      className: 'login-button'
+    })).toBeInTheDocument();
   });
 
   test('shows error message on invalid login attempt', async () => {
@@ -54,7 +58,12 @@ describe('Login Component', () => {
       target: { value: 'wrongpassword' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    const submitButton = screen.getByRole('button', { 
+      name: 'Login',
+      type: 'submit',
+      className: 'login-button'
+    });
+    fireEvent.click(submitButton);
 
     const errorMessage = await screen.findByText('Error logging in.');
     expect(errorMessage).toBeInTheDocument();
@@ -78,7 +87,12 @@ describe('Login Component', () => {
       target: { value: 'correctpassword' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    const submitButton = screen.getByRole('button', { 
+      name: 'Login',
+      type: 'submit',
+      className: 'login-button'
+    });
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith({ token: 'fake-jwt-token' });

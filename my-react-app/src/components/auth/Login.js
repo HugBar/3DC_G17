@@ -68,14 +68,15 @@ const Login = () => {
         
         <div className="separator"> 
         </div>
-      </form>
+     
       <div className="divider">OR</div>
       <button 
         onClick={handleGoogleLogin}
         className="google-login-button"
       >
         Login with Google
-      </button>
+      </button> 
+      </form>
     </div>
   );
 };

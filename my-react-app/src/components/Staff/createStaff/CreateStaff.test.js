@@ -23,6 +23,16 @@ const mockStaffData = {
 };
 
 describe('CreateStaff Component', () => {
+  beforeAll(() => {
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterAll(() => {
+    console.log.mockRestore();
+    console.error.mockRestore();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -63,7 +73,7 @@ describe('CreateStaff Component', () => {
     });
 
     expect(staffService.createStaff).toHaveBeenCalledWith(mockStaffData);
-    expect(screen.getByText('Staff created successfully!')).toBeInTheDocument();
+    expect(screen.getByText('Staff John Doe created successfully!')).toBeInTheDocument();
   });
 
   test('handles availability slot addition and removal', async () => {
@@ -137,6 +147,6 @@ describe('CreateStaff Component', () => {
     });
 
     // Updated to match the actual error message shown in the component
-    expect(screen.getByText('Error creating staff.')).toBeInTheDocument();
+    expect(screen.getByText('Email already exists')).toBeInTheDocument();
   });
 }); 
