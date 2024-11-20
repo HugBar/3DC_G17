@@ -14,9 +14,9 @@ public interface IPatientRepository
 
     Task<Patient> RemoveAsync(Patient patient);
 
-    Task<bool> IsEmailUniqueAsync(string email);  
+    Task<bool> IsEmailUniqueAsync(string email);
 
-    Task<bool> IsPhoneNumberUniqueAsync(string phoneNumber);  
+    Task<bool> IsPhoneNumberUniqueAsync(string phoneNumber);
 
     Task<Patient> UpdateAsync(Patient patient);
 
@@ -24,6 +24,8 @@ public interface IPatientRepository
 
     Task<Patient> GetByIdAsync(string id);
     Task<Patient> AnonymizeAsync(Patient patient);
+
+    Task<Patient> GetByMedicalRecordNumberAsync(string mrn);
 
 
 

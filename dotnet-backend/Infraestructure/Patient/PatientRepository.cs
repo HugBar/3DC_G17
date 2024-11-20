@@ -36,7 +36,7 @@ namespace DDDSample1.Infrastructure.PatientData
             {
                 query = query.Where(p => p.Email.StartsWith(filter.Email));
             }
-                 if (filter.PhoneNumber != null)
+            if (filter.PhoneNumber != null)
             {
                 query = query.Where(p => p.PhoneNumber.StartsWith(filter.PhoneNumber));
             }
@@ -66,7 +66,7 @@ namespace DDDSample1.Infrastructure.PatientData
 
             return (patients, totalCount);
         }
-       
+
 
 
         public async Task<Patient> AddAsync(Patient patient)
@@ -95,10 +95,10 @@ namespace DDDSample1.Infrastructure.PatientData
         }
         public async Task<Patient> RemoveAsync(Patient patient)
         {
-             _context.Patients.Remove(patient);
-             await _context.SaveChangesAsync();
+            _context.Patients.Remove(patient);
+            await _context.SaveChangesAsync();
             return patient;
-        }	
+        }
         public async Task<Patient> UpdateAsync(Patient patient)
         {
             _context.Patients.Update(patient);
@@ -112,14 +112,20 @@ namespace DDDSample1.Infrastructure.PatientData
         }
 
         public async Task<Patient> GetByIdAsync(string id)
-        {   
-        return await _context.Patients.FirstOrDefaultAsync(p => p.UserId == id);
+        {
+            return await _context.Patients.FirstOrDefaultAsync(p => p.UserId == id);
         }
         public async Task<Patient> AnonymizeAsync(Patient patient)
         {
             _context.Patients.Update(patient);
             await _context.SaveChangesAsync();
             return patient;
+        }
+
+        public async Task<Patient> GetByMedicalRecordNumberAsync(string mrn)
+        {
+            return await _context.Patients
+                .FirstOrDefaultAsync(p => p.MedicalNr == mrn);
         }
 
 

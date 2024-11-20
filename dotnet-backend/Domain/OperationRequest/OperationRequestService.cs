@@ -35,16 +35,18 @@ namespace DDDSample1.Domain.OperationRequestData
 
         public async Task<OperationRequestDto> CreateOperationRequestAsync(CreateOperationRequestDto dto)
         {
-            var patientExists = await _patientRepo.ExistsAsync(dto.PatientId);
-            if (!patientExists)
+            // Find patient by medical record number
+            var patient = await _patientRepo.GetByMedicalRecordNumberAsync(dto.PatientMRN);
+            if (patient == null)
             {
-                throw new InvalidOperationException("No patient found with this ID.");
+                throw new InvalidOperationException("No patient found with this Medical Record Number.");
             }
 
-            var doctor = await _staffRepo.GetByIdAsync(dto.DoctorId);
+            // Find doctor by license number
+            var doctor = await _staffRepo.GetByLicenseNumberAsync(dto.DoctorLicenseNumber);
             if (doctor == null)
             {
-                throw new InvalidOperationException("No doctor found with this ID or user is not a doctor.");
+                throw new InvalidOperationException("No doctor found with this License Number or user is not a doctor.");
             }
 
             var operationType = await _operationTypeRepo.GetByIdAsync(new OperationTypeId(dto.OperationTypeId));
@@ -70,8 +72,8 @@ namespace DDDSample1.Domain.OperationRequestData
 
             var operationRequest = new OperationRequest(
                 operationRequestId,
-                dto.PatientId,
-                dto.DoctorId,
+                patient.UserId,  // Use the found patient's ID
+                doctor.Id,   // Use the found doctor's ID
                 dto.OperationTypeId,
                 dto.Deadline,
                 dto.Priority);
@@ -87,12 +89,12 @@ namespace DDDSample1.Domain.OperationRequestData
                 throw;
             }
 
-            _loggingService.LogInformation($"New operation request created: {operationRequest.Id.ToString()}");
+            _loggingService.LogInformation($"New operation request created: {operationRequest.Id}");
 
             return new OperationRequestDto(
                 operationRequest.Id,
-                operationRequest.PatientId,
-                operationRequest.DoctorId,
+                patient.UserId,
+                doctor.UserId,
                 operationRequest.OperationTypeId,
                 operationRequest.Deadline,
                 operationRequest.Priority

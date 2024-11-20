@@ -87,39 +87,39 @@ namespace DDDSample1.Infrastructure.Staffs
                                  .ToListAsync();
         }
 
-         public async Task<(List<Staff> Items, int TotalCount)> GetFilteredStaffAsync(
-        StaffFilterDto filters,
-        int pageNumber,
-        int pageSize)
+        public async Task<(List<Staff> Items, int TotalCount)> GetFilteredStaffAsync(
+       StaffFilterDto filters,
+       int pageNumber,
+       int pageSize)
         {
-        var query = _context.Staffs.Where(s => s.Active)
-            .AsQueryable();
+            var query = _context.Staffs.Where(s => s.Active)
+                .AsQueryable();
 
-        // Aplicar filtros
-        if (!string.IsNullOrWhiteSpace(filters.FirstName))
-            query = query.Where(s => s.FirstName.Contains(filters.FirstName));
-        
-        if (!string.IsNullOrWhiteSpace(filters.LastName))
-            query = query.Where(s => s.LastName.Contains(filters.LastName));
-        
-        if (!string.IsNullOrWhiteSpace(filters.Email))
-            query = query.Where(s => s.Email.Contains(filters.Email));
-        
-        if (!string.IsNullOrWhiteSpace(filters.Specialization))
-            query = query.Where(s => s.Specialization.Contains(filters.Specialization));
+            // Aplicar filtros
+            if (!string.IsNullOrWhiteSpace(filters.FirstName))
+                query = query.Where(s => s.FirstName.Contains(filters.FirstName));
 
-        // Obter contagem total antes da paginação
-        var totalCount = await query.CountAsync();
+            if (!string.IsNullOrWhiteSpace(filters.LastName))
+                query = query.Where(s => s.LastName.Contains(filters.LastName));
 
-        // Aplicar paginação
-        var items = await query
-            .OrderBy(s => s.FirstName) // Ordenação padrão
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+            if (!string.IsNullOrWhiteSpace(filters.Email))
+                query = query.Where(s => s.Email.Contains(filters.Email));
 
-        return (items, totalCount);
-    }
+            if (!string.IsNullOrWhiteSpace(filters.Specialization))
+                query = query.Where(s => s.Specialization.Contains(filters.Specialization));
+
+            // Obter contagem total antes da paginação
+            var totalCount = await query.CountAsync();
+
+            // Aplicar paginação
+            var items = await query
+                .OrderBy(s => s.FirstName) // Ordenação padrão
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
 
 
 
@@ -132,6 +132,14 @@ namespace DDDSample1.Infrastructure.Staffs
         {
             return await _context.Staffs.Where(s => !s.Active).ToListAsync();
         }
+
+        public async Task<Staff> GetByLicenseNumberAsync(string licenseNumber)
+        {
+            return await _context.Staffs
+                .FirstOrDefaultAsync(s => s.LicenseNumber == licenseNumber);
+        }
+
+
 
     }
 }

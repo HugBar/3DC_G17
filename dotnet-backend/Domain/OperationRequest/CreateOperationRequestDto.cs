@@ -6,14 +6,14 @@ namespace DDDSample1.Domain.OperationRequestData
 {
     public class CreateOperationRequestDto : IValidatableObject
     {
-        [Required(ErrorMessage = "Patient ID is required.")]
-        public string PatientId { get; set; }
+        [Required(ErrorMessage = "Patient Medical Record Number is required.")]
+        public string PatientMRN { get; set; }
 
-        [Required(ErrorMessage = "Doctor ID is required.")]
-        public string DoctorId { get; set; }
+        [Required(ErrorMessage = "Doctor License Number is required.")]
+        [RegularExpression(@"^LIC-[A-Z0-9]{8}$", ErrorMessage = "Invalid license number format. Should be LIC-XXXXXXXX")]
+        public string DoctorLicenseNumber { get; set; }
 
-        [Required(ErrorMessage = "Operation type is required.")]
-        [StringLength(100, MinimumLength = 2, ErrorMessage = "Operation type must be between 2 and 100 characters.")]
+        [Required(ErrorMessage = "Operation Type ID is required.")]
         public string OperationTypeId { get; set; }
 
         [Required(ErrorMessage = "Deadline is required.")]

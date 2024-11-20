@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // Use named import
+import { CreateStaffDTO, StaffDTO } from '../dtos/StaffDTOs';
 
 const API_URL = 'https://localhost:5001/api/staff';
 
@@ -24,27 +25,30 @@ const checkAdminRole = (token) => {
 };
 
 const staffService = {
-  createStaff: async (staffData) => {
+  createStaff: async (staffDTO) => {
     const token = getAuthToken();
     checkAdminRole(token);
 
     try {
-      const response = await axios.post(`${API_URL}/create-staff-profile`, staffData, {
+      console.log('Sending data to server:', staffDTO); // Log the data being sent
+      
+      const response = await axios.post(`${API_URL}/create-staff-profile`, staffDTO, {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json', // Make sure this is set
         },
       });
-      return response.data;
+      
+      return StaffDTO.fromJSON(response.data);
     } catch (error) {
+      console.error('Full error in service:', error); // Log the full error
+      
       if (error.response) {
-        console.error('Error response:', error.response.data);
-        console.error('Error status:', error.response.status);
-      } else if (error.request) {
-        console.error('Error request:', error.request);
-      } else {
-        console.error('Error message:', error.message);
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
       }
-      throw error;
+      throw error; // Re-throw the error to be caught by the component
     }
   },
 

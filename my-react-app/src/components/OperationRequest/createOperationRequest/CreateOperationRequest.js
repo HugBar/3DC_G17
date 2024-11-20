@@ -4,11 +4,11 @@ import './CreateOperationRequest.css';
 
 const CreateOperationRequest = () => {
   const [operationData, setOperationData] = useState({
-    patientId: '',
-    doctorId: '',
+    patientMRN: '',
+    doctorLicenseNumber: '',
     operationTypeId: '',
     deadline: '',
-    priority: 'elective', // Default priority
+    priority: 'elective',
   });
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -29,8 +29,8 @@ const CreateOperationRequest = () => {
       setErrorMessage('');
       // Clear form on success
       setOperationData({
-        patientId: '',
-        doctorId: '',
+        patientMRN: '',
+        doctorLicenseNumber: '',
         operationTypeId: '',
         deadline: '',
         priority: 'elective',
@@ -48,25 +48,27 @@ const CreateOperationRequest = () => {
       {errorMessage && <p className="error-message">{errorMessage}</p>}
       <form onSubmit={handleSubmit} className="operation-request-form">
         <div className="form-group">
-          <label htmlFor="patientId">Patient ID:</label>
+          <label htmlFor="patientMRN">Patient Medical Record Number:</label>
           <input
-            id="patientId"
+            id="patientMRN"
             type="text"
-            name="patientId"
-            value={operationData.patientId}
+            name="patientMRN"
+            value={operationData.patientMRN}
             onChange={handleChange}
             required
+            placeholder="Enter patient MRN"
           />
         </div>
         <div className="form-group">
-          <label htmlFor="doctorId">Doctor ID:</label>
+          <label htmlFor="doctorLicenseNumber">Doctor License Number:</label>
           <input
-            id="doctorId"
+            id="doctorLicenseNumber"
             type="text"
-            name="doctorId"
-            value={operationData.doctorId}
+            name="doctorLicenseNumber"
+            value={operationData.doctorLicenseNumber}
             onChange={handleChange}
             required
+            placeholder="Format: LIC-XXXXXXXX"
           />
         </div>
         <div className="form-group">

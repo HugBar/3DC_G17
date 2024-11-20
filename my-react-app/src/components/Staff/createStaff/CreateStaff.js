@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import staffService from '../../../api/staffService';
+import { CreateStaffDTO, AvailabilitySlotDTO } from '../../../dtos/StaffDTOs';
 import useFormValidation from '../../../hooks/useFormValidation';
 import './CreateStaff.css';
 
@@ -10,7 +11,7 @@ const CreateStaff = () => {
     email: '',
     phoneNumber: '',
     specialization: '',
-    availabilitySlots: [{ startTime: '', endTime: '' }],
+    availabilitySlots: [new AvailabilitySlotDTO('', '')]
   });
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -28,17 +29,20 @@ const CreateStaff = () => {
   const handleSlotChange = (index, e) => {
     const { name, value } = e.target;
     const newSlots = [...staffData.availabilitySlots];
-    newSlots[index][name] = value;
-    setStaffData((prevData) => ({
+    newSlots[index] = new AvailabilitySlotDTO(
+      name === 'startTime' ? value : newSlots[index].startTime,
+      name === 'endTime' ? value : newSlots[index].endTime
+    );
+    setStaffData(prevData => ({
       ...prevData,
-      availabilitySlots: newSlots,
+      availabilitySlots: newSlots
     }));
   };
 
   const addSlot = () => {
     setStaffData((prevData) => ({
       ...prevData,
-      availabilitySlots: [...prevData.availabilitySlots, { startTime: '', endTime: '' }],
+      availabilitySlots: [...prevData.availabilitySlots, new AvailabilitySlotDTO('', '')],
     }));
   };
 
@@ -54,20 +58,43 @@ const CreateStaff = () => {
     e.preventDefault();
     if (validate(staffData)) {
       try {
-        await staffService.createStaff(staffData);
-        setSuccessMessage('Staff created successfully!');
+        const staffDTO = new CreateStaffDTO(
+          staffData.firstName,
+          staffData.lastName,
+          staffData.email,
+          staffData.phoneNumber,
+          staffData.specialization,
+          staffData.availabilitySlots
+        );
+
+        const createdStaff = await staffService.createStaff(staffDTO);
+        setSuccessMessage(`Staff ${createdStaff.firstName} ${createdStaff.lastName} created successfully!`);
         setErrorMessage('');
-        // Clear form on success
+        // Clear form
         setStaffData({
           firstName: '',
           lastName: '',
           email: '',
           phoneNumber: '',
           specialization: '',
-          availabilitySlots: [{ startTime: '', endTime: '' }],
+          availabilitySlots: [new AvailabilitySlotDTO('', '')]
         });
       } catch (error) {
-        setErrorMessage('Error creating staff.');
+        console.log('Full error:', error);
+        
+        if (error.response) {
+          console.error('Error response data:', error.response.data);
+          console.error('Error status:', error.response.status);
+          setErrorMessage(error.response.data.message || 
+                         error.response.data.title || 
+                         `Server error: ${error.response.status}`);
+        } else if (error.request) {
+          console.error('Error request:', error.request);
+          setErrorMessage('No response received from server. Please try again.');
+        } else {
+          console.error('Error message:', error.message);
+          setErrorMessage(`Error: ${error.message}`);
+        }
         setSuccessMessage('');
       }
     } else {
