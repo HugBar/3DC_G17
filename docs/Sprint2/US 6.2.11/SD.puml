@@ -1,5 +1,4 @@
-@startuml Update Staff UI Sequence Diagram
-
+@startuml
 actor Admin
 participant "UpdateStaff\nComponent" as UI
 participant "FormValidation" as FV
@@ -16,8 +15,6 @@ UI -> SS: getStaffById(id)
 activate SS
 SS -> API: GET /api/staff/get-staff-profile/{id}
 activate API
-API -> DB: Query staff data
-DB --> API: Return staff data
 API --> SS: Return StaffDto
 deactivate API
 SS --> UI: Return staff data
@@ -38,8 +35,6 @@ alt validation successful
     activate SS
     SS -> API: PATCH /api/staff/edit-staff-profile/{id}
     activate API
-    API -> DB: Update staff data
-    DB --> API: Confirm update
     API --> SS: Return updated StaffDto
     deactivate API
     SS --> UI: Return success
@@ -57,5 +52,4 @@ end
 
 deactivate UI
 deactivate Admin
-
 @enduml

@@ -1,11 +1,10 @@
-@startuml namespace 
+@startuml
 title "SequenceDiagram 6.2.8"
 actor Admin
 participant PatientList
 participant DeletePatient
 participant PatientService
 participant API
-participant Database
 
 activate Admin
 Admin->>PatientList: Seleciona paciente na lista
@@ -15,10 +14,6 @@ PatientList->>PatientService: getPatientById(patientId)
 activate PatientService
 PatientService->>API: GET /api/patient/get-patient-profile/{id}
 activate API
-API->>Database: SELECT * FROM Patients WHERE Id = {id}  // Linha de consulta à base de dados
-activate Database
-Database->>API: Retorna dados do paciente
-deactivate Database
 API-->>PatientService: Retorna dados do paciente
 deactivate API
 PatientService-->>PatientList: Retorna detalhes do paciente
@@ -39,8 +34,6 @@ alt Admin confirma exclusão
     PatientService->>PatientService: checkAdminRole(token)
     PatientService->>API: DELETE /api/patient/delete-patient/{id}
     activate API
-    API->>Database: UPDATE Patients SET IsDeleted = true WHERE Id = {id}  // Linha de atualização na base de dados
-    deactivate Database
     API-->>PatientService: Retorna sucesso
     deactivate API
     PatientService-->>DeletePatient: Retorna sucesso
@@ -51,8 +44,10 @@ alt Admin confirma exclusão
     deactivate DeletePatient
 else Admin cancela exclusão
     Admin->>DeletePatient: Clica em "No"
+    activate DeletePatient
     DeletePatient->>PatientList: Navigate to /patient/list
     deactivate DeletePatient
+    activate PatientList
 end
 
 activate PatientList

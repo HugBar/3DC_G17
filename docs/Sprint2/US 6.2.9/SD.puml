@@ -1,10 +1,8 @@
-@startuml PatientList Sequence Diagram
-
+@startuml
 actor User
 participant PatientList
 participant PatientService
 participant API
-database Database
 
 activate User
 
@@ -17,10 +15,6 @@ activate PatientService
 PatientService -> API: GET /api/patient/filter
 activate API
 
-API -> Database: Query patients with filters
-activate Database
-Database --> API: Return filtered patients
-deactivate Database
 
 alt API Error
     API --> PatientService: Return error
@@ -62,16 +56,16 @@ alt Select Patient
     PatientList -> PatientService: getPatientById(patientId)
     activate PatientService
     PatientService -> API: GET /api/patient/{id}
-        API -> Database: Query patient details
-        Database --> API: Return patient details
+        activate API
         API --> PatientService: Return response
-
+        deactivate API
     alt Patient Not Found
         PatientService --> PatientList: Throw error
         PatientList -> PatientList: setErrorMessage("Error fetching patient details")
         PatientList --> User: Display error message
     else Success
         PatientService --> PatientList: Return patient details
+        deactivate PatientService
         PatientList -> PatientList: setSelectedPatient(patientDetails)
         PatientList --> User: Display patient modal
     end
@@ -102,5 +96,4 @@ end
 
 deactivate PatientList
 deactivate User
-
 @enduml

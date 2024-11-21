@@ -1,12 +1,10 @@
-@startuml Operation Request List UI Sequence Diagram
-
+@startuml
 actor Doctor
 participant "OperationRequestList\nComponent" as UI
 participant "OperationRequest\nService" as ORS
 participant "StaffService" as SS
 participant "PatientService" as PS
 participant "Backend API" as API
-database "Database" as DB
 
 activate Doctor
 Doctor -> UI: Navigate to Operation Request List
@@ -20,28 +18,27 @@ ORS -> ORS: checkDoctorRole(token)
 
 ORS -> API: GET /api/OperationRequest/filter
 activate API
-API -> DB: Query operation requests
-DB --> API: Return requests
 API --> ORS: Return operation requests
-
+deactivate API
 loop for each request
     ORS -> SS: getStaffById(request.doctorId)
+    activate SS
     SS --> ORS: Return doctor details
-    
+    deactivate SS
     ORS -> PS: getPatientById(request.patientId)
+    activate PS
     PS --> ORS: Return patient details
-    
+    deactivate PS
     ORS -> ORS: Merge request with doctor and patient details
 end
 
 ORS --> UI: Return enriched operation requests
 deactivate ORS
 
-UI -> UI: Display operation requests list
+UI -> Doctor: Display operation requests list
 
 
 
 deactivate UI
 deactivate Doctor
-
 @enduml
