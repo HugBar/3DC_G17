@@ -229,6 +229,13 @@ export default class ThumbRaiser {
             this.scene3D.add(patient.object);
         });
 
+        this.checkRoomStatus();
+
+        // Check room status every minute
+        setInterval(() => {
+            this.checkRoomStatus();
+        }, 60000);
+
         // Create the doors
         this.doors = [];
         doorData.forEach(doorParams => {
@@ -404,6 +411,84 @@ export default class ThumbRaiser {
         this.activeElement = document.activeElement;
 
     }
+
+    async checkRoomStatus() {
+        const rooms = [
+            { id: 'OR-101', patientPosition: { x: 6.70, z: 3.40 } },
+            { id: 'OR-102', patientPosition: { x: 3.70, z: 3.40 } },
+            { id: 'OR-103', patientPosition: { x: 0.70, z: 3.40 } },
+            { id: 'OR-104', patientPosition: { x: -2.30, z: 3.40 } }
+        ];
+    
+        try {
+            const roomStatuses = await Promise.all(
+                rooms.map(room =>
+                    fetch(`https://localhost:5001/api/surgery-room/${room.id}`) // Correct URL
+                        .then(response => {
+                            if (!response.ok) throw new Error(`Error fetching ${room.id}`);
+                            return response.json();
+                        })
+                )
+            );
+    
+            roomStatuses.forEach((roomData, index) => {
+                const room = rooms[index];
+                console.log(`Room ${room.id} data received:`, roomData);
+    
+                // Find the patient corresponding to this room
+                const patient = this.patients.find(p => {
+                    const xMatch = Math.abs(p.object.position.x - room.patientPosition.x) < 0.01;
+                    const zMatch = Math.abs(p.object.position.z - room.patientPosition.z) < 0.01;
+                    console.log(`Comparing positions for ${room.id}:`, {
+                        expected: room.patientPosition,
+                        actual: {
+                            x: p.object.position.x,
+                            z: p.object.position.z
+                        },
+                        xMatch,
+                        zMatch
+                    });
+                    return xMatch && zMatch;
+                });
+                
+                if (patient && patient.object) {
+                    const isOccupied = roomData.status === 'Occupied';
+                    patient.setVisibility(isOccupied);
+                    
+                    // Find the doctor corresponding to this room
+                    const doctor = this.doctors.find(d => {
+                        const doctorX = room.patientPosition.x - 0.2; // Offset from patient position
+                        const doctorZ = room.patientPosition.z - 0.25; // Offset from patient position
+                        const xMatch = Math.abs(d.object.position.x - doctorX) < 0.01;
+                        const zMatch = Math.abs(d.object.position.z - doctorZ) < 0.01;
+                        console.log(`Comparing doctor positions for ${room.id}:`, {
+                            expected: { x: doctorX, z: doctorZ },
+                            actual: {
+                                x: d.object.position.x,
+                                z: d.object.position.z
+                            },
+                            xMatch,
+                            zMatch
+                        });
+                        return xMatch && zMatch;
+                    });
+            
+                    if (doctor && doctor.object) {
+                        doctor.setVisibility(isOccupied);
+                        console.log(`Set doctor visibility for ${room.id} to:`, isOccupied,
+                            'at position:', {
+                                x: doctor.object.position.x,
+                                z: doctor.object.position.z
+                            }
+                        );
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error fetching room statuses:', error);
+        }
+    }
+    
 
     buildHelpPanel() {
         const table = document.getElementById("help-table");

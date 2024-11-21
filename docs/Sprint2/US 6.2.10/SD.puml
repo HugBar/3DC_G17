@@ -5,7 +5,6 @@ participant "CreateStaff\nComponent" as UI
 participant "FormValidation" as FV
 participant "StaffService" as SS
 participant "Backend API" as API
-database "Database" as DB
 
 activate Admin
 Admin -> UI: Navigate to Create Staff page
@@ -27,10 +26,10 @@ alt validation successful
     SS -> SS: checkAdminRole(token)
     SS -> API: POST /api/staff/create-staff-profile
     activate API
-    API -> DB: Insert staff data
-    DB --> API: Confirm creation
     API --> SS: Return StaffDto
+    deactivate API
     SS --> UI: Return success
+    deactivate SS
     UI -> UI: Display success message
     UI -> UI: Clear form
     UI --> Admin: Show success notification
@@ -39,6 +38,7 @@ alt validation successful
 else validation failed
     UI -> UI: Display validation errors
     UI --> Admin: Show validation errors
+    deactivate UI
 end
 
 deactivate UI

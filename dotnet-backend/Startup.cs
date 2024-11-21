@@ -32,6 +32,8 @@ using DDDSample1.Domain.OperationTypeData;
 using DDDSample1.Infrastructure.OperationTypeData;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using DDDSample1.Domain.SurgeryRoomData;
+using DDDSample1.Infrastructure.SurgeryRoomData;
 
 namespace DDDSample1
 {
@@ -63,12 +65,12 @@ namespace DDDSample1
             });
 
             services.AddCors(options =>
-   {
-       options.AddPolicy("AllowAllOrigins",
-           builder => builder.AllowAnyOrigin()
-                             .AllowAnyMethod()
-                             .AllowAnyHeader());
-   });
+            {
+                options.AddPolicy("AllowAllOrigins",
+                    builder => builder.AllowAnyOrigin()
+                                        .AllowAnyMethod()
+                                        .AllowAnyHeader());
+            });
 
             // Configure Identity with ApplicationUser
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -141,6 +143,7 @@ namespace DDDSample1
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<StaffService>();
+            services.AddScoped<ISurgeryRoomRepository, SurgeryRoomRepository>();
 
             // Add this logging configuration
             services.AddLogging(logging =>
@@ -164,6 +167,8 @@ namespace DDDSample1
                     // Esta é a configuração chave para rejeitar propriedades desconhecidas
                     options.JsonSerializerOptions.UnknownTypeHandling = JsonUnknownTypeHandling.JsonNode;
                 });
+
+
 
         }
 

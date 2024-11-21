@@ -186,18 +186,31 @@ export const doctorData = [
         url: "./models/gltf/Doctor/Doctor.glb",
         credits: "Hospital doctor model",
         scale: new THREE.Vector3(0.005, 0.005, 0.005),
-        position: new THREE.Vector3(0.5, 0, 3.15),  // Position in the first room
-        rotation: new THREE.Vector3(0, Math.PI / 0.5, 0) // Rotate 180 degrees around Y axis
+        position: new THREE.Vector3(6.50, 0, 3.15),  // OR-101
+        rotation: new THREE.Vector3(0, Math.PI / 0.5, 0)
     },
     {
         url: "./models/gltf/Doctor/Doctor.glb",
         credits: "Hospital doctor model",
         scale: new THREE.Vector3(0.005, 0.005, 0.005),
-        position: new THREE.Vector3(-2.50, 0, 3.15),  // Position in the second room
-        rotation: new THREE.Vector3(0, Math.PI / 0.5, 0) // Rotate 180 degrees around Y axis
+        position: new THREE.Vector3(3.50, 0, 3.15),  // OR-102
+        rotation: new THREE.Vector3(0, Math.PI / 0.5, 0)
     },
-
-]; 
+    {
+        url: "./models/gltf/Doctor/Doctor.glb",
+        credits: "Hospital doctor model",
+        scale: new THREE.Vector3(0.005, 0.005, 0.005),
+        position: new THREE.Vector3(0.50, 0, 3.15),  // OR-103
+        rotation: new THREE.Vector3(0, Math.PI / 0.5, 0)
+    },
+    {
+        url: "./models/gltf/Doctor/Doctor.glb",
+        credits: "Hospital doctor model",
+        scale: new THREE.Vector3(0.005, 0.005, 0.005),
+        position: new THREE.Vector3(-2.50, 0, 3.15),  // OR-104
+        rotation: new THREE.Vector3(0, Math.PI / 0.5, 0)
+    }
+];
 export const deskData = [
     {
         url: "./models/gltf/Desk/Desk.glb",

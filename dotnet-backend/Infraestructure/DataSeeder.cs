@@ -12,6 +12,8 @@ using DDDSample1.Infrastructure;
 using DDDSample1.Domain.Shared;
 using Microsoft.EntityFrameworkCore;
 using DDDSample1.Domain.UserData;
+using DDDSample1.Domain.SurgeryRoomData;
+using DDDSample1.Domain.SurgeryRoom;
 
 namespace DDDSample1.Infrastructure
 {
@@ -30,6 +32,7 @@ namespace DDDSample1.Infrastructure
                 await SeedPatients(context, userManager);
                 await SeedOperationTypes(context);
                 await SeedOperationRequests(context, userManager);
+                await SeedSurgeryRooms(context);
 
                 await context.SaveChangesAsync();
             }
@@ -195,6 +198,48 @@ namespace DDDSample1.Infrastructure
             }
         }
 
+        private static async Task SeedSurgeryRooms(DDDSample1DbContext context)
+        {
+            if (!context.SurgeryRooms.Any())
+            {
+                var surgeryRoomList = new List<SurgeryRoom>
+                {
+                    new SurgeryRoom(
+                        "OR-101",
+                        RoomType.OperatingRoom,
+                        6
+                    ),
+                    new SurgeryRoom(
+                        "OR-102",
+                        RoomType.OperatingRoom,
+                        4
+                    ),
+                    new SurgeryRoom(
+                        "OR-103",
+                        RoomType.ICU,
+                        2
+                    ),
+                    new SurgeryRoom(
+                        "OR-104",
+                        RoomType.ConsultationRoom,
+                        3
+                    )
+                };
 
+
+                surgeryRoomList[0].SetStatus(RoomStatus.Occupied);
+                surgeryRoomList[1].SetStatus(RoomStatus.Occupied);
+                surgeryRoomList[2].SetStatus(RoomStatus.Occupied);
+                surgeryRoomList[3].SetStatus(RoomStatus.Occupied);
+
+
+                foreach (var surgeryRoom in surgeryRoomList)
+                {
+                    await context.SurgeryRooms.AddAsync(surgeryRoom);
+                }
+
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }
