@@ -433,21 +433,11 @@ export default class ThumbRaiser {
     
             roomStatuses.forEach((roomData, index) => {
                 const room = rooms[index];
-                console.log(`Room ${room.id} data received:`, roomData);
     
                 // Find the patient corresponding to this room
                 const patient = this.patients.find(p => {
                     const xMatch = Math.abs(p.object.position.x - room.patientPosition.x) < 0.01;
                     const zMatch = Math.abs(p.object.position.z - room.patientPosition.z) < 0.01;
-                    console.log(`Comparing positions for ${room.id}:`, {
-                        expected: room.patientPosition,
-                        actual: {
-                            x: p.object.position.x,
-                            z: p.object.position.z
-                        },
-                        xMatch,
-                        zMatch
-                    });
                     return xMatch && zMatch;
                 });
                 
@@ -461,26 +451,11 @@ export default class ThumbRaiser {
                         const doctorZ = room.patientPosition.z - 0.25; // Offset from patient position
                         const xMatch = Math.abs(d.object.position.x - doctorX) < 0.01;
                         const zMatch = Math.abs(d.object.position.z - doctorZ) < 0.01;
-                        console.log(`Comparing doctor positions for ${room.id}:`, {
-                            expected: { x: doctorX, z: doctorZ },
-                            actual: {
-                                x: d.object.position.x,
-                                z: d.object.position.z
-                            },
-                            xMatch,
-                            zMatch
-                        });
                         return xMatch && zMatch;
                     });
             
                     if (doctor && doctor.object) {
                         doctor.setVisibility(isOccupied);
-                        console.log(`Set doctor visibility for ${room.id} to:`, isOccupied,
-                            'at position:', {
-                                x: doctor.object.position.x,
-                                z: doctor.object.position.z
-                            }
-                        );
                     }
                 }
             });
