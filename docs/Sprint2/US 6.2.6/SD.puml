@@ -1,4 +1,4 @@
-@startuml namespace sequence diagram
+@startuml
 title "US 6.2.6 Create Patient Profile Sequence Diagram"
 
 actor Admin
@@ -27,10 +27,6 @@ alt validation successful
     PS -> PS: checkAdminRole(token)
     PS -> API: POST /api/patient
     activate API
-    API -> DB: Insert patient data
-    activate DB
-    DB --> API: Confirm creation
-    deactivate DB
     API --> PS: Return PatientDto
     deactivate API
     PS --> UI: Return success
@@ -41,9 +37,9 @@ alt validation successful
 else validation failed
     UI -> UI: Display validation errors
     UI --> Admin: Show error messages
+    deactivate
 end
 
 deactivate UI
 deactivate Admin
-
 @enduml

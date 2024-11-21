@@ -1,11 +1,10 @@
-@startuml StaffList Sequence Diagram
+@startuml
 title "Staff List Management Flow"
 
 actor User
 participant StaffList
 participant StaffService
 participant API
-database Database
 
 activate User
 
@@ -18,10 +17,7 @@ activate StaffService
 StaffService -> API: GET /api/staff/filter
 activate API
 
-API -> Database: Query staff with filters
-activate Database
-Database --> API: Return filtered staff
-deactivate Database
+
 
 alt API Error
     API --> StaffService: Return error
@@ -63,10 +59,9 @@ alt Select Staff Member
     StaffList -> StaffService: getStaffById(staffId)
     activate StaffService
     StaffService -> API: GET /api/staff/{id}
-    API -> Database: Query staff details
-    Database --> API: Return staff details
+    activate API
     API --> StaffService: Return response
-
+    deactivate API
     alt Staff Not Found
         StaffService --> StaffList: Throw error
         StaffList -> StaffList: setErrorMessage("Error fetching staff details")
@@ -106,5 +101,4 @@ end
 
 deactivate StaffList
 deactivate User
-
 @enduml

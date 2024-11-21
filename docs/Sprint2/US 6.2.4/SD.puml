@@ -1,4 +1,4 @@
-@startuml Login Sequence Diagram
+@startuml
 title "User Login Flow"
 
 actor User
@@ -6,7 +6,6 @@ participant Login
 participant AuthContext
 participant LoginAPI
 participant API
-database Database
 
 activate User
 
@@ -18,7 +17,6 @@ Login -> Login: handleChange(event)
 Login -> Login: setCredentials(newCredentials)
 
 User -> Login: Submit form
-activate Login
 Login -> Login: handleSubmit(event)
 Login -> Login: preventDefault()
 
@@ -28,10 +26,6 @@ activate LoginAPI
 LoginAPI -> API: POST /api/auth/login
 activate API
 
-API -> Database: Validate credentials
-activate Database
-Database --> API: Return user data
-deactivate Database
 
 alt Invalid Credentials
     API --> LoginAPI: Return error
@@ -55,9 +49,9 @@ else Success
     
     Login -> Login: navigate('/')
     Login --> User: Redirect to home page
+    deactivate Login
 end
 
 deactivate Login
 deactivate User
-
 @enduml
