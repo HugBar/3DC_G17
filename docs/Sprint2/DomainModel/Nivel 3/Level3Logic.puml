@@ -1,4 +1,4 @@
-@startuml "Hospital Management System - Logical View"
+@startuml "Hospital Management System - Level 3 Logical View"
 
 ' Style definitions
 skinparam componentStyle uml2
@@ -8,50 +8,67 @@ skinparam component {
   ArrowColor #666666
 }
 
-' Logical Layers
-package "Frontend" {
-  component "Authentication Module" as frontAuth
-  component "User Management Module" as frontUserMgmt
-  component "Patient Management Module" as frontPatientMgmt
-  component "Staff Management Module" as frontStaffMgmt
-  component "Operation Management Module" as frontOperationMgmt
-}
+' External Systems
+[MDR API] as MDR
+[SMTP API] as SMTP
+[GOOGLE API] as GOOGLE
+[SWIPL API] as SWIPL
 
-package "Backend" {
-  component "Authentication Service" as backAuth
-  component "User Management Service" as backUserMgmt
-  component "Patient Management Service" as backPatientMgmt
-  component "Staff Management Service" as backStaffMgmt
-  component "Operation Request Service" as backOperationMgmt
+package "Application Core" {
+  ' Core Business Components
+  [Patient Management] as PatientMgmt
+  [Staff Management] as StaffMgmt
+  [Operation Management] as OpMgmt
+  [Authentication] as Auth
   
-  package "Data Access Layer" {
-    component "User Data Access" as userData
-    component "Patient Data Access" as patientData
-    component "Staff Data Access" as staffData
-    component "Operation Data Access" as operationData
-  }
+  ' Cross-cutting Components
+  [Logging] as Log
+  [Security] as Sec
+  [Validation] as Val
 }
 
-database "Database" as db
+package "Infrastructure" {
+  database "Database" as DB
+  [Data Access Layer] as DAL
+  [External Service Adapters] as ExtAdapters
+}
 
-' Frontend to Backend Relationships
-frontAuth --> backAuth
-frontUserMgmt --> backUserMgmt
-frontPatientMgmt --> backPatientMgmt
-frontStaffMgmt --> backStaffMgmt
-frontOperationMgmt --> backOperationMgmt
+package "API Layer" {
+  [API Gateway] as Gateway
+  [Controllers] as Ctrl
+  [DTOs] as DTOs
+}
 
-' Backend to Data Access Layer Relationships
-backAuth --> userData
-backUserMgmt --> userData
-backPatientMgmt --> patientData
-backStaffMgmt --> staffData
-backOperationMgmt --> operationData
+' Core Dependencies
+PatientMgmt --> DAL
+StaffMgmt --> DAL
+OpMgmt --> DAL
+Auth --> DAL
 
-' Data Access Layer to Database
-userData --> db
-patientData --> db
-staffData --> db
-operationData --> db
+' Cross-cutting Concerns
+Log ..> PatientMgmt
+Log ..> StaffMgmt
+Log ..> OpMgmt
+Sec ..> PatientMgmt
+Sec ..> StaffMgmt
+Sec ..> OpMgmt
+Val ..> PatientMgmt
+Val ..> StaffMgmt
+Val ..> OpMgmt
+
+' Infrastructure Dependencies
+DAL --> DB
+ExtAdapters --> MDR
+ExtAdapters --> SMTP
+ExtAdapters --> GOOGLE
+ExtAdapters --> SWIPL
+
+' API Layer Dependencies
+Gateway --> Ctrl
+Ctrl --> PatientMgmt
+Ctrl --> StaffMgmt
+Ctrl --> OpMgmt
+Ctrl --> Auth
+DTOs ..> Ctrl
 
 @enduml
