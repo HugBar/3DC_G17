@@ -215,11 +215,21 @@ export const deskData = [
     {
         url: "./models/gltf/Desk/Desk.glb",
         credits: "Hospital desk model",
-        scale: new THREE.Vector3(0.003, 0.003, 0.003),
+        scale: new THREE.Vector3(0.0032, 0.0032, 0.0032),
         position: new THREE.Vector3(-5.46, 0, -2.35),
         rotation: new THREE.Vector3(0, Math.PI / 2, 0)
     }
 ];
+export const vendingMachineData = [
+    {
+        url: "./models/gltf/VendingMachine/VendingMachine.glb",
+        credits: "Hospital vending machine model",
+        scale: new THREE.Vector3(0.75, 0.75, 0.75),
+        position: new THREE.Vector3(-7.0, 0, -3.50),
+        rotation: new THREE.Vector3(0, 0, 0)
+    }
+];
+
 
 export const doorData = [
 
