@@ -28,7 +28,6 @@ namespace DDDSample1.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin, Patient")]
 
         public async Task<IActionResult> RegisterPatient(RegisterPatientDto dto)
 

@@ -4,7 +4,7 @@ import usePatientFormValidation from '../../../hooks/usePatientFormValidation';
 import patientService from '../../../api/patientService';
 import './CreatePatient.css';
 
-const CreatePatient = () => {
+const CreatePatient = ({ isAdmin }) => {
   const navigate = useNavigate();
   const { errors, validate } = usePatientFormValidation();
   const [successMessage, setSuccessMessage] = useState('');
@@ -32,10 +32,18 @@ const CreatePatient = () => {
     e.preventDefault();
     if (validate(values)) {
       try {
-        await patientService.registerPatient(values);
+        if (isAdmin) {
+          await patientService.registerPatient(values);
+        } else {
+          await patientService.registerPatientItself(values);
+        }
         setSuccessMessage('Patient registered successfully!');
         setTimeout(() => {
-          navigate('/patient/list');
+          if (isAdmin) {
+            navigate('/patient/list');
+          } else {
+            navigate('/patient/update');
+          }
         }, 2000);
       } catch (error) {
         console.error('Error registering patient:', error);

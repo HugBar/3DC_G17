@@ -33,7 +33,7 @@ const App = () => {
   const [showStaffActions, setShowStaffActions] = useState(false);
   const [showPatientActions, setShowPatientActions] = useState(false);
   const [selectedStaffAction, setSelectedStaffAction] = useState(null);
-  const [selectedPatientAction, setSelectedPatientAction] = useState(null);
+  const [selectedPatientAction, setSelectedPatientAction] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [selectedStaffId, setSelectedStaffId] = useState(null);
   const [selectedOperationRequest, setSelectedOperationRequest] = useState(null);
@@ -263,6 +263,15 @@ const App = () => {
               </button>
               <button
                 onClick={() => {
+                  setSelectedPatientAction('Create Patient');
+                  navigate('/patient/create-profile');
+                }}
+                className={`action-button ${selectedPatientAction === 'Create Patient' ? 'active' : ''}`}
+              >
+                Create Profile
+              </button>
+              <button
+                onClick={() => {
                   setSelectedPatientAction('Delete Account');
                   navigate('/patient/delete-account');
                 }}
@@ -388,11 +397,16 @@ const App = () => {
   <Route path="/hospital-3d" element={<Hospital3DView />} />
 
   {/* Patient Routes */}
-  <Route path="/Patient/create" element={
+  <Route path="/patient/create" element={
     <ProtectedRoute requiredRole="admin">
-      <CreatePatient />
+      <CreatePatient isAdmin={true} />
     </ProtectedRoute>
   } />
+  <Route path="/patient/create-profile" element={
+  <ProtectedRoute requiredRole="patient">
+    <CreatePatient isAdmin={false} />
+  </ProtectedRoute>
+} />
   <Route path="/patient/update" element={
     <ProtectedRoute requiredRole="patient">
       <UpdatePatient />
