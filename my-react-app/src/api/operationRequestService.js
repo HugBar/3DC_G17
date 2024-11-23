@@ -4,6 +4,7 @@ import staffService from './staffService';
 import patientService from './patientService'; 
 
 const API_URL = 'https://localhost:5001/api/OperationRequest/';
+const Type_API_URL = 'https://localhost:5001/api/OperationType/';
 
 const getAuthToken = () => {
   const token = localStorage.getItem('authToken');
@@ -195,6 +196,28 @@ const operationRequestService = {
     checkDoctorRole(token);
     try {
       const response = await axios.get(`${API_URL}get/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+      throw error;
+    }
+  },
+
+  getAllOperationTypes: async () => {
+    const token = getAuthToken();
+    try {
+      const response = await axios.get(`${Type_API_URL}search-operation-type`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

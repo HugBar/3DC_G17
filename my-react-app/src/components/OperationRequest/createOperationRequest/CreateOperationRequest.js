@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import operationRequestService from '../../../api/operationRequestService';
 import './CreateOperationRequest.css';
 
@@ -10,8 +10,36 @@ const CreateOperationRequest = () => {
     deadline: '',
     priority: 'elective',
   });
+  const [operationTypes, setOperationTypes] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchOperationTypes = async () => {
+      try {
+        const response = await operationRequestService.getAllOperationTypes();
+        if (!controller.signal.aborted) {
+          setOperationTypes(response);
+          setIsLoading(false);
+          setErrorMessage('');
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setErrorMessage('Error fetching operation types');
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchOperationTypes();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,15 +100,26 @@ const CreateOperationRequest = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="operationTypeId">Operation Type ID:</label>
-          <input
+          <label htmlFor="operationTypeId">Operation Type:</label>
+          <select
             id="operationTypeId"
-            type="text"
             name="operationTypeId"
             value={operationData.operationTypeId}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="">Select Operation Type</option>
+            {operationTypes.map((type, index) => (
+            <option 
+              key={type?.operationTypeCode || `fallback-${index}`} 
+              value={type?.operationTypeCode || ''}
+            >
+              {type?.name || 'Unknown'} {type?.version ? `(Version ${type.version})` : ''}
+            </option>
+          ))}
+
+
+          </select>
         </div>
         <div className="form-group">
           <label htmlFor="deadline">Deadline:</label>

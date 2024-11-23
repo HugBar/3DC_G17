@@ -44,15 +44,15 @@ namespace DDDSample1.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
-            
+
 
         }
 
         [HttpPatch("edit-operation-type/{id}")]
         [Authorize(Roles = "Admin")]
 
-        public async Task<IActionResult> UpdateOperationType([FromRoute] Guid  id, [FromBody] JsonPatchDocument<UpdateOperationTypeDto> patchDoc)
-        {   
+        public async Task<IActionResult> UpdateOperationType([FromRoute] Guid id, [FromBody] JsonPatchDocument<UpdateOperationTypeDto> patchDoc)
+        {
             if (patchDoc == null)
             {
                 return BadRequest(new { message = "Invalid patch document." });
@@ -98,7 +98,6 @@ namespace DDDSample1.Controllers
         }
 
         [HttpGet("search-operation-type")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SearchOperationType([FromQuery] OperationTypeFilterDto filterDto)
         {
             try
