@@ -252,6 +252,33 @@ const patientService = {
     }
 },
 
+registerPatientItself: async (patientData) => {
+  const token = getAuthToken();
+
+  try {
+      const response = await axios.post(API_URL, patientData, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          }
+      });
+      
+      if (response.data) {
+          console.log('Patient registered successfully:', response.data);
+          return response.data;
+      }
+  } catch (error) {
+      if (error.response) {
+          console.error('Error response:', error.response.data);
+          console.error('Error status:', error.response.status);
+      } else if (error.request) {
+          console.error('Error request:', error.request);
+      } else {
+          console.error('Error message:', error.message);
+      }
+      throw error;
+  }
+},
+
 };
 
 export default patientService;
