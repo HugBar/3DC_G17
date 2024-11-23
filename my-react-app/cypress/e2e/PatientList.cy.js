@@ -67,7 +67,9 @@ describe('Patient List', () => {
       cy.get('.modal-content').within(() => {
         cy.contains('Patient Details').should('be.visible');
         cy.contains('Update Patient').should('be.visible');
-        cy.contains('Delete Patient').should('be.visible');
+        cy.get('button.delete-button')
+          .scrollIntoView() // Scrolls the button into view
+          .should('be.visible') // Ensures the button is now visible
         cy.contains('Close').should('be.visible');
       });
   
