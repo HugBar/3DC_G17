@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import patientService from '../../../api/patientService';
 import './UpdatePatient.css';
 
-const UpdatePatient = ({ patientEmail, onBack }) => {
+const UpdatePatient = ({ onBack }) => {
+  const location = useLocation();
+  const patientEmail = location.state?.email || localStorage.getItem('userEmail');
   const [originalData, setOriginalData] = useState({});
   const [patientData, setPatientData] = useState({
     email: '',
@@ -25,6 +27,11 @@ const UpdatePatient = ({ patientEmail, onBack }) => {
 
   useEffect(() => {
     const fetchPatientData = async () => {
+      if (!patientEmail) {
+        console.log('No patient email provided');
+        return;
+      }
+
       try {
         const data = await patientService.getPatientProfile(patientEmail);
         setPatientData(data);
@@ -141,6 +148,19 @@ const UpdatePatient = ({ patientEmail, onBack }) => {
   return (
     <div className="update-profile-container">
       <h2>Update Profile</h2>
+      
+      {successMessage && (
+        <div className="success-message">
+          {successMessage}
+        </div>
+      )}
+      
+      {errorMessage && (
+        <div className="error-message">
+          {errorMessage}
+        </div>
+      )}
+
       <form className="update-profile-form" onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Email:</label>
@@ -249,11 +269,6 @@ const UpdatePatient = ({ patientEmail, onBack }) => {
         <button type="submit" className="update-button">Update</button>
       </form>
 
-      {successMessage && (
-        <div className="success-message">
-          {successMessage}
-        </div>
-      )}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
