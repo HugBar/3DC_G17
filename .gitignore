@@ -1,4 +1,4 @@
 /bin/
 /obj/
 .DS_Store
-node_modules/.bin
+node_modules

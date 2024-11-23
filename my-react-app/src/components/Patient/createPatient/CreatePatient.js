@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import usePatientFormValidation from '../../../hooks/usePatientFormValidation';
+import patientService from '../../../api/patientService';
 import './CreatePatient.css';
 
 const CreatePatient = () => {
@@ -31,6 +32,7 @@ const CreatePatient = () => {
     e.preventDefault();
     if (validate(values)) {
       try {
+        await patientService.registerPatient(values);
         setSuccessMessage('Patient registered successfully!');
         setTimeout(() => {
           navigate('/patient/list');
