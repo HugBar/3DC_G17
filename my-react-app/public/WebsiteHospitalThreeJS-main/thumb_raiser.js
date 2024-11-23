@@ -13,7 +13,7 @@
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 import Orientation from "./orientation.js";
-import { generalData, mazeData, playerData, lightsData, fogData, cameraData , chairData, plantData, medicalEquipmentData, patientData, doorData, doctorData, deskData } from "./default_data.js";
+import { generalData, mazeData, playerData, lightsData, fogData, cameraData , chairData, plantData, medicalEquipmentData, patientData, doorData, doctorData, deskData, vendingMachineData } from "./default_data.js";
 import { merge } from "./merge.js";
 import Maze from "./hospital.js";
 import Player from "./player.js";
@@ -29,6 +29,7 @@ import Patient from "./patient.js";
 import Door from "./door.js";
 import Doctor from './doctor.js';
 import Desk from "./desk.js";
+import VendingMachine from "./vending_machine.js";
 
 
 /*
@@ -158,7 +159,7 @@ import Desk from "./desk.js";
  */
 
 export default class ThumbRaiser {
-    constructor(generalParameters, mazeParameters, playerParameters, lightsParameters, fogParameters, fixedViewCameraParameters, firstPersonViewCameraParameters, thirdPersonViewCameraParameters, topViewCameraParameters, miniMapCameraParameters, chairParameters, plantParameters,medicalEquipmentParameters, patientParameters, doctorParameters, deskParameters) {
+    constructor(generalParameters, mazeParameters, playerParameters, lightsParameters, fogParameters, fixedViewCameraParameters, firstPersonViewCameraParameters, thirdPersonViewCameraParameters, topViewCameraParameters, miniMapCameraParameters, chairParameters, plantParameters, medicalEquipmentParameters, patientParameters, doctorParameters, deskParameters, vendingMachineParameters) {
         this.generalParameters = merge({}, generalData, generalParameters);
         this.mazeParameters = merge({}, mazeData, mazeParameters);
         this.playerParameters = merge({}, playerData, playerParameters);
@@ -175,7 +176,9 @@ export default class ThumbRaiser {
         this.patientParameters = merge({}, patientData, patientParameters);
         this.doctorParameters = merge({}, doctorData, doctorParameters);
         this.deskParameters = merge({}, deskData, deskParameters);
-
+        this.vendingMachineParameters = merge({}, vendingMachineData, vendingMachineParameters);
+        
+        
         // Create a 2D scene (the viewports frames)
         this.scene2D = new THREE.Scene();
 
@@ -259,6 +262,15 @@ export default class ThumbRaiser {
             this.desks.push(desk);
             this.scene3D.add(desk.object);
         });
+        
+        // Create the vending machines
+        this.vendingMachines = [];
+        vendingMachineData.forEach(vendingMachineParams => {
+            const vendingMachine = new VendingMachine(vendingMachineParams);
+            this.vendingMachines.push(vendingMachine);
+            this.scene3D.add(vendingMachine.object);
+        });
+        
 
         this.ceilingLights = [];
         const ceilingLightPositions = [
