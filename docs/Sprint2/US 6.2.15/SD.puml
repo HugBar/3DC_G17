@@ -1,0 +1,40 @@
+@startuml namespace
+title "Sequence Diagram US 6.2.15"
+
+actor Doctor
+participant UpdateOperationRequest
+participant OperationRequestService
+participant API
+
+activate Doctor
+Doctor->UpdateOperationRequest: Access update page
+activate UpdateOperationRequest
+UpdateOperationRequest->OperationRequestService: getOperationRequestById(requestId)
+activate OperationRequestService
+OperationRequestService->OperationRequestService: getAuthToken()
+OperationRequestService->API: GET /api/operation-request/{id}
+activate API
+API-->OperationRequestService: Return operation request data
+deactivate API
+OperationRequestService-->UpdateOperationRequest: Return operation request data
+deactivate OperationRequestService
+UpdateOperationRequest->UpdateOperationRequest: setRequestData(data)
+UpdateOperationRequest-->Doctor: Display form with current data
+
+Doctor->UpdateOperationRequest: Edit form fields
+UpdateOperationRequest->UpdateOperationRequest: handleChange(event)
+UpdateOperationRequest->UpdateOperationRequest: validate(values)
+
+Doctor->UpdateOperationRequest: Submit changes
+activate OperationRequestService
+UpdateOperationRequest->OperationRequestService: updateOperationRequest(requestId, updateData)
+OperationRequestService->OperationRequestService: checkDoctorRole(token)
+OperationRequestService->API: PATCH /api/operation-request/{id}
+activate API
+API-->OperationRequestService: Return updated data
+deactivate API
+OperationRequestService-->UpdateOperationRequest: Return success
+deactivate OperationRequestService
+UpdateOperationRequest-->Doctor: Show success message
+
+@enduml
