@@ -35,6 +35,28 @@ surgery(so2,45,60,45).
 surgery(so3,45,90,45).
 surgery(so4,45,75,45).
 
+% surgery_requirements(SurgeryType, StaffRequirements)
+% StaffRequirements = [Phase1Requirements, Phase2Requirements, Phase3Requirements]
+% Each PhaseRequirements = [Role-Number, Role-Number, ...]
+
+surgery_requirements(so2, [
+    % Phase 1 - Anesthesia/preparation
+    [anaesthesiologist-1],
+    % Phase 2 - Surgery
+    [doctor-3, anaesthesiologist-1, instrumentation_nurse-1, circulating_nurse-1, nurse_anaesthetist-1],
+    % Phase 3 - Cleaning
+    [medical_assistant-1]
+]).
+
+surgery_requirements(so3, [
+    % Phase 1 - Anesthesia/preparation
+    [anaesthesiologist-1],
+    % Phase 2 - Surgery
+    [doctor-3, anaesthesiologist-1, instrumentation_nurse-1, circulating_nurse-1, nurse_anaesthetist-1],
+    % Phase 3 - Cleaning
+    [medical_assistant-1]
+]).
+
 surgery_id(so100001,so2).
 surgery_id(so100002,so3).
 surgery_id(so100003,so4).
@@ -52,25 +74,6 @@ assignment_surgery(so100005,d002).
 assignment_surgery(so100005,d003).
 
 agenda_operation_room(or1,20241028,[(520,579,so100000),(1000,1059,so099999)]).
-
-% Surgery phases definition with required roles
-surgery_phases(so2, [
-    (anesthesia, 45, [anaesthetist, nurse_anaesthetist]),
-    (surgery, 60, [orthopaedist, instrumenting_nurse, circulating_nurse, anaesthetist, nurse_anaesthetist]),
-    (cleaning, 45, [medical_action])
-]).
-surgery_phases(so3, [
-    (anesthesia, 45, [anaesthetist, nurse_anaesthetist]),
-    (surgery, 90, [orthopaedist, instrumenting_nurse, circulating_nurse, anaesthetist, nurse_anaesthetist]),
-    (cleaning, 45, [medical_action])
-]).
-surgery_phases(so4, [
-    (anesthesia, 45, [anaesthetist, nurse_anaesthetist]),
-    (surgery, 75, [orthopaedist, instrumenting_nurse, circulating_nurse, anaesthetist, nurse_anaesthetist]),
-    (cleaning, 45, [medical_action])
-]).
-
-
 
 free_agenda0([],[(0,1440)]).
 free_agenda0([(0,Tfin,_)|LT],LT1):-!,free_agenda1([(0,Tfin,_)|LT],LT1).
