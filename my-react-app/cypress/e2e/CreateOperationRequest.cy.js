@@ -37,21 +37,28 @@ describe('Operation Request Form', () => {
   
     it('should display the create operation request form', () => {
       cy.get('h2').should('contain', 'Create Operation Request');
-      cy.get('input[name="patientId"]').should('exist');
-      cy.get('input[name="doctorId"]').should('exist');
-      cy.get('input[name="operationTypeId"]').should('exist');
+      cy.get('input[name="patientMRN"]').should('exist');
+      cy.get('input[name="doctorLicenseNumber"]').should('exist');
+      cy.get('label').contains('Operation Type:').should('exist');
       cy.get('input[name="deadline"]').should('exist');
       cy.get('select[name="priority"]').should('exist');
     });
   
     it('should successfully create a new operation request', () => {
       const requestData = {
-        patientId: 'b99fd2b1-20d1-4aeb-879e-e2d5f4debeda',
-        doctorId: '0c40019b-1e02-42d3-9da8-0138c9825c17',
-        operationTypeId: 'c86233e0-82ca-499b-af0b-854ed601fe5a',
+        patientMRN: 'MRN123456',
+        doctorLicenseNumber: 'LIC789012',
+        operationType: 'Brain Surgery (Version 1)',
         deadline: '2024-12-01T10:00',
         priority: 'urgent'
       };
+  
+      // Wait for operation types to load
+      cy.contains('label', 'Operation Type:')
+        .parent()
+        .find('select')
+        .should('exist')
+        .and('not.be.disabled');
   
       cy.intercept('POST', `${baseUrl}/create-operation-request`, {
         headers: {
@@ -59,9 +66,12 @@ describe('Operation Request Form', () => {
         }
       }).as('createRequestRequest');
   
-      cy.get('input[name="patientId"]').type(requestData.patientId);
-      cy.get('input[name="doctorId"]').type(requestData.doctorId);
-      cy.get('input[name="operationTypeId"]').type(requestData.operationTypeId);
+      cy.get('input[name="patientMRN"]').type(requestData.patientMRN);
+      cy.get('input[name="doctorLicenseNumber"]').type(requestData.doctorLicenseNumber);
+      cy.contains('label', 'Operation Type:')
+        .parent()
+        .find('select')
+        .select(requestData.operationType);
       cy.get('input[name="deadline"]')
         .invoke('removeAttr', 'disabled')
         .type(requestData.deadline);
@@ -76,20 +86,29 @@ describe('Operation Request Form', () => {
       cy.get('.success-message').should('contain', 'Operation request created successfully!');
   
       // Verify form is cleared
-      cy.get('input[name="patientId"]').should('have.value', '');
-      cy.get('input[name="doctorId"]').should('have.value', '');
-      cy.get('input[name="operationTypeId"]').should('have.value', '');
+      cy.get('input[name="patientMRN"]').should('have.value', '');
+      cy.get('input[name="doctorLicenseNumber"]').should('have.value', '');
+      cy.get('select[name="priority"]').should('have.value', 'elective');
     });
     
     it('should handle network errors gracefully', () => {
+      cy.contains('label', 'Operation Type:')
+        .parent()
+        .find('select')
+        .should('exist')
+        .and('not.be.disabled');
+      
       cy.intercept('POST', `${baseUrl}/create-operation-request`, {
         statusCode: 500,
         body: { message: 'Internal Server Error' }
       }).as('createRequestError');
   
-      cy.get('input[name="patientId"]').type('P123');
-      cy.get('input[name="doctorId"]').type('D456');
-      cy.get('input[name="operationTypeId"]').type('OT789');
+      cy.get('input[name="patientMRN"]').type('P123');
+      cy.get('input[name="doctorLicenseNumber"]').type('D456');
+      cy.contains('label', 'Operation Type:')
+        .parent()
+        .find('select')
+        .select('Brain Surgery (Version 1)');
       cy.get('input[name="deadline"]')
         .invoke('removeAttr', 'disabled')
         .type('2024-12-01T10:00');
@@ -101,14 +120,23 @@ describe('Operation Request Form', () => {
     });
   
     it('should handle validation errors', () => {
+      cy.contains('label', 'Operation Type:')
+        .parent()
+        .find('select')
+        .should('exist')
+        .and('not.be.disabled');
+      
       cy.intercept('POST', `${baseUrl}/create-operation-request`, {
         statusCode: 400,
-        body: { message: 'Invalid operation type ID' }
+        body: { message: 'Invalid patient medical record number' }
       }).as('createRequestValidationError');
   
-      cy.get('input[name="patientId"]').type('P123');
-      cy.get('input[name="doctorId"]').type('D456');
-      cy.get('input[name="operationTypeId"]').type('invalid-id');
+      cy.get('input[name="patientMRN"]').type('invalid-mrn');
+      cy.get('input[name="doctorLicenseNumber"]').type('LIC789012');
+      cy.contains('label', 'Operation Type:')
+        .parent()
+        .find('select')
+        .select('Brain Surgery (Version 1)');
       cy.get('input[name="deadline"]').type('2024-12-01T10:00');
       cy.get('select[name="priority"]').select('urgent');
   
@@ -118,8 +146,7 @@ describe('Operation Request Form', () => {
         .should('be.visible')
         .and('contain', 'Error creating operation request');
   
-      // Verify the form data is preserved
-      cy.get('input[name="operationTypeId"]').should('have.value', 'invalid-id');
+      cy.get('input[name="patientMRN"]').should('have.value', 'invalid-mrn');
     });
   
     afterEach(() => {

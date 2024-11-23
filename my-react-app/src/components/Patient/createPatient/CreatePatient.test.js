@@ -1,9 +1,10 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { act } from 'react';
 import CreatePatient from './CreatePatient';
 import { useNavigate } from 'react-router-dom';
 import usePatientFormValidation from '../../../hooks/usePatientFormValidation';
+import patientService from '../../../api/patientService';
 
 // Mock the dependencies
 jest.mock('react-router-dom', () => ({
@@ -13,6 +14,14 @@ jest.mock('react-router-dom', () => ({
 jest.mock('../../../hooks/usePatientFormValidation', () => ({
   __esModule: true,
   default: jest.fn(),
+}));
+
+jest.mock('../../../api/patientService', () => ({
+  __esModule: true,
+  default: {
+    registerPatientItself: jest.fn(),
+    registerPatient: jest.fn(),
+  },
 }));
 
 const mockPatientData = {
@@ -38,6 +47,9 @@ describe('CreatePatient Component', () => {
       errors: {},
       validate: mockValidate,
     });
+    // Mock successful patient registration
+    patientService.registerPatientItself.mockResolvedValue({});
+    patientService.registerPatient.mockResolvedValue({});
   });
 
   test('renders create patient form', () => {
@@ -73,11 +85,14 @@ describe('CreatePatient Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /register patient/i }));
     });
 
-    expect(screen.getByText('Patient registered successfully!')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Patient registered successfully!')).toBeInTheDocument();
+    });
+
     // Check if navigation is called after successful registration
-    setTimeout(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/patient/list');
-    }, 2000);
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/patient/update');
+    }, { timeout: 3000 });
   });
 
   test('displays validation errors when form is submitted with invalid data', async () => {

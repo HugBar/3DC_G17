@@ -83,7 +83,7 @@ describe('Create Staff Form', () => {
       });
   
       // Check for success message
-      cy.get('.success-message').should('contain', 'Staff created successfully!');
+      cy.get('.success-message').should('contain', 'Staff John Doe created successfully!');
   
       // Verify form is cleared after successful submission
       cy.get('input[name="firstName"]').should('have.value', '');
@@ -127,7 +127,7 @@ describe('Create Staff Form', () => {
       cy.get('button[type="submit"]').click();
   
       // Check for error message
-      cy.get('.error-message').should('contain', 'Error creating staff');
+      cy.get('.error-message').should('contain', 'Internal Server Error');
     });
   
     it('should handle duplicate email validation error', () => {
@@ -159,7 +159,7 @@ describe('Create Staff Form', () => {
       // Check for error message
       cy.get('.error-message')
         .should('be.visible')
-        .and('contain', 'Error creating staff.');
+        .and('contain', 'Email already exists');
 
       // Verify the form data is preserved
       cy.get('input[name="email"]').should('have.value', 'admin@admin.com');

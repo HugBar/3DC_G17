@@ -61,8 +61,8 @@ before(() => {
                 "specialization": "Nurse",
                 "availabilitySlots": [
                     {
-                        "startTime": "2024-11-23T08:00:00",
-                        "endTime": "2024-11-23T11:00:00"
+                        "startTime": "2024-12-01T08:00:00",
+                        "endTime": "2024-12-01T11:00:00"
                     }
                 ]
             }
