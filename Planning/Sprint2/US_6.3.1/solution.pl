@@ -5,8 +5,7 @@
 :-dynamic agenda_operation_room1/3.
 :-dynamic better_sol/5.
 
-
-agenda_staff(d001,20241028,[(720,790,m01),(1080,1140,c01)]).
+agenda_staff(d001,20241028,[(720,790,m01)]).
 agenda_staff(d002,20241028,[(850,900,m02)]).
 agenda_staff(d003,20241028,[(720,790,m01)]).
 agenda_staff(d004,20241028,[(720,790,m01)]).
@@ -16,8 +15,6 @@ agenda_staff(a001,20241028,[(850,900,d002)]).
 agenda_staff(n001,20241028,[(850,900,d002)]).
 agenda_staff(n002,20241028,[(850,900,d002)]).
 agenda_staff(n003,20241028,[(850,900,d002)]).
-
-
 
 timetable(d001,20241028,(480,1200)).
 timetable(d002,20241028,(500,1440)).
@@ -29,6 +26,7 @@ timetable(a001,20241028,(480,1200)).
 timetable(n001,20241028,(480,1200)).
 timetable(n002,20241028,(480,1200)).
 timetable(n003,20241028,(480,1200)).
+
 
 % surgery_requirements(SurgeryType, StaffRequirements)
 % StaffRequirements = [Phase1Requirements, Phase2Requirements, Phase3Requirements]
@@ -72,6 +70,9 @@ staff(n001, nurse, instrumentation, [so2,so3,so4]).
 staff(n002, nurse, circulating, [so2,so3,so4]).
 staff(n003, nurse, anaesthetist, [so2,so3,so4]).
 staff(m001, medical, assistant, [so2,so3,so4]).
+staff(n004, nurse, anaesthetist, [so2,so3,so4]).
+
+
 
 % surgery(SurgeryType, TPrep, TSurgery, TCleaning)
 surgery(so2, 45, 60, 45).
@@ -84,16 +85,7 @@ surgery_id(so100003,so4).
 surgery_id(so100004,so2).
 surgery_id(so100005,so4).
 
-assignment_surgery(so100001,d001).
-assignment_surgery(so100002,d002).
-assignment_surgery(so100003,d003).
-assignment_surgery(so100003,n004).
-assignment_surgery(so100004,d001).
-assignment_surgery(so100004,d002).
-assignment_surgery(so100005,d002).
-assignment_surgery(so100005,d003).
-
-agenda_operation_room(or1,20241028,[(520,579,so100000)]).
+agenda_operation_room(or1,20241028,[(580,629, so100099), (1290, 1350, so100097)]).
 
 free_agenda0([],[(0,1440)]).
 free_agenda0([(0,Tfin,_)|LT],LT1):-!,free_agenda1([(0,Tfin,_)|LT],LT1).
@@ -131,68 +123,52 @@ take_n(N, List, [Elem|RestSelected]) :-
     N1 is N - 1,
     take_n(N1, Remaining, RestSelected).
 
-availability_operation(OpCode, Room, Day, LPossibilities, LAllStaff) :-
-    % Adicionar prints para debug
-    write('Starting availability_operation for OpCode: '), write(OpCode), nl,
-    
+availability_operation(OpCode, Room, Day, LPossibilities, StaffByPhase) :-
     surgery_id(OpCode, SurgeryType),
-    write('Surgery Type: '), write(SurgeryType), nl,
-    
     surgery(SurgeryType, TPrep, TSurgery, TCleaning),
-    write('Times - Prep: '), write(TPrep), 
-    write(' Surgery: '), write(TSurgery),
-    write(' Cleaning: '), write(TCleaning), nl,
+    surgery_requirements(SurgeryType, [Phase1Reqs, Phase2Reqs, Phase3Reqs]),
     
-    surgery_requirements(SurgeryType, AllPhases),
-    write('Surgery Requirements: '), write(AllPhases), nl,
+    % Get available staff for each phase
+    findall(Staff1, (
+        member(Role-Specialty-Number, Phase1Reqs),
+        staff(Staff1, Role, Specialty, _),
+        availability(Staff1, Day, _)
+    ), Phase1Staff),
     
-    % Obtém staff para cada fase
-    get_all_required_staff(AllPhases, LAllStaff),
-    write('All required staff: '), write(LAllStaff), nl,
+    findall(Staff2, (
+        member(Role-Specialty-Number, Phase2Reqs),
+        staff(Staff2, Role, Specialty, _),
+        availability(Staff2, Day, _)
+    ), Phase2Staff),
     
-    % Verifica disponibilidade para todos os staff necessários
-    findall(Staff, (
-        member(Staff, LAllStaff),
-        availability(Staff, Day, _)
-    ), AvailableStaff),
-    write('Available staff: '), write(AvailableStaff), nl,
+    findall(Staff3, (
+        member(Role-Specialty-Number, Phase3Reqs),
+        staff(Staff3, Role, Specialty, _),
+        availability(Staff3, Day, _)
+    ), Phase3Staff),
     
-    % Intersecta disponibilidades
-    intersect_all_agendas(AvailableStaff, Day, LA),
-    write('Intersected availabilities: '), write(LA), nl,
+    % Get intersected availabilities for each phase
+    intersect_all_agendas(Phase1Staff, Day, Phase1Avail),
+    intersect_all_agendas(Phase2Staff, Day, Phase2Avail),
+    intersect_all_agendas(Phase3Staff, Day, Phase3Avail),
     
-    % Verifica disponibilidade da sala
-    agenda_operation_room1(Room, Day, LAgenda),
-    write('Room agenda: '), write(LAgenda), nl,
+    % Get room availability
+    agenda_operation_room1(Room, Day, RoomAgenda),
+    free_agenda0(RoomAgenda, RoomAvail),
     
-    free_agenda0(LAgenda, LFAgRoom),
-    write('Free room slots: '), write(LFAgRoom), nl,
+    % Intersect all availabilities
+    intersect_2_agendas(Phase1Avail, RoomAvail, Temp1),
+    intersect_2_agendas(Phase2Avail, Temp1, Temp2),
+    intersect_2_agendas(Phase3Avail, Temp2, FinalAvail),
     
-    % Intersecta disponibilidades da sala e staff
-    intersect_2_agendas(LA, LFAgRoom, LIntAgStaffRoom),
-    write('Final intersected availabilities: '), write(LIntAgStaffRoom), nl,
-    
-    % Calcula tempo total necessário
+    % Calculate total time needed
     TTotal is TPrep + TSurgery + TCleaning,
-    write('Total time needed: '), write(TTotal), nl,
     
-    remove_unf_intervals(TTotal, LIntAgStaffRoom, LPossibilities),
-    write('Final possibilities: '), write(LPossibilities), nl.
-
-% Novo predicado para obter todo o staff necessário de todas as fases
-get_all_required_staff(AllPhases, LAllStaff) :-
-    flatten_requirements(AllPhases, FlatRequirements),
-    findall(Staff, (
-        member(Role-Specialty-_, FlatRequirements),
-        staff(Staff, Role, Specialty, _)
-    ), StaffList),
-    sort(StaffList, LAllStaff).
-
-% Auxiliar para achatar a lista de requisitos
-flatten_requirements([], []).
-flatten_requirements([Phase|Rest], Flat) :-
-    flatten_requirements(Rest, RestFlat),
-    append(Phase, RestFlat, Flat).
+    % Get valid intervals
+    remove_unf_intervals(TTotal, FinalAvail, LPossibilities),
+    
+    % Return staff by phase
+    StaffByPhase = [Phase1Staff, Phase2Staff, Phase3Staff].
 
 intersect_all_agendas([Name],Date,LA):-!,availability(Name,Date,LA).
 intersect_all_agendas([Name|LNames],Date,LI):-
@@ -262,74 +238,67 @@ remove_unf_intervals(TSurgery,[_|LA],LA1):- remove_unf_intervals(TSurgery,LA,LA1
 
 availability_all_surgeries([],_,_).
 availability_all_surgeries([OpCode|LOpCode],Room,Day):-
-    % Primeiro verifica se a cirurgia já está agendada
+    % Check if already scheduled
     (agenda_operation_room1(Room,Day,CurrentAgenda),
      member((_,_,OpCode), CurrentAgenda)) ->
-        % Se já está agendada, passa para a próxima
-        write('Surgery '), write(OpCode), write(' already scheduled, skipping...'), nl,
         availability_all_surgeries(LOpCode,Room,Day)
     ;
     surgery_id(OpCode,OpType),
     surgery(OpType,TPrep,TSurgery,TCleaning),
     TTotal is TPrep + TSurgery + TCleaning,
-    write('Availability for surgery: '), write(OpCode), nl,
     
-    availability_operation(OpCode,Room,Day,LPossibilities,StaffAvailable),  % Renomeado para StaffAvailable
-    write('Staff available for surgery: '), write(StaffAvailable), nl,
+    availability_operation(OpCode,Room,Day,LPossibilities,[Phase1Staff,Phase2Staff,Phase3Staff]),
     
-    % Se encontrou possibilidades, agenda a primeira
     (LPossibilities = [] -> 
-        write('No possibilities found for surgery: '), write(OpCode), nl,
         availability_all_surgeries(LOpCode,Room,Day)
     ;
-        % Agenda usando o primeiro intervalo disponível
+        % Schedule using first available interval
         schedule_first_interval(TTotal,LPossibilities,(TinS,TfinS)),
         
-        % Divide o tempo total nas três fases
+        % Calculate phase times
         TPreparationEnd is TinS + TPrep - 1,
         TSurgeryStart is TPreparationEnd + 1,
         TSurgeryEnd is TSurgeryStart + TSurgery - 1,
         TCleaningStart is TSurgeryEnd + 1,
         TCleaningEnd is TfinS,
         
-        % Atualiza agenda da sala
+        % Update room agenda
         retract(agenda_operation_room1(Room,Day,Agenda)),
-        insert_agenda((TinS,TfinS,OpCode),Agenda,Agenda1),
-        assertz(agenda_operation_room1(Room,Day,Agenda1)),
+        insert_agenda((TinS,TfinS,OpCode),Agenda,NewAgenda),
+        assertz(agenda_operation_room1(Room,Day,NewAgenda)),
         
-        % Obtém staff necessário para cada fase usando o staff disponível
-        surgery_requirements(OpType, [Phase1Staff, Phase2Staff, Phase3Staff]),
+        % Get unique staff lists for each phase
+        sort(Phase1Staff, UniquePhase1Staff),
+        sort(Phase2Staff, UniquePhase2Staff),
+        sort(Phase3Staff, UniquePhase3Staff),
         
-        % Filtra o staff disponível para cada fase
-        filter_available_staff(Phase1Staff, StaffAvailable, Phase1Members),
-        filter_available_staff(Phase2Staff, StaffAvailable, Phase2Members),
-        filter_available_staff(Phase3Staff, StaffAvailable, Phase3Members),
+        % Schedule staff for each phase with unique lists
+        insert_agenda_staff_phase((TinS,TPreparationEnd,OpCode),Day,UniquePhase1Staff),
+        insert_agenda_staff_phase((TSurgeryStart,TSurgeryEnd,OpCode),Day,UniquePhase2Staff),
+        insert_agenda_staff_phase((TCleaningStart,TCleaningEnd,OpCode),Day,UniquePhase3Staff),
         
-        % Insere na agenda do staff para cada fase
-        insert_agenda_staff((TinS,TPreparationEnd,OpCode),Day,Phase1Members),
-        insert_agenda_staff((TSurgeryStart,TSurgeryEnd,OpCode),Day,Phase2Members),
-        insert_agenda_staff((TCleaningStart,TCleaningEnd,OpCode),Day,Phase3Members),
-        
-        write('Scheduled surgery '), write(OpCode), 
-        write(' from '), write(TinS), 
-        write(' to '), write(TfinS), nl,
-        write('Staff Phase 1: '), write(Phase1Members), nl,
-        write('Staff Phase 2: '), write(Phase2Members), nl,
-        write('Staff Phase 3: '), write(Phase3Members), nl
-    ),
-    % Continua com as próximas cirurgias
-    availability_all_surgeries(LOpCode,Room,Day).
+        availability_all_surgeries(LOpCode,Room,Day)
+    ).
 
-% Novo predicado para filtrar staff disponível por fase
-filter_available_staff([], _, []).
-filter_available_staff([Role-Specialty-Number|Rest], Available, Selected) :-
-    findall(Staff, (
-        member(Staff, Available),
-        staff(Staff, Role, Specialty, _)
-    ), StaffOptions),
-    take_n(Number, StaffOptions, ThisRoleSelected),
-    filter_available_staff(Rest, Available, RestSelected),
-    append(ThisRoleSelected, RestSelected, Selected).
+% New predicate for inserting staff agenda for a specific phase
+insert_agenda_staff_phase(_,_,[]).
+insert_agenda_staff_phase((TinS,TfinS,OpCode),Day,[Staff|RestStaff]):-
+    (agenda_staff1(Staff,Day,CurrentAgenda) ->
+        % Check if this exact time slot is already scheduled
+        (member((TinS,TfinS,OpCode), CurrentAgenda) ->
+            % If already scheduled, skip
+            true
+        ;
+            % If not scheduled, update agenda
+            retract(agenda_staff1(Staff,Day,CurrentAgenda)),
+            insert_agenda((TinS,TfinS,OpCode),CurrentAgenda,NewAgenda),
+            assertz(agenda_staff1(Staff,Day,NewAgenda))
+        )
+    ;
+        % If no agenda exists, create new one
+        assertz(agenda_staff1(Staff,Day,[(TinS,TfinS,OpCode)]))
+    ),
+    insert_agenda_staff_phase((TinS,TfinS,OpCode),Day,RestStaff).
 
 schedule_all_surgeries(Room,Day):-
     retractall(agenda_staff1(_,_,_)),
@@ -355,38 +324,6 @@ schedule_first_interval(TSurgery,[(Tin,_)|_],(Tin,TfinS)):-
 insert_agenda((TinS,TfinS,OpCode),[],[(TinS,TfinS,OpCode)]).
 insert_agenda((TinS,TfinS,OpCode),[(Tin,Tfin,OpCode1)|LA],[(TinS,TfinS,OpCode),(Tin,Tfin,OpCode1)|LA]):-TfinS<Tin,!.
 insert_agenda((TinS,TfinS,OpCode),[(Tin,Tfin,OpCode1)|LA],[(Tin,Tfin,OpCode1)|LA1]):-insert_agenda((TinS,TfinS,OpCode),LA,LA1).
-
-insert_agenda_doctors(_,_,[]).
-insert_agenda_doctors((TinS,TfinS,OpCode),Day,[Doctor|LDoctors]):-
-    retract(agenda_staff1(Doctor,Day,Agenda)),
-    insert_agenda((TinS,TfinS,OpCode),Agenda,Agenda1),
-    assert(agenda_staff1(Doctor,Day,Agenda1)),
-    insert_agenda_doctors((TinS,TfinS,OpCode),Day,LDoctors).
-
-insert_agenda_staff(_,_,[]).  % Caso base: lista vazia de staff
-insert_agenda_staff((TinS,TfinS,OpCode),Day,[Staff|RestStaff]):-
-    % Verifica se existe agenda para este staff
-    (agenda_staff1(Staff,Day,CurrentAgenda) ->
-        % Se existe, retira a agenda atual
-        retract(agenda_staff1(Staff,Day,CurrentAgenda))
-    ;
-        % Se não existe, considera agenda vazia
-        CurrentAgenda = []
-    ),
-    
-    % Insere o novo slot na agenda
-    insert_agenda((TinS,TfinS,OpCode),CurrentAgenda,NewAgenda),
-    
-    % Guarda a nova agenda
-    assertz(agenda_staff1(Staff,Day,NewAgenda)),
-    
-    % Debug output
-    write('Updated agenda for '), write(Staff),
-    write(' Day: '), write(Day),
-    write(' New agenda: '), write(NewAgenda), nl,
-    
-    % Continua com o resto do staff
-    insert_agenda_staff((TinS,TfinS,OpCode),Day,RestStaff).
 
 obtain_better_sol(Room,Day,AgOpRoomBetter,LAllStaffAgendas,TFinOp):-
     get_time(Ti),
