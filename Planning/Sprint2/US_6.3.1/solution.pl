@@ -44,7 +44,7 @@ surgery_requirements(so3, [
     % Phase 1 - Anesthesia/preparation
     [doctor-anaesthetist-1, nurse-anaesthetist-1],
     % Phase 2 - Surgery
-    [doctor-orthopaedist-3, doctor-anaesthetist-1, nurse-anaesthetist-1, circulating_nurse-1],
+    [doctor-orthopaedist-3, doctor-anaesthetist-1, nurse-anaesthetist-1, nurse-circulating-1],
     % Phase 3 - Cleaning
     [medical-assistant-1]
 ]).
@@ -53,7 +53,7 @@ surgery_requirements(so4, [
     % Phase 1 - Anesthesia/preparation
     [doctor-anaesthetist-1, nurse-anaesthetist-1],
     % Phase 2 - Surgery
-    [doctor-orthopaedist-3, doctor-anaesthetist-1, nurse-anaesthetist-1, circulating_nurse-1],
+    [doctor-orthopaedist-3, doctor-anaesthetist-1, nurse-anaesthetist-1, nurse-circulating-1],
     % Phase 3 - Cleaning
     [medical-assistant-1]
 ]).
