@@ -237,7 +237,7 @@ export default class ThumbRaiser {
         // Check room status every minute
         setInterval(() => {
             this.checkRoomStatus();
-        }, 60000);
+        }, 1800000);
 
         // Create the doors
         this.doors = [];
