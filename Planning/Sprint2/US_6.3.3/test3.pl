@@ -5,48 +5,51 @@
 :- dynamic agenda_operation_room1/3.
 :- dynamic better_sol/5.
 
+% Mock data for staff agendas
 agenda_staff(d001, 20241028, [(720, 790, m01), (1080, 1140, c01)]).
-agenda_staff(d002, 20241028, [(850, 900, m02)]).
-agenda_staff(d003, 20241028, [(720, 790, m01)]).
-agenda_staff(d004, 20241028, [(720, 760, m01)]).
-agenda_staff(n004, 20241028, [(720, 790, m01)]).
-agenda_staff(m001, 20241028, [(720, 790, d001)]).
-agenda_staff(a001, 20241028, [(850, 900, d002)]).
-agenda_staff(n001, 20241028, [(850, 900, d002)]).
-agenda_staff(n002, 20241028, [(850, 900, d002)]).
-agenda_staff(n003, 20241028, [(850, 900, d002)]).
+agenda_staff(d002, 20241028, [(800, 850, m02)]).
+agenda_staff(d003, 20241028, [(700, 750, m01)]).
+agenda_staff(d004, 20241028, [(600, 660, m01)]).
+agenda_staff(n004, 20241028, [(650, 700, m01)]).
+agenda_staff(m001, 20241028, [(620, 680, d001)]).
+agenda_staff(a001, 20241028, [(800, 900, d002)]).
+agenda_staff(n001, 20241028, [(800, 850, d002)]).
+agenda_staff(n002, 20241028, [(800, 850, d002)]).
+agenda_staff(n003, 20241028, [(800, 850, d002)]).
 
-timetable(d001, 20241028, (480, 1200)).
+% Timetables for staff availability
+timetable(d001, 20241028, (480, 1300)).
 timetable(d002, 20241028, (500, 1440)).
 timetable(d003, 20241028, (520, 1320)).
 timetable(d004, 20241028, (510, 1310)).
 timetable(n004, 20241028, (510, 1310)).
-timetable(m001, 20241028, (480, 1200)).
-timetable(a001, 20241028, (480, 1200)).
-timetable(n001, 20241028, (480, 1200)).
-timetable(n002, 20241028, (480, 1200)).
-timetable(n003, 20241028, (480, 1200)).
+timetable(m001, 20241028, (480, 1240)).
+timetable(a001, 20241028, (480, 1230)).
+timetable(n001, 20241028, (480, 1240)).
+timetable(n002, 20241028, (480, 1240)).
+timetable(n003, 20241028, (480, 1240)).
 
+% Surgery requirements
 surgery_requirements(so2, [
     [doctor-anaesthetist-1, nurse-anaesthetist-1],
-    [doctor-orthopaedist-3, nurse-instrumentation-1, nurse-circulating-1, doctor-anaesthetist-1, nurse-anaesthetist-1],
+    [doctor-orthopaedist-2, nurse-instrumentation-1, nurse-circulating-1],
     [medical-assistant-1]
 ]).
 
 surgery_requirements(so3, [
     [doctor-anaesthetist-1, nurse-anaesthetist-1],
-    [doctor-orthopaedist-3, doctor-anaesthetist-1, nurse-anaesthetist-1, circulating_nurse-1],
+    [doctor-orthopaedist-2, doctor-anaesthetist-1, nurse-circulating-1],
     [medical-assistant-1]
 ]).
 
 surgery_requirements(so4, [
-    [doctor-anaesthetist-1, nurse-anaesthetist-1, nurse-circulating-1],  % Phase 1
-    [doctor-orthopaedist-3, doctor-anaesthetist-1, nurse-instrumentation-1],  % Phase 2
-    [medical-assistant-2]  % Phase 3 with more staff
+    [doctor-anaesthetist-1, nurse-circulating-1],
+    [doctor-orthopaedist-3, nurse-instrumentation-1],
+    [medical-assistant-1]
 ]).
 
-
-staff(d001, doctor, orthopaedist, [so2, so3, so4]).
+% Staff specialties and operations
+staff(d001, doctor, anaesthetist, [so2, so3, so4]).
 staff(d002, doctor, orthopaedist, [so2, so3, so4]).
 staff(d003, doctor, orthopaedist, [so2, so3, so4]).
 staff(d004, doctor, anaesthetist, [so2, so3, so4]).
@@ -56,27 +59,20 @@ staff(n002, nurse, circulating, [so2, so3, so4]).
 staff(n003, nurse, anaesthetist, [so2, so3, so4]).
 staff(m001, medical, assistant, [so2, so3, so4]).
 
-surgery(so2, 45, 60, 45).
-surgery(so3, 20, 45, 30).
-surgery(so4, 45, 75, 45).
+% Surgery durations
+surgery(so2, 45, 70, 45). % Surgery Type 2
+surgery(so3, 30, 50, 30). % Surgery Type 3
+surgery(so4, 50, 80, 50). % Surgery Type 4
 
+% Surgery IDs
 surgery_id(so100001, so2).
 surgery_id(so100002, so3).
 surgery_id(so100003, so4).
 surgery_id(so100004, so2).
 surgery_id(so100005, so4).
-surgery_id(so100006, so4).
 
-assignment_surgery(so100001, d001).
-assignment_surgery(so100002, d002).
-assignment_surgery(so100003, d003).
-assignment_surgery(so100003, n004).
-assignment_surgery(so100004, d001).
-assignment_surgery(so100004, d002).
-assignment_surgery(so100005, d002).
-assignment_surgery(so100005, d003).
-
-agenda_operation_room(or1, 20241028, [(520, 579, so100000), (700, 750, s01)]).
+% Room agenda with overlapping surgeries
+agenda_operation_room(or1, 20241028, [(520, 579, so100000), (600, 650, s01)]).
 
 
 
