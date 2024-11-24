@@ -1,4 +1,4 @@
-:- consult('test3.pl').  % Load existing code
+:- consult('6.3.1.pl').  
 
 % Unified test for both heuristics
 test_heuristics(OpCodeList, Room, Day, Result) :-
