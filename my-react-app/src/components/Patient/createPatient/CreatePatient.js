@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import usePatientFormValidation from '../../../hooks/usePatientFormValidation';
 import patientService from '../../../api/patientService';
 import './CreatePatient.css';
+import { jwtDecode } from 'jwt-decode'; // Use named import
 
 const CreatePatient = ({ isAdmin }) => {
   const navigate = useNavigate();
@@ -19,6 +20,23 @@ const CreatePatient = ({ isAdmin }) => {
     emergencyContact: '',
     medicalNr: ''
   });
+
+  useEffect(() => {
+    if (!isAdmin) {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          const decodedToken = jwtDecode(token);
+          setValues(prev => ({
+            ...prev,
+            email: decodedToken.email
+          }));
+        } catch (error) {
+          console.error('Error decoding token:', error);
+        }
+      }
+    }
+  }, [isAdmin]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -82,18 +100,20 @@ const CreatePatient = ({ isAdmin }) => {
           {errors.lastName && <span className="error-message">{errors.lastName}</span>}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="email">Email:</label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            value={values.email}
-            onChange={handleChange}
-            className={errors.email ? 'error' : ''}
-          />
-          {errors.email && <span className="error-message">{errors.email}</span>}
-        </div>
+        {isAdmin && (
+          <div className="form-group">
+            <label htmlFor="email">Email:</label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              value={values.email}
+              onChange={handleChange}
+              className={errors.email ? 'error' : ''}
+            />
+            {errors.email && <span className="error-message">{errors.email}</span>}
+          </div>
+        )}
 
         <div className="form-group">
           <label htmlFor="phoneNumber">Phone Number:</label>

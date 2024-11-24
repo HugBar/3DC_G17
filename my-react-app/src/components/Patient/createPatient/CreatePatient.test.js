@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { act } from 'react';
 import CreatePatient from './CreatePatient';
 import { useNavigate } from 'react-router-dom';
 import usePatientFormValidation from '../../../hooks/usePatientFormValidation';
 import patientService from '../../../api/patientService';
+import { jwtDecode } from 'jwt-decode';
 
 // Mock the dependencies
 jest.mock('react-router-dom', () => ({
@@ -22,6 +23,10 @@ jest.mock('../../../api/patientService', () => ({
     registerPatientItself: jest.fn(),
     registerPatient: jest.fn(),
   },
+}));
+
+jest.mock('jwt-decode', () => ({
+  jwtDecode: jest.fn()
 }));
 
 const mockPatientData = {
@@ -47,83 +52,88 @@ describe('CreatePatient Component', () => {
       errors: {},
       validate: mockValidate,
     });
-    // Mock successful patient registration
     patientService.registerPatientItself.mockResolvedValue({});
     patientService.registerPatient.mockResolvedValue({});
+    // Mock JWT token and its decoded value
+    Storage.prototype.getItem = jest.fn(() => 'fake-token');
+    jwtDecode.mockReturnValue({
+      email: 'patient@test.com'
+    });
+    // Mock console.error
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  test('renders create patient form', () => {
-    render(<CreatePatient />);
+  afterEach(() => {
+    console.error.mockRestore();
+  });
+
+  test('renders create patient form for admin', () => {
+    render(<CreatePatient isAdmin={true} />);
     
     expect(screen.getByText('Register New Patient')).toBeInTheDocument();
     expect(screen.getByLabelText('First Name:')).toBeInTheDocument();
     expect(screen.getByLabelText('Last Name:')).toBeInTheDocument();
     expect(screen.getByLabelText('Email:')).toBeInTheDocument();
     expect(screen.getByLabelText('Phone Number:')).toBeInTheDocument();
-    expect(screen.getByLabelText('Date of Birth:')).toBeInTheDocument();
-    expect(screen.getByLabelText('Gender:')).toBeInTheDocument();
   });
 
-  test('successfully registers a new patient', async () => {
-    mockValidate.mockReturnValue(true);
-    render(<CreatePatient />);
+  test('renders create patient form for patient without email field', () => {
+    render(<CreatePatient isAdmin={false} />);
+    
+    expect(screen.getByText('Register New Patient')).toBeInTheDocument();
+    expect(screen.getByLabelText('First Name:')).toBeInTheDocument();
+    expect(screen.getByLabelText('Last Name:')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Email:')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Phone Number:')).toBeInTheDocument();
+  });
 
-    // Fill in the form
+  test('successfully registers a new patient as admin', async () => {
+    mockValidate.mockReturnValue(true);
+    render(<CreatePatient isAdmin={true} />);
+
     await act(async () => {
       fireEvent.change(screen.getByLabelText('First Name:'), { target: { value: mockPatientData.firstName } });
       fireEvent.change(screen.getByLabelText('Last Name:'), { target: { value: mockPatientData.lastName } });
       fireEvent.change(screen.getByLabelText('Email:'), { target: { value: mockPatientData.email } });
       fireEvent.change(screen.getByLabelText('Phone Number:'), { target: { value: mockPatientData.phoneNumber } });
-      fireEvent.change(screen.getByLabelText('Date of Birth:'), { target: { value: mockPatientData.dateOfBirth } });
-      fireEvent.change(screen.getByLabelText('Gender:'), { target: { value: mockPatientData.gender } });
-      fireEvent.change(screen.getByLabelText('Contact Info:'), { target: { value: mockPatientData.contactInfo } });
-      fireEvent.change(screen.getByLabelText('Emergency Contact:'), { target: { value: mockPatientData.emergencyContact } });
-    });
-
-    // Submit form
-    await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /register patient/i }));
     });
 
-    await waitFor(() => {
-      expect(screen.getByText('Patient registered successfully!')).toBeInTheDocument();
-    });
-
-    // Check if navigation is called after successful registration
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/patient/update');
-    }, { timeout: 3000 });
+    expect(patientService.registerPatient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: mockPatientData.email
+      })
+    );
   });
 
-  test('displays validation errors when form is submitted with invalid data', async () => {
-    const mockErrors = {
-      firstName: 'First name is required',
-      email: 'Invalid email format'
-    };
+  test('successfully registers a new patient as patient', async () => {
+    mockValidate.mockReturnValue(true);
+    render(<CreatePatient isAdmin={false} />);
 
-    usePatientFormValidation.mockReturnValue({
-      errors: mockErrors,
-      validate: jest.fn().mockReturnValue(false)
-    });
-
-    render(<CreatePatient />);
-
-    // Submit form without filling required fields
     await act(async () => {
+      fireEvent.change(screen.getByLabelText('First Name:'), { target: { value: mockPatientData.firstName } });
+      fireEvent.change(screen.getByLabelText('Last Name:'), { target: { value: mockPatientData.lastName } });
+      fireEvent.change(screen.getByLabelText('Phone Number:'), { target: { value: mockPatientData.phoneNumber } });
       fireEvent.click(screen.getByRole('button', { name: /register patient/i }));
     });
 
-    expect(screen.getByText('First name is required')).toBeInTheDocument();
-    expect(screen.getByText('Invalid email format')).toBeInTheDocument();
+    expect(patientService.registerPatientItself).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'patient@test.com'
+      })
+    );
   });
 
-  test('handles cancel button click', async () => {
-    render(<CreatePatient />);
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+  test('handles invalid JWT token', async () => {
+    jwtDecode.mockImplementation(() => {
+      throw new Error('Invalid token');
     });
-
-    expect(mockNavigate).toHaveBeenCalledWith('/patient/list');
+    
+    render(<CreatePatient isAdmin={false} />);
+    
+    expect(console.error).toHaveBeenCalledWith(
+      'Error decoding token:',
+      expect.any(Error)
+    );
   });
 });

@@ -32,6 +32,7 @@ describe('UpdatePatient Component', () => {
     useNavigate.mockImplementation(() => mockNavigate);
     patientService.getPatientProfile.mockResolvedValue(mockPatientData);
     Storage.prototype.removeItem = jest.fn();
+    Storage.prototype.getItem = jest.fn(() => 'patient@test.com');
   });
 
   afterEach(() => {
@@ -92,24 +93,6 @@ describe('UpdatePatient Component', () => {
     expect(errorElement).toBeInTheDocument();
   });
 
-  test('atualiza perfil com sucesso', async () => {
-    patientService.updatePatientProfile.mockResolvedValue({});
-    
-    await act(async () => {
-      renderUpdatePatient();
-    });
-
-    const phoneInput = screen.getByDisplayValue(mockPatientData.phoneNumber);
-    fireEvent.change(phoneInput, { target: { value: '987654321' } });
-
-    const submitButton = screen.getByText('Update');
-    await act(async () => {
-      fireEvent.click(submitButton);
-    });
-
-    const successElement = screen.getByText('Profile updated successfully');
-    expect(successElement).toBeInTheDocument();
-  });
 
   test('exibe modal quando email é alterado', async () => {
     patientService.updatePatientProfile.mockResolvedValue({});
@@ -186,5 +169,58 @@ describe('UpdatePatient Component', () => {
     });
 
     expect(patientService.updatePatientProfile).not.toHaveBeenCalled();
+  });
+
+  test('handles missing patient email', async () => {
+    Storage.prototype.getItem = jest.fn(() => null);
+    
+    await act(async () => {
+      renderUpdatePatient();
+    });
+
+    expect(patientService.getPatientProfile).not.toHaveBeenCalled();
+  });
+
+  test('retrieves email from localStorage when not in location state', async () => {
+    const localStorageEmail = 'patient@localStorage.com';
+    Storage.prototype.getItem = jest.fn(() => localStorageEmail);
+    
+    await act(async () => {
+      renderUpdatePatient();
+    });
+
+    expect(patientService.getPatientProfile).toHaveBeenCalledWith(localStorageEmail);
+  });
+
+  test('displays success message when update is successful', async () => {
+    patientService.updatePatientProfile.mockResolvedValue({});
+    
+    await act(async () => {
+      renderUpdatePatient();
+    });
+
+    const phoneInput = screen.getByDisplayValue(mockPatientData.phoneNumber);
+    fireEvent.change(phoneInput, { target: { value: '987654321' } });
+
+    const submitButton = screen.getByText('Update');
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    const successMessage = screen.getByText('Profile updated successfully');
+    expect(successMessage).toBeInTheDocument();
+    expect(successMessage.className).toContain('success-message');
+  });
+
+  test('displays error message when profile fetch fails', async () => {
+    patientService.getPatientProfile.mockRejectedValue(new Error('Failed to fetch'));
+    
+    await act(async () => {
+      renderUpdatePatient();
+    });
+
+    const errorMessage = screen.getByText('Failed to fetch patient data');
+    expect(errorMessage).toBeInTheDocument();
+    expect(errorMessage.className).toContain('error-message');
   });
 });
