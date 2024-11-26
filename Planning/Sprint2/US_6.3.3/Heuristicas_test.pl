@@ -19,6 +19,12 @@ test_heuristics(OpCodeList, Room, Day, Result) :-
     write(Schedule2), nl,
 
 
+
+    % Heuristic 2: Most Occupied Slot (obtain_better_sol/5)
+    obtain_better_sol(Room, Day, Schedule2, _, EndTime2),
+    write('Heuristic 2 (Most Occupied) Schedule: '), nl,
+    write(Schedule2), nl,
+
     % Output comparison
     write('Comparison of Heuristics:'), nl,
     format('Heuristic 1: End Time = ~w, Schedule = ~w~n', [EndTime1, Schedule1]),
