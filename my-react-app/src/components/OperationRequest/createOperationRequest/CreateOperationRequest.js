@@ -39,7 +39,7 @@ const CreateOperationRequest = () => {
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [setIsLoading]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

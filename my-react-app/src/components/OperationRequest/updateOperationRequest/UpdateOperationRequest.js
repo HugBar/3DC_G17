@@ -38,7 +38,7 @@ const UpdateOperationRequest = ({ requestId, onBack }) => {
     };
 
     fetchRequestData();
-  }, [requestId,id]);
+  }, [requestId,id,setOriginalData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
