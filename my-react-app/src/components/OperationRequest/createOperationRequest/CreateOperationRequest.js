@@ -13,7 +13,7 @@ const CreateOperationRequest = () => {
   const [operationTypes, setOperationTypes] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [setIsLoading] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();

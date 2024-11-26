@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import operationRequestService from '../../../api/operationRequestService';
 import './UpdateOperationRequest.css';
 
 const UpdateOperationRequest = ({ requestId, onBack }) => {
   const { id } = useParams(); // Get id from URL params
 
-  const [originalData, setOriginalData] = useState({});
+  const [setOriginalData] = useState({});
   const [requestData, setRequestData] = useState({
     operationTypeId: '',
     deadline: '',
@@ -17,8 +17,7 @@ const UpdateOperationRequest = ({ requestId, onBack }) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const navigate = useNavigate();
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   useEffect(() => {
     const fetchRequestData = async () => {
@@ -39,7 +38,7 @@ const UpdateOperationRequest = ({ requestId, onBack }) => {
     };
 
     fetchRequestData();
-  }, [requestId]);
+  }, [requestId,id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

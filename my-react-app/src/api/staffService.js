@@ -167,7 +167,7 @@ const staffService = {
     checkAdminRole(token);
 
     try {
-      const response = await axios.patch(`${API_URL}/${staffId}/deactivate`, null, {
+      await axios.patch(`${API_URL}/${staffId}/deactivate`, null, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
