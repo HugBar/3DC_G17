@@ -56,7 +56,7 @@ describe('Create Staff Form', () => {
         firstName: 'John',
         lastName: 'Doe',
         email: 'stafftest@stafftest.com',
-        phoneNumber: '962041130',
+        phoneNumber: '962041131',
         specialization: 'Cardiology'
       };
   

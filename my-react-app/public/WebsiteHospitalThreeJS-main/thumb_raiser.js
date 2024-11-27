@@ -330,6 +330,7 @@ export default class ThumbRaiser {
             this.renderer.setPixelRatio(window.devicePixelRatio);
         }
         this.renderer.autoClear = false;
+        this.renderer.setClearColor(0xBFDDF3);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.renderer.setSize(window.innerWidth, window.innerHeight);
