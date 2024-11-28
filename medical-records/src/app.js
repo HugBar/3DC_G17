@@ -2,7 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/database');
 require('dotenv').config();
-const mongoose = require('mongoose');
+
+const medicalRecordsRoutes = require('./routes/medicalRecords');
 
 const app = express();
 
@@ -16,34 +17,12 @@ app.use(cors({
     credentials: true
 }));
 
-// Basic route to test connection
+// Routes
+app.use('/api/medical-records', medicalRecordsRoutes);
+
+// Basic health check route
 app.get('/api/health', (req, res) => {
     res.json({ status: 'Medical Records Service is running' });
-});
-
-// Add this route to your app.js
-app.get('/api/test', async (req, res) => {
-    try {
-        // Check MongoDB connection
-        if (mongoose.connection.readyState === 1) {
-            res.json({ 
-                status: 'success',
-                message: 'Medical Records Service is connected to MongoDB',
-                database: mongoose.connection.db.databaseName
-            });
-        } else {
-            res.status(500).json({ 
-                status: 'error',
-                message: 'MongoDB not connected',
-                readyState: mongoose.connection.readyState
-            });
-        }
-    } catch (error) {
-        res.status(500).json({ 
-            status: 'error',
-            message: error.message 
-        });
-    }
 });
 
 // Error handling middleware

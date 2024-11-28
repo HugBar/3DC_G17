@@ -5,7 +5,7 @@ const medicalRecordSchema = new mongoose.Schema({
     type: String,
     required: true,
     index: true,
-    ref: 'Patient' // References patient ID from .NET backend
+    ref: 'Patient' 
   },
   conditions: [{
     name: String,
