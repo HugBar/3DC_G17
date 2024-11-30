@@ -1,0 +1,14 @@
+POST http://localhost:3001/medical-records/add-allergies/testPatient123
+Content-Type: application/json
+
+    {
+        "allergen": "Peanuts",
+        "severity": "High",
+        "diagnosedDate": "2024-11-25T00:00:00.000Z",
+        "notes": "Patient experiences anaphylaxis."
+    }
+
+
+###
+
+GET http://localhost:3001/medical-records/

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/database');
+const medicalRecordRoutes = require('./routes/MedicalRecord');
 require('dotenv').config();
 const mongoose = require('mongoose');
 
@@ -15,6 +16,9 @@ app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true
 }));
+
+//Routes
+app.use('/medical-records', medicalRecordRoutes);
 
 // Basic route to test connection
 app.get('/api/health', (req, res) => {

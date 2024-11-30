@@ -76,8 +76,8 @@ staff(n004, nurse, anaesthetist, [so2,so3,so4]).
 
 % surgery(SurgeryType, TPrep, TSurgery, TCleaning)
 surgery(so2, 45, 60, 45).
-surgery(so3, 20, 45, 30).
-surgery(so4, 45,75,45).
+surgery(so3, 45, 60, 30).
+surgery(so4, 45,50,30).
 
 surgery_id(so100001,so2).
 surgery_id(so100002,so3).
