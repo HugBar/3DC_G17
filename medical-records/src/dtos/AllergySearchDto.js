@@ -1,9 +1,8 @@
-class AllergyDto {
+class AllergySearchDto {
     constructor(allergen, severity, desription) {
         this.allergen = allergen;
         this.severity = severity;
-        this.desription = desription;
-    }
+        }
 }
 
-module.exports = AllergyDto;
+module.exports = AllergySearchDto;
