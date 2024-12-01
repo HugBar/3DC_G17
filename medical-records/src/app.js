@@ -5,6 +5,7 @@ const medicalRecordRoute = require('./routes/MedicalRecord');
 require('dotenv').config();
 
 const medicalRecordsRoutes = require('./routes/medicalRecords');
+const allergyRoutes = require('./routes/AllergyRoutes');
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.use(cors({
 
 //Routes
 app.use('/medical-records', medicalRecordRoute);
+
+app.use('/allergies', allergyRoutes);
 
 // Routes
 app.use('/api/medical-records', medicalRecordsRoutes);
