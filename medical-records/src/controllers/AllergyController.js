@@ -46,7 +46,7 @@ exports.addAllergyModel = async (req, res) => {
             allergy: result
         });
     } catch (error) {
-        console.error(error);
+        console.error('Error adding allergy:', error);
         if (error.message === 'Allergy already exists') {
             res.status(409).json({ message: error.message });
         } else {

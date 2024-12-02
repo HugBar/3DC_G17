@@ -30,4 +30,4 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:3001/allergies/search?severity=Low
+GET http://localhost:3001/allergies/search?allergen=Derm
