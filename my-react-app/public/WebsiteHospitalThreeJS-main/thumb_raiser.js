@@ -30,6 +30,7 @@ import Door from "./door.js";
 import Doctor from './doctor.js';
 import Desk from "./desk.js";
 import VendingMachine from "./vending_machine.js";
+import RoomInfo from "./room_info.js";
 
 
 /*
@@ -178,6 +179,7 @@ export default class ThumbRaiser {
         this.deskParameters = merge({}, deskData, deskParameters);
         this.vendingMachineParameters = merge({}, vendingMachineData, vendingMachineParameters);
         
+        this.roomInfo = new RoomInfo();
         
         // Create a 2D scene (the viewports frames)
         this.scene2D = new THREE.Scene();
@@ -659,6 +661,12 @@ export default class ThumbRaiser {
             }
             else if (event.code == this.player.keyCodes.thumbsUp) {
                 this.player.keyStates.thumbsUp = state;
+            }
+            else if (event.code === "KeyI" && state) {
+                const roomNumber = this.roomInfo.isInRoom(this.player.position);
+                if (roomNumber) {
+                    this.roomInfo.toggleVisibility(roomNumber);
+                }
             }
             else if (event.code === this.player.keyCodes.door && state) { // Only on key press, not release
                 this.tryToggleDoor();
