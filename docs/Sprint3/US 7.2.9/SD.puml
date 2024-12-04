@@ -1,0 +1,99 @@
+@startuml
+actor User
+participant PatientList
+participant PatientService
+participant API
+
+activate User
+
+User -> PatientList: Access patient list page
+activate PatientList
+
+PatientList -> PatientService: getAllPatients(filters, currentPage, pageSize)
+activate PatientService
+
+PatientService -> API: GET /api/patient/filter
+activate API
+
+
+alt API Error
+    API --> PatientService: Return error
+    PatientService --> PatientList: Throw error
+    PatientList -> PatientList: setErrorMessage("Error fetching patient list")
+    PatientList --> User: Display error message
+else No Patients Found
+    API --> PatientService: Return empty array
+    PatientService --> PatientList: Return empty result
+    PatientList -> PatientList: setPatientList([])
+    PatientList -> PatientList: setErrorMessage("No patients found")
+    PatientList --> User: Display no results message
+else Success
+    API --> PatientService: Return response
+    deactivate API
+    PatientService --> PatientList: Return patient data
+    deactivate PatientService
+    PatientList -> PatientList: setPatientList(response.items)
+    PatientList -> PatientList: setTotalPages(response.totalPages)
+    PatientList --> User: Display patient list
+end
+
+alt Apply Filter
+    User -> PatientList: Enter filter criteria
+    PatientList -> PatientList: handleFilterChange(event)
+    PatientList -> PatientList: updateURL(filters, page)
+    PatientList -> PatientList: setCurrentPage(1)
+    PatientList -> PatientService: getAllPatients(newFilters, 1, pageSize)
+else Clear Filters
+    User -> PatientList: Click "Clear Filters"
+    PatientList -> PatientList: clearFilters()
+    PatientList -> PatientList: setFilters({})
+    PatientList -> PatientList: setCurrentPage(1)
+    PatientList -> PatientService: getAllPatients({}, 1, pageSize)
+end
+
+alt Select Patient
+    User -> PatientList: Click patient card
+    PatientList -> PatientService: getPatientById(patientId)
+    activate PatientService
+    PatientService -> API: GET /api/patient/{id}
+        activate API
+        API --> PatientService: Return response
+        deactivate API
+    alt Patient Not Found
+        PatientService --> PatientList: Throw error
+        PatientList -> PatientList: setErrorMessage("Error fetching patient details")
+        PatientList --> User: Display error message
+    else Success
+        PatientService --> PatientList: Return patient details
+        deactivate PatientService
+        PatientList -> PatientList: setSelectedPatient(patientDetails)
+        PatientList --> User: Display patient modal
+    end
+    deactivate PatientService
+end
+
+alt Delete Patient
+    User -> PatientList: Click "Delete Patient"
+    PatientList -> PatientList: handleDeleteClick(patientId)
+    PatientList -> User: Navigate to delete confirmation
+else Update Patient
+    User -> PatientList: Click "Update Patient"
+    PatientList -> PatientList: handleSelectPatient()
+    PatientList -> User: Navigate to update page
+else Close Modal
+    User -> PatientList: Click "Close"
+    PatientList -> PatientList: setSelectedPatient(null)
+    PatientList --> User: Close patient modal
+end
+
+alt Pagination
+    User -> PatientList: Click pagination control
+    PatientList -> PatientList: handlePageChange(newPage)
+    PatientList -> PatientList: updateURL(filters, newPage)
+    PatientList -> PatientList: setCurrentPage(newPage)
+    PatientList -> PatientService: getAllPatients(filters, newPage, pageSize)
+end
+
+deactivate PatientList
+deactivate User
+@enduml

@@ -1,0 +1,92 @@
+@startuml
+left to right direction
+skinparam usecaseBorderThickness 2
+skinparam usecase {
+    BorderColor black
+    BackgroundColor white
+    RoundCorner 20
+}
+
+actor Patient
+actor "Google User" as GoogleUser
+
+package "Staff" {
+    actor Admin
+    actor Doctor
+    actor Nurse
+    actor Technician
+}
+
+package "Authentication" {
+    usecase "Login" as UC1
+    usecase "Google Login" as UC2
+    usecase "Reset Password" as UC3
+    usecase "Change Password" as UC4
+    usecase "Logout" as UC5
+}
+
+package "Staff Management UI" {
+    usecase "Create Staff Profile" as UC6
+    usecase "Update Staff Profile" as UC7
+    usecase "View Staff List" as UC8
+    usecase "Deactivate Staff" as UC9
+}
+
+package "Patient Management UI" {
+    usecase "Register Patient" as UC10
+    usecase "Update Patient Profile" as UC11
+    usecase "View Patient List" as UC12
+    usecase "Delete Patient" as UC13
+    usecase "Request Account Deletion" as UC14
+    usecase "Confirm Account Deletion" as UC15
+}
+
+package "Operation Management UI" {
+    usecase "Create Operation Request" as UC16
+    usecase "Update Operation Request" as UC17
+    usecase "View Operation List" as UC18
+    usecase "Delete Operation Request" as UC19
+    usecase "Create Operation Type" as UC20
+    usecase "Update Operation Type" as UC21
+}
+
+' Authentication
+Admin --> UC1
+Doctor --> UC1
+Nurse --> UC1
+Technician --> UC1
+Patient --> UC1
+GoogleUser --> UC2
+Patient --> UC3
+Staff --> UC3
+Patient --> UC4
+Staff --> UC4
+Patient --> UC5
+Staff --> UC5
+
+' Staff Management
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+
+' Patient Management
+Admin --> UC10
+Patient --> UC10
+Admin --> UC11
+Patient --> UC11
+Admin --> UC12
+Doctor --> UC12
+Admin --> UC13
+Patient --> UC14
+Patient --> UC15
+
+' Operation Management
+Doctor --> UC16
+Doctor --> UC17
+Doctor --> UC18
+Doctor --> UC19
+Admin --> UC20
+Admin --> UC21
+
+@enduml

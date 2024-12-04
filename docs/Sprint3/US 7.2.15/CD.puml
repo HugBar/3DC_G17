@@ -1,0 +1,52 @@
+@startuml namespace class Diagram 
+title "Class Diagram US 6.2.15"
+
+class UpdateOperationRequest {
+    -values: object
+    -errors: object
+    -successMessage: string
+    -navigate: useNavigate
+    +handleChange(event): void
+    +handleSubmit(event): void
+    +validate(values): boolean
+    +render(): JSX
+}
+
+class OperationRequestService {
+    -API_URL: string
+    +getAuthToken(): string
+    +checkDoctorRole(token): void
+    +updateOperationRequest(requestId, updateData): Promise
+    +getOperationRequestById(requestId): Promise
+}
+
+class UpdateOperationRequestDto {
+    +description: string
+    +priority: Priority
+    +status: Status
+    +operationTypeId: string
+    +deadline: Date
+}
+
+enum Priority {
+    LOW
+    MEDIUM
+    HIGH
+    URGENT
+}
+
+enum Status {
+    PENDING
+    APPROVED
+    REJECTED
+    IN_PROGRESS
+    COMPLETED
+}
+
+UpdateOperationRequest --> OperationRequestService : uses
+UpdateOperationRequest --> UpdateOperationRequestDto : uses
+OperationRequestService ..> UpdateOperationRequestDto : uses
+UpdateOperationRequestDto --> Priority : uses
+UpdateOperationRequestDto --> Status : uses
+
+@enduml

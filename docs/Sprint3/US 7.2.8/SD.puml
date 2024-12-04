@@ -1,0 +1,58 @@
+@startuml
+title "SequenceDiagram 6.2.8"
+actor Admin
+participant PatientList
+participant DeletePatient
+participant PatientService
+participant API
+
+activate Admin
+Admin->>PatientList: Seleciona paciente na lista
+activate PatientList
+PatientList->>PatientList: handlePatientSelect(patientId)
+PatientList->>PatientService: getPatientById(patientId)
+activate PatientService
+PatientService->>API: GET /api/patient/get-patient-profile/{id}
+activate API
+API-->>PatientService: Retorna dados do paciente
+deactivate API
+PatientService-->>PatientList: Retorna detalhes do paciente
+deactivate PatientService
+PatientList->>PatientList: Exibe modal com detalhes
+
+Admin->>PatientList: Clica em "Delete Patient"
+PatientList->>DeletePatient: Navigate to /patient/delete/{id}
+deactivate PatientList
+activate DeletePatient
+DeletePatient->>DeletePatient: Exibe modal de confirmação
+
+alt Admin confirma exclusão
+    Admin->>DeletePatient: Clica em "Yes"
+    DeletePatient->>PatientService: deletePatient(patientId)
+    activate PatientService
+    PatientService->>PatientService: getAuthToken()
+    PatientService->>PatientService: checkAdminRole(token)
+    PatientService->>API: DELETE /api/patient/delete-patient/{id}
+    activate API
+    API-->>PatientService: Retorna sucesso
+    deactivate API
+    PatientService-->>DeletePatient: Retorna sucesso
+    deactivate PatientService
+    DeletePatient->>DeletePatient: setIsDeleted(true)
+    DeletePatient->>DeletePatient: Exibe mensagem de sucesso
+    DeletePatient->>PatientList: Navigate to /patient/list após 3 segundos
+    deactivate DeletePatient
+else Admin cancela exclusão
+    Admin->>DeletePatient: Clica em "No"
+    activate DeletePatient
+    DeletePatient->>PatientList: Navigate to /patient/list
+    deactivate DeletePatient
+    activate PatientList
+end
+
+activate PatientList
+PatientList->>PatientList: Atualiza lista de pacientes
+PatientList-->>Admin: Exibe lista atualizada
+deactivate PatientList
+deactivate Admin
+@enduml

@@ -1,0 +1,47 @@
+@startuml Create Staff UI Sequence Diagram
+
+actor Admin
+participant "CreateStaff\nComponent" as UI
+participant "FormValidation" as FV
+participant "StaffService" as SS
+participant "Backend API" as API
+
+activate Admin
+Admin -> UI: Navigate to Create Staff page
+activate UI
+
+Admin -> UI: Fill staff information
+Admin -> UI: Add availability slots
+Admin -> UI: Submit form
+
+UI -> FV: validate(staffData)
+activate FV
+FV --> UI: validation result
+deactivate FV
+
+alt validation successful
+    UI -> SS: createStaff(staffData)
+    activate SS
+    SS -> SS: getAuthToken()
+    SS -> SS: checkAdminRole(token)
+    SS -> API: POST /api/staff/create-staff-profile
+    activate API
+    API --> SS: Return StaffDto
+    deactivate API
+    SS --> UI: Return success
+    deactivate SS
+    UI -> UI: Display success message
+    UI -> UI: Clear form
+    UI --> Admin: Show success notification
+    deactivate SS
+    deactivate API
+else validation failed
+    UI -> UI: Display validation errors
+    UI --> Admin: Show validation errors
+    deactivate UI
+end
+
+deactivate UI
+deactivate Admin
+
+@enduml

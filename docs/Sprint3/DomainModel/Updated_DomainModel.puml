@@ -1,0 +1,424 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+' Controllers
+class AuthController {
+  -_userManager: UserManager<ApplicationUser>
+  -_signInManager: SignInManager<ApplicationUser>
+  -_logger: ILogger<AuthController>
+  -_configuration: IConfiguration
+  -_emailService: IEmailService
+  +Login(model: LoginDto): Task<IActionResult>
+  +ResetPassword(ResetPasswordDto): Task<IActionResult>
+  +ConfirmResetPassword(ConfirmResetPasswordDto): Task<IActionResult>
+}
+
+class UserController {
+  -IUserService _userService
+  -ILogger<UserController> _logger
+  +Register(CreateUserDto): Task<IActionResult>
+  +GetUser(string): Task<IActionResult>
+  +GetAllUsers(): Task<IActionResult>
+  +UpdateUser(string, UpdateUserDto): Task<IActionResult>
+  +DeleteUser(string): Task<IActionResult>
+}
+
+class StaffController {
+  -IStaffService _staffService
+  -ILogger<StaffController> _logger
+  +CreateStaffProfile(CreateStaffDto): Task<IActionResult>
+  +UpdateStaffProfile(string, JsonPatchDocument<UpdateStaffDto>): Task<IActionResult>
+  +Deactivate(string): Task<ActionResult>
+}
+
+class OperationRequestController {
+  -OperationRequestService _service
+  -ILogger<OperationRequestController> _logger
+  +CreateOperationRequest(CreateOperationRequestDto): Task<IActionResult>
+  +DeleteOperationRequest(string): Task<IActionResult>
+  +SearchOperationRequests(SearchOperationRequestDto): Task<ActionResult<IEnumerable<OperationRequestDto>>>
+}
+
+class PatientController {
+  -PatientService _service
+  +PatientController(PatientService service)
+  +Task<IActionResult> RegisterPatient(RegisterPatientDto dto)
+  +UpdatePatientProfile(email: string, patchDoc: JsonPatchDocument<UpdatePatientDto>): Task<IActionResult>
+  +RequestAccountDeletion(): Task<IActionResult>
+  +ConfirmAccountDeletion(DeleteConfirmationDto): Task<IActionResult>
+}
+
+class SurgeryRoomController {
+  -ISurgeryRoomRepository _surgeryRoomRepository
+  +GetRoomStatus(string id): Task<ActionResult<object>>
+}
+
+' Services
+class AuthService {
+  -UserManager<ApplicationUser> _userManager
+  -SignInManager<ApplicationUser> _signInManager
+  -IConfiguration _configuration
+  -IEmailService _emailService
+  -ILogger<AuthService> _logger
+  +ResetPasswordAsync(string email) : Task<bool>
+  +ConfirmResetPasswordAsync(string email, string token, string newPassword) : Task<bool>
+  -ValidatePasswordComplexity(string password) : void
+}
+
+class UserService {
+  -UserManager<ApplicationUser> _userManager
+  -RoleManager<IdentityRole> _roleManager
+  -IEmailService _emailService
+  +RegisterUserAsync(CreateUserDto): Task<UserDto>
+  +GetUserByIdAsync(string): Task<UserDto>
+  +GetAllUsersAsync(): Task<IEnumerable<UserDto>>
+  +UpdateUserAsync(string, UpdateUserDto): Task<UserDto>
+  +DeleteUserAsync(string): Task<bool>
+}
+
+class StaffService {
+  -IStaffRepository _repository
+  -UserManager<ApplicationUser> _userManager
+  -IUnitOfWork _unitOfWork
+  -IEmailService _emailService
+  +AddAsync(CreateStaffDto): Task<StaffDto>
+  +UpdateStaffAsync(string, UpdateStaffDto): Task<StaffDto>
+  +DeactivateAsync(string): Task<bool>
+  -GenerateUniqueLicenseNumber(): string
+}
+
+class OperationRequestService {
+  -IOperationRequestRepository _repository
+  -IUnitOfWork _unitOfWork
+  -IStaffRepository _staffRepo
+  -IPatientRepository _patientRepo
+  -ILoggingService _loggingService
+  -IOperationTypeRepository _operationTypeRepo
+  +CreateOperationRequestAsync(CreateOperationRequestDto): Task<OperationRequestDto>
+  +DeleteOperationRequestAsync(string, string): Task<bool>
+  +SearchOperationRequestsAsync(SearchOperationRequestDto): Task<IEnumerable<OperationRequestDto>>
+}
+
+class PatientService {
+  -IPatientRepository _repository
+  -UserManager<ApplicationUser> _userManager
+  -IUnitOfWork _unitOfWork
+  -IEmailService _emailService
+  -ILoggingService _loggingService
+  +PatientService(IPatientRepository repository, UserManager<ApplicationUser> userManager, IUnitOfWork unitOfWork, IEmailService emailService, ILoggingService loggingService)
+  +Task<PatientDto> AddAsync(RegisterPatientDto dto)
+  +UpdatePatientProfileAsync(email: string, dto: UpdatePatientDto): Task<PatientDto>
+  +RequestAccountDeletionAsync(string email): Task
+  +ConfirmAccountDeletionAsync(string email): Task<bool>
+  +ValidateTokenAndGetEmail(string token): string
+  -GenerateToken(string email): string
+  -string GenerateUniqueMedicalNumber()
+}
+
+' Repositories
+interface IStaffRepository {
+  +AddAsync(Staff): Task<Staff>
+  +GetByIdAsync(string): Task<Staff>
+  +GetByUserIdAsync(string): Task<Staff>
+  +UpdateAsync(Staff): Task<Staff>
+  +IsEmailUnique(string): Task<bool>
+  +IsPhoneNumberUnique(string): Task<bool>
+}
+
+interface ISurgeryRoomRepository {
+  +AddAsync(SurgeryRoom): Task<SurgeryRoom>
+  +GetByIdAsync(string): Task<SurgeryRoom>
+  +GetAllAsync(): Task<List<SurgeryRoom>>
+  +GetByTypeAsync(RoomType): Task<List<SurgeryRoom>>
+  +GetByStatusAsync(RoomStatus): Task<List<SurgeryRoom>>
+  +UpdateAsync(SurgeryRoom): Task<SurgeryRoom>
+  +RemoveAsync(string): Task<bool>
+}
+
+interface IOperationRequestRepository {
+  +AddAsync(OperationRequest): Task<OperationRequest>
+  +GetByIdAsync(string id): Task<OperationRequest>
+  +RemoveAsync(OperationRequest operationRequest): Task
+  +GetFilteredOperationRequestsAsync(SearchOperationRequestDto): Task<IEnumerable<OperationRequest>>
+}
+
+interface IPatientRepository {
+  +AddAsync(Patient patient): Task<Patient>
+  +GetByEmailAsync(email: string): Task<Patient>
+  +UpdateAsync(Patient patient): Task<Patient>
+  +AnonymizeAsync(Patient patient): Task<Patient>
+  +IsEmailUniqueAsync(string email): Task<bool>
+  +IsPhoneNumberUniqueAsync(string phoneNumber): Task<bool>
+}
+
+' Common Classes
+class ApplicationUser {
+  +Id: string
+  +UserName: string
+  +Email: string
+  +bool IsLockedOut
+}
+
+class Staff {
+  +Id: string
+  +UserId: string
+  +FirstName: string
+  +LastName: string
+  +Email: string
+  +PhoneNumber: string
+  +Specialization: string
+  +LicenseNumber: string
+  +Active: bool
+  +AvailabilitySlots: List<AvailabilitySlot>
+}
+
+class OperationRequest {
+  +Id: string
+  +PatientId: string
+  +DoctorId: string
+  +OperationTypeId: string
+  +Deadline: DateTime
+  +Priority: string
+  +IsScheduled: bool
+}
+
+class Patient {
+  +UserId: string
+  +FirstName: string
+  +LastName: string
+  +Email: string
+  +PhoneNumber: string
+  +DateofBirth: DateTime
+  +Gender: string
+  +ContactInfo: string
+  +EmergencyContact: string
+  +AppointmentHistory: string
+  +MedicalHistory: string
+  +MedicalNr: string
+}
+
+' Domain Model
+class SurgeryRoom {
+  +Id: string
+  +Type: RoomType
+  +Capacity: int
+  +Status: RoomStatus
+  +AssignedEquipment: List<string>
+  +MaintenanceSlots: List<MaintenanceSlot>
+}
+
+enum RoomType {
+  GENERAL
+  SPECIALIZED
+  EMERGENCY
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+class MaintenanceSlot {
+  +StartTime: DateTime
+  +EndTime: DateTime
+}
+
+' DTOs
+class ResetPasswordDto {
+  +string Email
+}
+
+class ConfirmResetPasswordDto {
+  +string Email
+  +string Token
+  +string NewPassword
+}
+
+class CreateUserDto {
+  +UserName: string
+  +Email: string
+  +Password: string
+  +Role: string
+}
+
+class UserDto {
+  +Id: string
+  +UserName: string
+  +Email: string
+  +Role: string
+}
+
+class CreateStaffDto {
+  +FirstName: string
+  +LastName: string
+  +Email: string
+  +PhoneNumber: string
+  +Specialization: string
+  +AvailabilitySlots: List<AvailabilitySlot>
+}
+
+class StaffDto {
+  +Id: string
+  +FirstName: string
+  +LastName: string
+  +Email: string
+  +PhoneNumber: string
+  +Specialization: string
+  +LicenseNumber: string
+  +Active: bool
+  +AvailabilitySlots: List<AvailabilitySlot>
+}
+
+class CreateOperationRequestDto {
+  +PatientId: string
+  +DoctorId: string
+  +OperationTypeId: string
+  +Deadline: DateTime
+  +Priority: string
+}
+
+class OperationRequestDto {
+  +Id: string
+  +PatientId: string
+  +DoctorId: string
+  +OperationTypeId: string
+  +Deadline: DateTime
+  +Priority: string
+}
+
+class SearchOperationRequestDto {
+  // Add properties used for searching
+}
+
+class RegisterPatientDto {
+  +string FirstName
+  +string LastName
+  +string Email
+  +string PhoneNumber
+  +DateTime DateofBirth
+  +string Gender
+  +string ContactInfo
+  +string EmergencyContact
+}
+
+class PatientDto {
+  +string Id
+  +string FirstName
+  +string LastName
+  +string Email
+  +string PhoneNumber
+  +DateTime DateofBirth
+  +string Gender
+  +string ContactInfo
+  +string EmergencyContact
+  +string AppointmentHistory
+  +string MedicalHistory
+  +string MedicalNr
+}
+
+class UpdatePatientDto {
+  +UserId: string
+  +FirstName: string
+  +LastName: string
+  +Email: string
+  +PhoneNumber: string
+  +DateOfBirth: string
+  +Gender: string
+  +ContactInfo: string
+  +EmergencyContact: string
+  +MedicalHistory: string
+  +MedicalNr: string
+}
+
+class DeleteConfirmationDto {
+  +Token: string
+}
+
+' Interfaces
+interface IAuthService {
+  +ResetPasswordAsync(string email) : Task<bool>
+  +ConfirmResetPasswordAsync(string email, string token, string newPassword) : Task<bool>
+}
+
+interface IEmailService {
+  +SendEmailAsync(string to, string subject, string body) : Task
+  +SendAdminLockoutNotification(userEmail: string): Task
+}
+
+interface ILoggingService {
+  +LogInformation(string message): void
+  +LogWarning(string message): void
+  +LogError(string message, Exception ex): void
+  +LogChangeAsync(string action, string userId, string patientName, object changeData): Task
+}
+
+interface IUnitOfWork {
+  +CommitAsync(): Task<int>
+  +BeginTransactionAsync(): Task
+  +CommitTransactionAsync(): Task
+  +RollbackTransactionAsync(): Task
+}
+
+' Relationships
+AuthController --> IAuthService : uses
+AuthController --> ILoggingService : uses
+AuthController --> UserManager : uses
+AuthController ..> ResetPasswordDto : uses
+AuthController ..> ConfirmResetPasswordDto : uses
+AuthService ..|> IAuthService : implements
+AuthService --> IEmailService : uses
+AuthService --> ILoggingService : uses
+AuthService --> UserManager : uses
+AuthService ..> ConfirmResetPasswordDto : uses
+LoggingService ..|> ILoggingService : implements
+UserManager --> ApplicationUser : manages
+
+UserController --> UserService
+UserService --> ApplicationUser
+UserService --> CreateUserDto
+UserService --> UserDto
+
+StaffController --> IStaffService
+IStaffService <|.. StaffService
+StaffService --> IStaffRepository
+StaffService --> UserManager
+StaffService --> IUnitOfWork
+StaffService --> IEmailService
+Staff --|> ApplicationUser
+StaffService --> Staff
+StaffService --> CreateStaffDto
+StaffService --> StaffDto
+
+OperationRequestController --> OperationRequestService : uses
+OperationRequestService --> IOperationRequestRepository : uses
+OperationRequestService --> IUnitOfWork : uses
+OperationRequestService --> IStaffRepository : uses
+OperationRequestService --> IPatientRepository : uses
+OperationRequestService --> ILoggingService : uses
+OperationRequestService --> IOperationTypeRepository : uses
+IOperationRequestRepository --> OperationRequest
+OperationRequestService ..> CreateOperationRequestDto
+OperationRequestService ..> OperationRequestDto
+OperationRequestController ..> SearchOperationRequestDto : uses
+OperationRequestService ..> SearchOperationRequestDto : uses
+
+PatientController --> PatientService
+PatientService --> IPatientRepository
+PatientService --> Patient
+PatientService ..> RegisterPatientDto
+PatientService ..> PatientDto
+Patient ..> PatientDto
+PatientController ..> UpdatePatientDto : uses
+PatientService ..> UpdatePatientDto : uses
+PatientController ..> DeleteConfirmationDto : uses
+PatientService ..> DeleteConfirmationDto : uses
+
+SurgeryRoomController --> ISurgeryRoomRepository : uses
+ISurgeryRoomRepository --> SurgeryRoom : manages
+SurgeryRoom --> RoomType : has
+SurgeryRoom --> RoomStatus : has
+SurgeryRoom --> MaintenanceSlot : contains
+
+@enduml
