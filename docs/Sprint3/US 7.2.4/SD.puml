@@ -1,0 +1,59 @@
+@startuml
+actor Admin
+participant "MedicalConditionRoutes" as Routes
+participant "MedicalConditionController" as Controller
+participant "MedicalConditionDto" as DTO
+participant "MedicalConditionService" as Service
+participant "MedicalCondition\nRepository" as Repo
+database "MongoDB" as DB
+
+activate Admin
+Admin -> Routes: POST /medical-conditions/add-medical-condition
+activate Routes
+
+Routes -> Controller: addMedicalConditionModel(req, res)
+activate Controller
+
+Controller -> Controller: Extrai dados do body\n(name, severity, description)
+
+Controller -> DTO: new MedicalConditionDto(name, severity, description)
+activate DTO
+DTO --> Controller: medicalConditionDto
+deactivate DTO
+
+Controller -> Service: addMedicalConditionModel(medicalConditionDto)
+activate Service
+
+Service -> Service: Verifica se condição já existe
+Service -> DB: findOne({name: medicalConditionDto.name})
+activate DB
+DB --> Service: resultado
+deactivate DB
+
+alt Condição já existe
+    Service --> Controller: throw Error('Medical condition already exists')
+    Controller --> Admin: status(409)\n"Medical condition already exists"
+else Condição não existe
+    Service -> Service: Cria novo objeto MedicalCondition
+    Service -> Repo: addMedicalConditionModel(newMedicalCondition)
+    activate Repo
+    
+    Repo -> DB: create(newMedicalCondition)
+    activate DB
+    DB --> Repo: condição salva
+    deactivate DB
+    
+    Repo --> Service: addedCondition
+    deactivate Repo
+    
+    Service --> Controller: addedCondition
+    deactivate Service
+    
+    Controller --> Admin: status(201)\n"Medical condition added successfully"
+    deactivate Controller
+    
+end
+
+deactivate Routes
+deactivate Admin
+@enduml

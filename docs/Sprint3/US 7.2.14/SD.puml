@@ -1,0 +1,51 @@
+@startuml
+actor Doctor
+participant "CreateOperationRequest\nComponent" as UI
+participant "OperationRequest\nService" as ORS
+participant "Backend API" as API
+
+activate Doctor
+Doctor -> UI: Navigate to Create Operation Request page
+activate UI
+
+Doctor -> UI: Fill operation request information
+note right
+  - Patient ID
+  - Doctor ID
+  - Operation Type ID
+  - Deadline
+  - Priority
+end note
+
+Doctor -> UI: Submit form
+
+UI -> UI: handleSubmit()
+
+UI -> ORS: createOperationRequest(operationData)
+activate ORS
+
+ORS -> ORS: getAuthToken()
+ORS -> ORS: checkDoctorRole(token)
+
+ORS -> API: POST /api/OperationRequest/create-operation-request
+activate API
+
+
+API --> ORS: Return OperationRequestDto
+deactivate API
+ORS --> UI: Return success
+deactivate ORS
+
+UI -> UI: setSuccessMessage()
+UI -> UI: Clear form
+UI --> Doctor: Show success message
+
+alt error occurs
+    ORS --> UI: Throw error
+    UI -> UI: setErrorMessage()
+    UI --> Doctor: Show error message
+end
+
+deactivate UI
+deactivate Doctor
+@enduml

@@ -1,0 +1,58 @@
+@startuml namespace
+title "Sequence Diagram US 6.2.7"
+
+actor Admin
+participant UpdatePatientAdmin
+participant PatientService
+participant API
+
+activate Admin
+Admin->UpdatePatientAdmin: Access update page
+activate UpdatePatientAdmin
+UpdatePatientAdmin->PatientService: getPatientById(patientId)
+activate PatientService
+PatientService->PatientService: getAuthToken()
+PatientService->PatientService: checkAdminRole(token)
+PatientService->API: GET /api/patient/{id}
+activate API
+API-->PatientService: Return patient data
+deactivate API
+PatientService-->UpdatePatientAdmin: Return patient data
+deactivate PatientService
+UpdatePatientAdmin->UpdatePatientAdmin: setPatientData(data)
+UpdatePatientAdmin->UpdatePatientAdmin: setOriginalData(data)
+UpdatePatientAdmin-->Admin: Display form with current data
+
+Admin->UpdatePatientAdmin: Edit form fields
+UpdatePatientAdmin->UpdatePatientAdmin: handleChange(event)
+UpdatePatientAdmin->UpdatePatientAdmin: setPatientData(newData)
+
+Admin->UpdatePatientAdmin: Submit form
+UpdatePatientAdmin->UpdatePatientAdmin: handleSubmit(event)
+UpdatePatientAdmin->UpdatePatientAdmin: validateFields()
+
+alt Invalid Fields
+    UpdatePatientAdmin->UpdatePatientAdmin: setErrorMessage(validationError)
+    UpdatePatientAdmin-->Admin: Display error message
+else Valid Fields
+    UpdatePatientAdmin->UpdatePatientAdmin: Compare with originalData
+    alt No Changes
+        UpdatePatientAdmin->UpdatePatientAdmin: setErrorMessage("No changes detected")
+        UpdatePatientAdmin-->Admin: Display error message
+    else Has Changes
+        UpdatePatientAdmin->PatientService: updatePatientProfile(patientId, updatedFields)
+        activate PatientService
+        PatientService->PatientService: getAuthToken()
+        PatientService->PatientService: checkAdminRole(token)
+        PatientService->API: PATCH /api/patient/{id}
+        activate API
+        API-->PatientService: Return success
+        deactivate API
+        PatientService-->UpdatePatientAdmin: Return success
+        deactivate PatientService
+        UpdatePatientAdmin->UpdatePatientAdmin: setSuccessMessage("Profile updated successfully")
+        UpdatePatientAdmin-->Admin: Show success message
+    end
+end
+
+@enduml

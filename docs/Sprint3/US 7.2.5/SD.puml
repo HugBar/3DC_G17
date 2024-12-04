@@ -1,0 +1,45 @@
+@startuml
+title "US 6.2.6 Create Patient Profile Sequence Diagram"
+
+actor Admin
+participant "CreatePatient\nComponent" as UI
+participant "PatientService" as PS
+participant "FormValidation" as FV
+participant "Backend API" as API
+database "Database" as DB
+
+activate Admin
+Admin -> UI: Navigate to Create Patient page
+activate UI
+
+Admin -> UI: Fill patient information
+Admin -> UI: Submit form
+
+UI -> FV: validate(values)
+activate FV
+FV --> UI: validation result
+deactivate FV
+
+alt validation successful
+    UI -> PS: registerPatient(patientData)
+    activate PS
+    PS -> PS: getAuthToken()
+    PS -> PS: checkAdminRole(token)
+    PS -> API: POST /api/patient
+    activate API
+    API --> PS: Return PatientDto
+    deactivate API
+    PS --> UI: Return success
+    deactivate PS
+    UI -> UI: Display success message
+    UI -> UI: Navigate to patient list
+    UI --> Admin: Show success notification
+else validation failed
+    UI -> UI: Display validation errors
+    UI --> Admin: Show error messages
+    deactivate
+end
+
+deactivate UI
+deactivate Admin
+@enduml

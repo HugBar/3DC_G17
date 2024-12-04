@@ -1,0 +1,84 @@
+@startuml namespace
+title "Class diagram US 6.2.8"
+class DeletePatient {
+        -navigate: useNavigate
+        -patientId: string
+        -successMessage: string
+        -isDeleted: boolean
+        +handleDelete(): void
+        +render(): JSX
+    }
+
+    class PatientList {
+        -navigate: useNavigate
+        -location: useLocation
+        -patientList: array
+        -errorMessage: string
+        -currentPage: number
+        -totalPages: number
+        -pageSize: number
+        -filters: object
+        -selectedPatient: object
+        +handleFilterChange(event): void
+        +updateURL(filters, page): void
+        +clearFilters(): void
+        +handlePageChange(newPage): void
+        +handleSelectPatient(): void
+        +handleDeleteClick(patientId): void
+        +handlePatientSelect(patientId): void
+        +fetchPatients(): void
+        +render(): JSX
+    }
+
+    class App {
+        -navigate: useNavigate
+        -isAdmin: boolean
+        -isDoctor: boolean
+        -isPatient: boolean
+        -isAuthenticated: boolean
+        -showStaffActions: boolean
+        -showPatientActions: boolean
+        -selectedStaffAction: string
+        -selectedPatientAction: string
+        -selectedPatientId: string
+        -selectedStaffId: string
+        +handleHomeClick(): void
+        +handleSelectPatient(): void
+        +resetPatientAction(): void
+        +handleSelectPatientFromList(patientId): void
+        +handleLogoutAndReset(): void
+        +handlePatientClick(): void
+        +handleDeletePatient(patientId): void
+        +render(): JSX
+    }
+
+    class PatientService {
+        -API_URL: string
+        +getAuthToken(): string
+        +checkAdminRole(token): void
+        +getPatientProfile(patientEmail): Promise
+        +updatePatientProfile(patientEmail, updateData): Promise
+        +getAllPatients(filters, page, pageSize): Promise
+        +getPatientById(patientId): Promise
+        +deletePatient(patientId): Promise
+    }
+
+    class DeletePatientCSS {
+        <<interface>>
+        +delete-patient-container: style
+        +delete-button: style
+        +modal: style
+        +modal-content: style
+        +confirm-button: style
+        +cancel-button: style
+        +success-message: style
+        +fadeIn: animation
+    }
+
+    App --> PatientList : uses
+    App --> DeletePatient : uses
+    PatientList --> PatientService : uses
+    DeletePatient --> PatientService : uses
+    DeletePatient --> DeletePatientCSS : styles
+    PatientList ..> DeletePatient : navigates to
+@enduml

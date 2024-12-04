@@ -1,0 +1,65 @@
+@startuml
+title "Sequence Diagram Us 6.2.2"
+
+actor Patient
+participant UpdatePatient
+participant PatientService
+participant API
+
+activate Patient
+Patient->UpdatePatient: Acessa página de atualização
+activate UpdatePatient
+UpdatePatient->PatientService: getPatientProfile(patientEmail)
+activate PatientService
+PatientService->PatientService: getAuthToken()
+PatientService->API: GET /api/patient/get-patient-profile?email={email}
+activate API
+API-->PatientService: Retorna response.data
+deactivate API
+PatientService-->UpdatePatient: Retorna dados do paciente
+deactivate PatientService
+UpdatePatient->UpdatePatient: setPatientData(data)
+UpdatePatient->UpdatePatient: setOriginalData(data)
+UpdatePatient-->Patient: Exibe formulário com dados atuais
+
+Patient->UpdatePatient: Edita campos do formulário
+UpdatePatient->UpdatePatient: handleChange(event)
+UpdatePatient->UpdatePatient: setPatientData(newData)
+
+Patient->UpdatePatient: Submete formulário
+UpdatePatient->UpdatePatient: handleSubmit(event)
+UpdatePatient->UpdatePatient: validateFields()
+
+alt Campos inválidos
+    UpdatePatient->UpdatePatient: setErrorMessage(validationError)
+    UpdatePatient-->Patient: Exibe mensagem de erro
+else Campos válidos
+    UpdatePatient->UpdatePatient: Compara com originalData
+    alt Sem alterações
+        UpdatePatient->UpdatePatient: setErrorMessage("Nenhuma alteração detectada")
+        UpdatePatient-->Patient: Exibe mensagem de erro
+    else Com alterações
+        UpdatePatient->PatientService: updatePatientProfile(email, updatedFields)
+        activate PatientService
+        PatientService->PatientService: getAuthToken()
+        PatientService->API: PATCH /api/patient/edit-patient-profile?email={email}
+        activate API
+        API-->PatientService: Retorna sucesso
+        deactivate API
+        PatientService-->UpdatePatient: Retorna sucesso
+        deactivate PatientService
+        UpdatePatient->UpdatePatient: setSuccessMessage("Perfil atualizado com sucesso")
+        
+        alt Email alterado
+            UpdatePatient->UpdatePatient: setShowModal(true)
+            UpdatePatient-->Patient: Exibe modal de confirmação
+            Patient->UpdatePatient: Confirma (handleModalClose)
+            UpdatePatient->UpdatePatient: Remove token
+            UpdatePatient->Patient: Navigate to /login
+            deactivate UpdatePatient
+        end
+    end
+end
+deactivate UpdatePatient
+deactivate Patient
+@enduml

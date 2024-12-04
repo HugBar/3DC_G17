@@ -1,0 +1,44 @@
+@startuml namespace class Diagram 
+title "Class Diagram US 6.2.6"
+
+class CreatePatient {
+    -values: object
+    -errors: object
+    -successMessage: string
+    -navigate: useNavigate
+    +handleChange(event): void
+    +handleSubmit(event): void
+    +validate(values): boolean
+    +render(): JSX
+}
+
+class PatientService {
+    -API_URL: string
+    +getAuthToken(): string
+    +checkAdminRole(token): void
+    +registerPatient(patientData): Promise
+}
+
+class usePatientFormValidation {
+    -errors: object
+    +validate(values): boolean
+}
+
+class RegisterPatientDto {
+    +firstName: string
+    +lastName: string
+    +email: string
+    +phoneNumber: string
+    +dateOfBirth: string
+    +gender: string
+    +contactInfo: string
+    +emergencyContact: string
+    +medicalNr: string
+}
+
+CreatePatient --> PatientService : uses
+CreatePatient --> usePatientFormValidation : uses
+CreatePatient ..> RegisterPatientDto : uses
+PatientService ..> RegisterPatientDto : uses
+
+@enduml

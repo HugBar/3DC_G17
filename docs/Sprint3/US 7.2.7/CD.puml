@@ -1,0 +1,53 @@
+@startuml namespace class Diagram 
+title "Class Diagram US 6.2.7"
+
+class UpdatePatientAdmin {
+    -originalData: object
+    -patientData: object
+    -successMessage: string
+    -errorMessage: string
+    -navigate: useNavigate
+    +handleChange(event): void
+    +validateFields(): string|null
+    +handleSubmit(event): void
+    +fetchPatientData(): Promise
+    +render(): JSX
+}
+
+class PatientService {
+    -API_URL: string
+    +getAuthToken(): string
+    +checkAdminRole(token): void
+    +getPatientById(patientId): Promise
+    +updatePatientProfile(patientId, updateData): Promise
+}
+
+class UpdatePatientDto {
+    +firstName: string
+    +lastName: string
+    +email: string
+    +phoneNumber: string
+    +dateOfBirth: string
+    +gender: string
+    +contactInfo: string
+    +emergencyContact: string
+    +medicalHistory: string
+    +medicalNr: string
+}
+
+class UpdatePatientCSS {
+    <<interface>>
+    +update-profile-container: style
+    +update-profile-form: style
+    +form-group: style
+    +update-button: style
+    +success-message: style
+    +error-message: style
+}
+
+UpdatePatientAdmin --> PatientService : uses
+UpdatePatientAdmin --> UpdatePatientDto : uses
+UpdatePatientAdmin --> UpdatePatientCSS : styles
+PatientService ..> UpdatePatientDto : handles
+
+@enduml

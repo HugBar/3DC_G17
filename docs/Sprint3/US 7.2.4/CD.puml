@@ -1,0 +1,42 @@
+@startuml
+
+class MedicalConditionRoutes {
+  +addMedicalConditionModel()
+}
+
+class MedicalConditionController {
+  +addMedicalConditionModel(req, res)
+}
+
+class MedicalConditionDto {
+  -name: String
+  -severity: String
+  -description: String
+  +constructor(name, severity, description)
+}
+
+class MedicalConditionService {
+  +addMedicalConditionModel(medicalConditionDto)
+}
+
+class MedicalConditionRepository {
+  +addMedicalConditionModel(newMedicalCondition)
+}
+
+class MedicalCondition {
+  -name: String
+  -severity: String
+  -description: String
+  -createdDate: Date
+}
+
+MedicalConditionRoutes --> MedicalConditionController : uses
+MedicalConditionController --> MedicalConditionDto : creates
+MedicalConditionController --> MedicalConditionService : uses
+MedicalConditionService --> MedicalConditionRepository : uses
+MedicalConditionRepository --> MedicalCondition : manages
+MedicalConditionService ..> MedicalConditionDto : uses
+
+
+
+@enduml
