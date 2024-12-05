@@ -1,14 +1,28 @@
+// Author: João Morais
+
+/**
+ * This module provides API endpoints for managing medical specializations.
+ * It includes functionality for adding new specializations, retrieving all specializations,
+ * and fetching specific specializations by their ID.
+ */
+
 const SpecializationService = require('../services/SpecializationService');
 const SpecializationDto = require('../dtos/SpecializationDto');
 
+/**
+ * Adds a new medical specialization
+ * @param {Object} req - Express request object containing specialization details in body
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with created specialization or error message
+ */
 exports.addSpecialization = async (req, res) => {
     try {
         const { name, description } = req.body;
         
-        // Create DTO
+        // Create DTO to transfer data
         const specializationDto = new SpecializationDto(name, description);
         
-        // Add specialization using service
+        // Add specialization using service layer
         const result = await SpecializationService.addSpecialization(specializationDto);
         
         res.status(201).json({
@@ -25,6 +39,12 @@ exports.addSpecialization = async (req, res) => {
     }
 };
 
+/**
+ * Retrieves all medical specializations
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with array of specializations or error message
+ */
 exports.getAllSpecializations = async (req, res) => {
     try {
         const specializations = await SpecializationService.getAllSpecializations();
@@ -35,6 +55,12 @@ exports.getAllSpecializations = async (req, res) => {
     }
 };
 
+/**
+ * Retrieves a specific medical specialization by its ID
+ * @param {Object} req - Express request object containing specialization ID in params
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with requested specialization or error message
+ */
 exports.getSpecializationById = async (req, res) => {
     try {
         const { id } = req.params;

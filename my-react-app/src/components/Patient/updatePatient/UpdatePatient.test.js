@@ -29,6 +29,9 @@ describe('UpdatePatient Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    
     useNavigate.mockImplementation(() => mockNavigate);
     patientService.getPatientProfile.mockResolvedValue(mockPatientData);
     Storage.prototype.removeItem = jest.fn();
@@ -37,6 +40,8 @@ describe('UpdatePatient Component', () => {
 
   afterEach(() => {
     console.error.mockRestore();
+    console.log.mockRestore();
+    console.warn.mockRestore();
   });
 
   const renderUpdatePatient = () => {

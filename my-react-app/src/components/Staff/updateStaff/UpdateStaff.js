@@ -123,7 +123,10 @@ const UpdateStaff = ({ onBack }) => {
       <h2>Update Staff</h2>
       {successMessage && <p className="success-message">{successMessage}</p>}
       {errorMessage && <p className="error-message">{errorMessage}</p>}
-      <form onSubmit={handleSubmit} className="staff-form">
+      <form 
+        onSubmit={handleSubmit} 
+        className="staff-form" 
+      >
         <div className="form-group">
           <label htmlFor="email">Email:</label>
           <input id="email" type="email" name="email" value={staffData.email} onChange={handleChange} required />

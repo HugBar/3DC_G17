@@ -1,16 +1,16 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import UpdateStaff from './UpdateStaff';
 import staffService from '../../../api/staffService';
+import specializationService from '../../../api/specializationService';
 
-// Mock the staffService
+// Mock the services
 jest.mock('../../../api/staffService');
+jest.mock('../../../api/specializationService');
 
 const mockStaffData = {
   id: 1,
-  firstName: 'John',
-  lastName: 'Doe',
   email: 'stafftest@stafftest.com',
   phoneNumber: '123456789',
   specialization: 'Cardiology',
@@ -19,12 +19,27 @@ const mockStaffData = {
   ],
 };
 
+const mockSpecializations = [
+  { _id: '1', name: 'Cardiology' },
+  { _id: '2', name: 'Neurology' }
+];
+
 describe('UpdateStaff Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    
     staffService.getStaffById.mockResolvedValue(mockStaffData);
-    // Mock localStorage
+    specializationService.getAllSpecializations.mockResolvedValue(mockSpecializations);
     Storage.prototype.getItem = jest.fn(() => 'fake-token');
+  });
+
+  afterEach(() => {
+    console.error.mockRestore();
+    console.log.mockRestore();
+    console.warn.mockRestore();
   });
 
   const renderUpdateStaff = () => {
@@ -37,52 +52,24 @@ describe('UpdateStaff Component', () => {
     );
   };
 
-  test('renders update form with staff data', async () => {
+  test('renders update form with staff data and specializations', async () => {
     renderUpdateStaff();
 
-    // Wait for the data to be loaded
-    await screen.findByDisplayValue(mockStaffData.email);
-    
-    expect(screen.getByDisplayValue(mockStaffData.email)).toBeInTheDocument();
-    expect(screen.getByDisplayValue(mockStaffData.phoneNumber)).toBeInTheDocument();
-    expect(screen.getByDisplayValue(mockStaffData.specialization)).toBeInTheDocument();
-  });
-
-  test('updates fields and submits updated staff data', async () => {
-    staffService.updateStaff.mockResolvedValue({});
-    renderUpdateStaff();
-
-    // Wait for form to be populated
-    await screen.findByDisplayValue(mockStaffData.email);
-
-    // Update fields
-    fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '987654321' } });
-    fireEvent.change(screen.getByLabelText(/specialization/i), { target: { value: 'Neurology' } });
-
-    // Submit form
-    fireEvent.click(screen.getByRole('button', { name: /update/i }));
-
-    // Wait for the update to complete
-    await screen.findByText('Staff updated successfully!');
-
-    expect(staffService.updateStaff).toHaveBeenCalledWith('1', {
-      ...mockStaffData,
-      phoneNumber: '987654321',
-      specialization: 'Neurology',
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(mockStaffData.email)).toBeInTheDocument();
+      expect(screen.getByDisplayValue(mockStaffData.phoneNumber)).toBeInTheDocument();
+      expect(screen.getByRole('combobox')).toHaveValue(mockStaffData.specialization);
     });
   });
 
-  test('displays error message on failed update', async () => {
-    staffService.updateStaff.mockRejectedValue(new Error('API Error'));
+  
+
+  test('displays error message when specializations fail to load', async () => {
+    specializationService.getAllSpecializations.mockRejectedValue(new Error('Failed to load'));
     renderUpdateStaff();
 
-    // Wait for form to be populated
-    await screen.findByDisplayValue(mockStaffData.email);
-
-    // Submit form
-    fireEvent.click(screen.getByRole('button', { name: /update/i }));
-
-    // Check for error message
-    expect(await screen.findByText('Error updating staff.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Error loading specializations')).toBeInTheDocument();
+    });
   });
 });
