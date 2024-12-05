@@ -27,7 +27,7 @@ namespace DDDSample1.Domain.OperationTypeData
                 throw new BusinessRuleValidationException("An operation type with this name already exists.");
 
             var operationPhases = new OperationPhases(dto.AnesthesiaPreparation, dto.Surgery, dto.Cleaning);
-           
+
 
             var operationType = new OperationType(dto.Name, dto.RequiredStaffBySpecialization, operationPhases);
 
@@ -53,15 +53,15 @@ namespace DDDSample1.Domain.OperationTypeData
                 throw new BusinessRuleValidationException("Operation type not found.");
 
             if (!operationType.IsActive)
-            throw new BusinessRuleValidationException("Cannot update an inactive version.");
+                throw new BusinessRuleValidationException("Cannot update an inactive version.");
 
             var operationTypeDto = ConvertToDto(operationType);
 
             patchDoc.ApplyTo(operationTypeDto);
 
-            if(operationTypeDto.Name != operationType.Name && await _repo.ExistsByNameAsync(operationTypeDto.Name))
+            if (operationTypeDto.Name != operationType.Name && await _repo.ExistsByNameAsync(operationTypeDto.Name))
                 throw new BusinessRuleValidationException("An operation type with this name already exists.");
-            
+
             var operationPhases = new OperationPhases(operationTypeDto.AnesthesiaPreparation, operationTypeDto.Surgery, operationTypeDto.Cleaning);
 
             var newVersion = operationType.CreateNewVersion(operationTypeDto.RequiredStaffBySpecialization, operationPhases);
@@ -94,7 +94,7 @@ namespace DDDSample1.Domain.OperationTypeData
 
             if (operationType == null)
                 throw new BusinessRuleValidationException("Operation type not found.");
-            
+
             if (!operationType.IsActive)
                 throw new BusinessRuleValidationException("Operation type is already inactive.");
 
@@ -112,10 +112,51 @@ namespace DDDSample1.Domain.OperationTypeData
                 throw new BusinessRuleValidationException("Invalid page number or page size.");
 
             var operationTypes = await _repo.SearchOperationType(filterDto);
-            
+
             return operationTypes;
         }
-    
+
+        public async Task<OperationTypeDto> UpdateSpecializations(OperationTypeId id, UpdateSpecializationsDto dto)
+        {
+            var operationType = await _repo.GetByIdAsync(id);
+
+            if (operationType == null)
+                throw new BusinessRuleValidationException("Operation type not found.");
+
+            if (!operationType.IsActive)
+                throw new BusinessRuleValidationException("Cannot update an inactive version.");
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                // 1. Deactivate current version
+                operationType.Deactivate();
+                await _repo.UpdateAsync(operationType);
+                await _unitOfWork.CommitAsync();
+
+                // 2. Create new version using factory method
+                var newVersion = OperationType.CreateNewVersionSpecialization(
+                    operationType,
+                    dto.RequiredStaffBySpecialization
+                );
+
+                await _repo.AddAsync(newVersion);
+                await _unitOfWork.CommitAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                _loggingService.LogInformation($"New version created with updated specializations: {newVersion.Id}, previous version: {operationType.Id}");
+
+                return new OperationTypeDto(newVersion);
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
     }
-    
+
 }

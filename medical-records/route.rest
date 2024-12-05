@@ -47,3 +47,34 @@ Content-Type: application/json
 
 GET http://localhost:3001/medical-conditions/search?name=Asthma
 
+
+
+###
+
+POST http://localhost:3001/api/specializations
+Content-Type: application/json
+
+    {
+        "name": "Cardiology",
+        "description": "Deals with heart conditions"
+    }
+
+###
+
+# Get all specializations
+GET http://localhost:3001/api/specializations
+
+###
+
+# Get specific specialization
+GET http://localhost:3001/api/specializations/67504121fd787927bf0dad89
+
+###
+
+POST http://localhost:3001/api/specializations
+Content-Type: application/json
+
+    {
+        "name": "Neurology",
+        "description": "Deals with brain conditions"
+    }

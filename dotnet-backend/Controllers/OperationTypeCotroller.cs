@@ -115,6 +115,31 @@ namespace DDDSample1.Controllers
             }
         }
 
+        [HttpPatch("update-specializations/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateSpecializations([FromRoute] Guid id, [FromBody] UpdateSpecializationsDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(GetModelErrors());
+            }
+
+            try
+            {
+                var operationTypeId = new OperationTypeId(id);
+                var result = await _service.UpdateSpecializations(operationTypeId, dto);
+                return Ok(result);
+            }
+            catch (BusinessRuleValidationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
         private object GetModelErrors()
         {
             return new

@@ -53,6 +53,30 @@ namespace DDDSample1.Domain.OperationTypeData
                 IsActive = true
             };
         }
+
+        public static OperationType CreateNewVersionSpecialization(
+        OperationType previousVersion,
+        Dictionary<string, int> newRequiredStaffBySpecialization)
+        {
+            var newVersion = new OperationType
+            {
+                Id = new OperationTypeId(Guid.NewGuid()),
+                Name = previousVersion.Name,
+                RequiredStaffBySpecialization = newRequiredStaffBySpecialization,
+                Duration = new OperationPhases(
+                    previousVersion.Duration.AnesthesiaPreparation,
+                    previousVersion.Duration.Surgery,
+                    previousVersion.Duration.Cleaning
+                ),
+                IsActive = true,
+                Version = previousVersion.Version + 1,
+                OperationTypeCode = previousVersion.OperationTypeCode,
+                ValidFrom = DateTime.UtcNow,
+                ValidTo = null
+            };
+
+            return newVersion;
+        }
         public void SetName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))

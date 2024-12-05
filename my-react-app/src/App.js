@@ -24,6 +24,7 @@ import AppointmentScheduler from './components/Appointments/AppointmentScheduler
 import AuthCallback from './components/auth/AuthCallback';
 import EditPatientProfile from './components/Patient/editPatientProfile/EditPatientProfile';
 import UpdateOperationRequest from './components/OperationRequest/updateOperationRequest/UpdateOperationRequest'
+import UpdateOperationType from './components/OperationType/updateOperationType/UpdateOperationType';
 
 
 const App = () => {
@@ -219,6 +220,15 @@ const App = () => {
                 className={`action-button ${selectedStaffAction === 'View Deactivated Staffs' ? 'active' : ''}`}
               >
                 View Deactivated Staffs
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('Update Operation Types');
+                  navigate('/operation-types/update');
+                }}
+                className={`action-button ${selectedStaffAction === 'Update Operation Types' ? 'active' : ''}`}
+              >
+                Manage Operation Types
               </button>
             </>
           )}
@@ -440,6 +450,12 @@ const App = () => {
   <Route path="/auth/callback" element={
     <AuthCallback onLoginSuccess={showPatientActionsOnLogin} />
   } />
+  {isAdmin && (
+    <Route 
+      path="/operation-types/update" 
+      element={<UpdateOperationType />} 
+    />
+  )}
 </Routes>
 
     </div>

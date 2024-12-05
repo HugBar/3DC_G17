@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import staffService from '../../../api/staffService';
 import { StaffDTO, AvailabilitySlotDTO } from '../../../dtos/StaffDTOs';
 import useFormValidation from '../../../hooks/useFormValidation';
+import specializationService from '../../../api/specializationService';
 import './UpdateStaff.css';
 
 const UpdateStaff = ({ onBack }) => {
@@ -17,6 +18,7 @@ const UpdateStaff = ({ onBack }) => {
   });
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [specializations, setSpecializations] = useState([]);
 
   const { errors, validate } = useFormValidation();
 
@@ -49,6 +51,20 @@ const UpdateStaff = ({ onBack }) => {
 
     fetchStaffData();
   }, [id, navigate]);
+
+  useEffect(() => {
+    const fetchSpecializations = async () => {
+      try {
+        const data = await specializationService.getAllSpecializations();
+        setSpecializations(data);
+      } catch (error) {
+        console.error('Error fetching specializations:', error);
+        setErrorMessage('Error loading specializations');
+      }
+    };
+
+    fetchSpecializations();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -120,7 +136,20 @@ const UpdateStaff = ({ onBack }) => {
         </div>
         <div className="form-group">
           <label htmlFor="specialization">Specialization:</label>
-          <input id="specialization" type="text" name="specialization" value={staffData.specialization} onChange={handleChange} required />
+          <select
+            id="specialization"
+            name="specialization"
+            value={staffData.specialization}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select a specialization</option>
+            {specializations.map((spec) => (
+              <option key={spec._id} value={spec.name}>
+                {spec.name}
+              </option>
+            ))}
+          </select>
           {errors.specialization && <p className="error-message">{errors.specialization}</p>}
         </div>
 
