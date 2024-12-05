@@ -1,45 +1,56 @@
 @startuml
-title "US 6.2.6 Create Patient Profile Sequence Diagram"
+title "Sequence Diagram - Search Medical Condition"
 
-actor Admin
-participant "CreatePatient\nComponent" as UI
-participant "PatientService" as PS
-participant "FormValidation" as FV
-participant "Backend API" as API
-database "Database" as DB
+actor Doctor
+participant "MedicalConditionRoutes" as Routes
+participant "MedicalConditionController" as Controller
+participant "SearchMedicalConditionDto" as SearchDTO
+participant "MedicalConditionService" as Service
+participant "MedicalCondition\nRepository" as Repo
+database "MongoDB" as DB
 
-activate Admin
-Admin -> UI: Navigate to Create Patient page
-activate UI
+activate Doctor
+Doctor -> Routes: GET /medical-conditions/search?name=&severity=
+activate Routes
 
-Admin -> UI: Fill patient information
-Admin -> UI: Submit form
+Routes -> Controller: searchMedicalConditions(req, res)
+deactivate Routes
 
-UI -> FV: validate(values)
-activate FV
-FV --> UI: validation result
-deactivate FV
+activate Controller
 
-alt validation successful
-    UI -> PS: registerPatient(patientData)
-    activate PS
-    PS -> PS: getAuthToken()
-    PS -> PS: checkAdminRole(token)
-    PS -> API: POST /api/patient
-    activate API
-    API --> PS: Return PatientDto
-    deactivate API
-    PS --> UI: Return success
-    deactivate PS
-    UI -> UI: Display success message
-    UI -> UI: Navigate to patient list
-    UI --> Admin: Show success notification
-else validation failed
-    UI -> UI: Display validation errors
-    UI --> Admin: Show error messages
-    deactivate
+Controller -> Controller: Extrai parâmetros da query\n(name, severity)
+
+Controller -> SearchDTO: new SearchMedicalConditionDto(name, severity)
+activate SearchDTO
+SearchDTO --> Controller: searchDto
+deactivate SearchDTO
+
+Controller -> Service: searchMedicalConditions(searchDto)
+activate Service
+
+Service -> Repo: findByFilters(searchDto)
+activate Repo
+
+Repo -> Repo: Constrói query MongoDB
+
+Repo -> DB: find(query)
+activate DB
+DB --> Repo: resultados
+deactivate DB
+
+Repo --> Service: conditions
+deactivate Repo
+
+Service -> Service: Mapeia resultados para DTOs
+Service --> Controller: conditions
+deactivate Service
+
+alt Sucesso
+    Controller --> Doctor: status(200)\n{conditions}
+else Erro
+    Controller --> Doctor: status(500)\n{error: error.message}
+    deactivate Controller
 end
 
-deactivate UI
-deactivate Admin
+deactivate Doctor
 @enduml
