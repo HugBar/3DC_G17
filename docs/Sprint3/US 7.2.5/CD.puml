@@ -1,44 +1,38 @@
-@startuml namespace class Diagram 
-title "Class Diagram US 6.2.6"
-
-class CreatePatient {
-    -values: object
-    -errors: object
-    -successMessage: string
-    -navigate: useNavigate
-    +handleChange(event): void
-    +handleSubmit(event): void
-    +validate(values): boolean
-    +render(): JSX
+@startuml
+class MedicalConditionRoutes {
+  +searchMedicalConditions()
 }
 
-class PatientService {
-    -API_URL: string
-    +getAuthToken(): string
-    +checkAdminRole(token): void
-    +registerPatient(patientData): Promise
+class MedicalConditionController {
+  +searchMedicalConditions(req, res)
 }
 
-class usePatientFormValidation {
-    -errors: object
-    +validate(values): boolean
+class SearchMedicalConditionDto {
+  -name: String
+  -severity: String
+  +constructor(name, severity)
 }
 
-class RegisterPatientDto {
-    +firstName: string
-    +lastName: string
-    +email: string
-    +phoneNumber: string
-    +dateOfBirth: string
-    +gender: string
-    +contactInfo: string
-    +emergencyContact: string
-    +medicalNr: string
+class MedicalConditionService {
+  +searchMedicalConditions(searchDto)
 }
 
-CreatePatient --> PatientService : uses
-CreatePatient --> usePatientFormValidation : uses
-CreatePatient ..> RegisterPatientDto : uses
-PatientService ..> RegisterPatientDto : uses
+class MedicalConditionRepository {
+  +findByFilters(filters)
+}
+
+class MedicalCondition {
+  -name: String
+  -severity: String
+  -description: String
+  -createdDate: Date
+}
+
+MedicalConditionRoutes --> MedicalConditionController : uses
+MedicalConditionController --> SearchMedicalConditionDto : creates
+MedicalConditionController --> MedicalConditionService : uses
+MedicalConditionService --> MedicalConditionRepository : uses
+MedicalConditionRepository --> MedicalCondition : manages
+MedicalConditionService ..> SearchMedicalConditionDto : uses
 
 @enduml
