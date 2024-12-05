@@ -1,73 +1,45 @@
-@startuml namespace class Diagram 
-title "Class Diagram US 6.2.2"
+@startuml
+title "Allergy Management Class Diagram"
 
-class UpdatePatient {
-        -originalData: object
-        -patientData: object
-        -successMessage: string
-        -showModal: boolean
-        -errorMessage: string
-        -navigate: useNavigate
-        +handleChange(event): void
-        +validateFields(): string|null
-        +handleSubmit(event): void
-        +handleModalClose(): void
-        +fetchPatientData(): Promise
-        +render(): JSX
-    }
+class AllergyDto {
+    +allergen: String
+    +severity: String
+    +diagnosedDate: Date
+    +notes: String
+    +constructor(allergen, severity, diagnosedDate, notes)
+}
 
-    class PatientService {
-        -API_URL: string
-        +getAuthToken(): string
-        +getPatientProfile(patientEmail): Promise
-        +updatePatientProfile(patientEmail, updateData): Promise
-    }
+class AllergyController {
+    +addAllergyModel(req, res): Promise<void>
+    +searchAllergies(req, res): Promise<void>
+}
 
-    class UpdatePatientCSS {
-        <<interface>>
-        +update-profile-container: style
-        +update-profile-form: style
-        +form-group: style
-        +update-button: style
-        +modal: style
-        +modal-content: style
-        +success-message: style
-        +error-message: style
-        +fadeOut: animation
-    }
+class AllergyService {
+    -allergyRepository: AllergyRepository
+    +addAllergyModel(allergyDto: AllergyDto): Promise<Allergy>
+    +searchAllergies(searchDto: AllergySearchDto): Promise<AllergyDto[]>
+}
 
-    class App {
-        -navigate: useNavigate
-        -isAdmin: boolean
-        -isDoctor: boolean
-        -isPatient: boolean
-        -isAuthenticated: boolean
-        -showPatientActions: boolean
-        -selectedPatientAction: string
-        -selectedPatientId: string
-        +handlePatientClick(): void
-        +resetPatientAction(): void
-        +handleSelectPatientFromList(patientId): void
-        +render(): JSX
-    }
+class Allergy {
+    +id: String
+    +allergen: String
+    +severity: String
+    +diagnosedDate: Date
+    +notes: String
+}
 
-    class PatientData {
-        <<interface>>
-        +email: string
-        +phoneNumber: string
-        +firstName: string
-        +lastName: string
-        +dateOfBirth: string
-        +gender: string
-        +contactInfo: string
-        +emergencyContact: string
-        +medicalHistory: string
-    }
+class AllergyRepository {
+    +findByAllergen(allergen: String): Promise<Allergy>
+    +addAllergyModel(allergy: Allergy): Promise<Allergy>
+    +findByFilters(filters: Object): Promise<Allergy[]>
+}
 
-    UpdatePatient --> PatientService : uses
-    UpdatePatient --> UpdatePatientCSS : styles
-    UpdatePatient ..> PatientData : implements
-    App --> UpdatePatient : routes to
-    PatientService ..> PatientData : handles
-    
+
+
+AllergyController --> AllergyService: uses
+AllergyController --> AllergyDto: creates
+AllergyService --> AllergyRepository: uses
+AllergyService --> Allergy: manages
+AllergyRepository --> Allergy: persists
+
 @enduml
