@@ -57,7 +57,11 @@ class AllergyService {
            
 
             const allergies = await AlergyRepository.findByFilters(allergySearchDto);
-            return allergies.map(allergy => new AllergyDto(allergy));
+            return allergies.map(allergy => new AllergyDto(
+            allergy.allergen,
+            allergy.severity,
+            allergy.description
+        ));
         } catch (error) {
             throw error;
         }

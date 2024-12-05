@@ -1,65 +1,59 @@
 @startuml
-title "Sequence Diagram Us 6.2.2"
+title "Add Allergy Sequence Diagram"
 
-actor Patient
-participant UpdatePatient
-participant PatientService
-participant API
+actor Client
+participant AllergyRoutes
+participant AllergyController
+participant AllergyDto
+participant AllergyService
+participant AllergyModel
+participant AllergyRepository
 
-activate Patient
-Patient->UpdatePatient: Acessa página de atualização
-activate UpdatePatient
-UpdatePatient->PatientService: getPatientProfile(patientEmail)
-activate PatientService
-PatientService->PatientService: getAuthToken()
-PatientService->API: GET /api/patient/get-patient-profile?email={email}
-activate API
-API-->PatientService: Retorna response.data
-deactivate API
-PatientService-->UpdatePatient: Retorna dados do paciente
-deactivate PatientService
-UpdatePatient->UpdatePatient: setPatientData(data)
-UpdatePatient->UpdatePatient: setOriginalData(data)
-UpdatePatient-->Patient: Exibe formulário com dados atuais
+activate Client
+Client -> AllergyRoutes: POST /allergies/add-allergy
+activate AllergyRoutes
 
-Patient->UpdatePatient: Edita campos do formulário
-UpdatePatient->UpdatePatient: handleChange(event)
-UpdatePatient->UpdatePatient: setPatientData(newData)
+AllergyRoutes -> AllergyController: addAllergyModel(req, res)
+activate AllergyController
 
-Patient->UpdatePatient: Submete formulário
-UpdatePatient->UpdatePatient: handleSubmit(event)
-UpdatePatient->UpdatePatient: validateFields()
+AllergyController -> AllergyDto: new AllergyDto(allergen, severity, diagnosedDate, notes)
+activate AllergyDto
+AllergyDto --> AllergyController: allergyDto
+deactivate AllergyDto
 
-alt Campos inválidos
-    UpdatePatient->UpdatePatient: setErrorMessage(validationError)
-    UpdatePatient-->Patient: Exibe mensagem de erro
-else Campos válidos
-    UpdatePatient->UpdatePatient: Compara com originalData
-    alt Sem alterações
-        UpdatePatient->UpdatePatient: setErrorMessage("Nenhuma alteração detectada")
-        UpdatePatient-->Patient: Exibe mensagem de erro
-    else Com alterações
-        UpdatePatient->PatientService: updatePatientProfile(email, updatedFields)
-        activate PatientService
-        PatientService->PatientService: getAuthToken()
-        PatientService->API: PATCH /api/patient/edit-patient-profile?email={email}
-        activate API
-        API-->PatientService: Retorna sucesso
-        deactivate API
-        PatientService-->UpdatePatient: Retorna sucesso
-        deactivate PatientService
-        UpdatePatient->UpdatePatient: setSuccessMessage("Perfil atualizado com sucesso")
-        
-        alt Email alterado
-            UpdatePatient->UpdatePatient: setShowModal(true)
-            UpdatePatient-->Patient: Exibe modal de confirmação
-            Patient->UpdatePatient: Confirma (handleModalClose)
-            UpdatePatient->UpdatePatient: Remove token
-            UpdatePatient->Patient: Navigate to /login
-            deactivate UpdatePatient
-        end
-    end
+AllergyController -> AllergyService: addAllergyModel(allergyDto)
+activate AllergyService
+
+AllergyService -> AllergyModel: findOne({allergen})
+activate AllergyModel
+AllergyModel --> AllergyService: existing allergy
+deactivate AllergyModel
+
+alt Allergy exists
+    AllergyService --> AllergyController: throw 'Allergy already exists'
+    AllergyController --> Client: 409 - Allergy already exists
+else Allergy doesn't exist
+    AllergyService -> AllergyModel: new Allergy(allergyDto)
+    activate AllergyModel
+    AllergyModel --> AllergyService: newAllergy
+    deactivate AllergyModel
+
+    AllergyService -> AllergyRepository: addAllergyModel(newAllergy)
+    activate AllergyRepository
+    AllergyRepository --> AllergyService: Added allergy
+    deactivate AllergyRepository
+    
+    AllergyService --> AllergyController: Return added allergy
+    AllergyController --> Client: 201 - Success response
 end
-deactivate UpdatePatient
-deactivate Patient
+
+alt Error occurs
+    AllergyController --> Client: 500 - Internal server error
+end
+
+deactivate AllergyService
+deactivate AllergyController
+deactivate AllergyRoutes
+deactivate Client
+
 @enduml

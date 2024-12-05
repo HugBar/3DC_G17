@@ -1,44 +1,55 @@
 @startuml
-title "Sequence Diagram US 6.2.3 - Patient Account Deletion"
+title "Search Allergies Sequence Diagram"
 
-actor Patient
-participant DeleteAccount
-participant PatientService
-participant API
+actor Client
+participant AllergyRoutes
+participant AllergyController
+participant AllergySearchDto
+participant AllergyService
+participant AllergyRepository
+database Database
 
+activate Client
+Client -> AllergyRoutes: GET /allergies/search?allergen&severity
+activate AllergyRoutes
 
-Patient->DeleteAccount: Clica em "Delete My Account"
-activate Patient
-activate DeleteAccount
-DeleteAccount->PatientService: requestAccountDeletion()
-activate PatientService
-PatientService->PatientService: getAuthToken()
-PatientService->API: POST /api/patient/account-deletion-request
-activate API
-API-->PatientService: Retorna sucesso
-deactivate API
-PatientService-->DeleteAccount: Retorna sucesso
-deactivate PatientService
-DeleteAccount->DeleteAccount: setShowTokenModal(true)
-DeleteAccount-->Patient: Exibe modal para token
-deactivate DeleteAccount
-Patient->DeleteAccount: Insere token e confirma
-activate DeleteAccount
-DeleteAccount->DeleteAccount: handleConfirmDeletion()
-DeleteAccount->PatientService: confirmAccountDeletion(token)
-activate PatientService
-PatientService->PatientService: getAuthToken()
-PatientService->API: DELETE /api/patient/confirm-account-deletion
-activate API
-API-->PatientService: Retorna sucesso
-deactivate API
-PatientService-->DeleteAccount: Retorna sucesso
-deactivate PatientService
-DeleteAccount->DeleteAccount: setIsDeleted(true)
-DeleteAccount->DeleteAccount: setSuccessMessage()
-DeleteAccount-->Patient: Exibe mensagem de sucesso
-DeleteAccount-->Patient: Redireciona para login após 3s
+AllergyRoutes -> AllergyController: searchAllergies(req, res)
+activate AllergyController
 
-deactivate DeleteAccount
-deactivate Patient
+AllergyController -> AllergyController: Extract query params
+note right: filters = {allergen, severity}
+
+AllergyController -> AllergySearchDto: new AllergySearchDto(allergen, severity)
+activate AllergySearchDto
+AllergySearchDto --> AllergyController: searchDto
+deactivate AllergySearchDto
+
+AllergyController -> AllergyService: searchAllergies(filters)
+activate AllergyService
+
+AllergyService -> AllergyRepository: findByFilters(allergySearchDto)
+activate AllergyRepository
+
+AllergyRepository -> Database: Allergy.find(query)
+activate Database
+Database --> AllergyRepository: allergies[]
+deactivate Database
+
+AllergyRepository --> AllergyService: allergies[]
+deactivate AllergyRepository
+
+AllergyService -> AllergyService: map to AllergyDto[]
+AllergyService --> AllergyController: allergies[]
+deactivate AllergyService
+
+AllergyController --> Client: 200 - allergies[]
+deactivate AllergyController
+deactivate AllergyRoutes
+
+alt Error occurs
+    AllergyController --> Client: 500 - {error: error.message}
+end
+
+deactivate Client
+
 @enduml
