@@ -25,6 +25,7 @@ import AuthCallback from './components/auth/AuthCallback';
 import EditPatientProfile from './components/Patient/editPatientProfile/EditPatientProfile';
 import UpdateOperationRequest from './components/OperationRequest/updateOperationRequest/UpdateOperationRequest'
 import UpdateOperationType from './components/OperationType/updateOperationType/UpdateOperationType';
+import CreateSpecialization from './components/Specialization/createSpecialization/CreateSpecialization';
 
 
 const App = () => {
@@ -220,6 +221,15 @@ const App = () => {
                 className={`action-button ${selectedStaffAction === 'View Deactivated Staffs' ? 'active' : ''}`}
               >
                 View Deactivated Staffs
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('Add Specialization');
+                  navigate('/specialization/create');
+                          }}
+                className={`action-button ${selectedStaffAction === 'Add Specialization' ? 'active' : ''}`}
+              >
+                Add Specialization
               </button>
               <button
                 onClick={() => {
@@ -456,6 +466,11 @@ const App = () => {
       element={<UpdateOperationType />} 
     />
   )}
+  <Route path="/specialization/create" element={
+    <ProtectedRoute requiredRole="admin">
+      <CreateSpecialization />
+    </ProtectedRoute>
+  } />
 </Routes>
 
     </div>

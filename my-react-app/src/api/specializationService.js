@@ -11,6 +11,16 @@ const specializationService = {
             console.error('Error fetching specializations:', error);
             throw error;
         }
+    },
+
+    addSpecialization: async (specializationData) => {
+        try {
+            const response = await axios.post(`${API_URL}/specializations`, specializationData);
+            return response.data;
+        } catch (error) {
+            console.error('Error adding specialization:', error);
+            throw error;
+        }
     }
 };
 
