@@ -53,13 +53,15 @@ exports.addAllergyModel = async (req, res) => {
             res.status(500).json({ message: 'Internal server error' });
         }
     }
-}
+};
 
 // Search for allergies in the allergy model
 
 exports.searchAllergies = async (req, res) => {
     try {
         const { allergen, severity } = req.query;
+
+        console.log("----------------------------------")
 
         // Cria um objeto de filtros apenas com os parâmetros fornecidos
         const filters = {};
@@ -73,7 +75,7 @@ exports.searchAllergies = async (req, res) => {
         // Cria um DTO de busca com os filtros
         const allergySearchDto = new AllergySearchDto(allergen, severity);
 
-        const allergies = await AllergyService.searchAllergies(filters);
+        const allergies = await AllergyService.searchAllergies(allergySearchDto);
         res.status(200).json(allergies);
     } catch (error) {
         res.status(500).json({ error: error.message });

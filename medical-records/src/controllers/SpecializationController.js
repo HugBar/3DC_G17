@@ -8,6 +8,7 @@
 
 const SpecializationService = require('../services/SpecializationService');
 const SpecializationDto = require('../dtos/SpecializationDto');
+const SpecializationSearchDto = require('../dtos/SearchSpecializationDto');
 
 /**
  * Adds a new medical specialization
@@ -75,3 +76,22 @@ exports.getSpecializationById = async (req, res) => {
         }
     }
 }; 
+
+exports.searchSpecialization = async (req, res) => {
+    try {
+        const { name} = req.query;
+
+        // Create filters object
+        const filters = {};
+        if (name) filters.name = name;
+
+        // Create search DTO
+        const specializationSearchDto = new SpecializationSearchDto(name);
+
+        const specializations = await SpecializationService.searchSpecializations(specializationSearchDto);
+        res.status(200).json(specializations);
+    } catch (error) {
+        console.error('Error searching specializations:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
