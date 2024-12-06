@@ -1,7 +1,21 @@
+// Author: Matias Vitorino
+
+/**
+ * This module provides API endpoints for managing medical conditions.
+ * It handles the creation and search of medical conditions in the system.
+ * Only administrators can add conditions, while doctors can search them.
+ */
+
 const MedicalConditionService = require('../services/MedicalConditionService');
 const MedicalConditionDto = require('../dtos/MedicalConditionDto');
 const SearchMedicalConditionDto = require('../dtos/SearchMedicalConditionDto');
 
+/**
+ * Adds a medical condition to a specific patient's record
+ * @param {Object} req - Request object containing patientId and condition details
+ * @param {Object} res - Response object
+ * @returns {Object} JSON response with created condition or error message
+ */
 exports.addMedicalCondition = async (req, res) => {
     try {
         const { patientId } = req.params;
@@ -9,10 +23,7 @@ exports.addMedicalCondition = async (req, res) => {
 
         console.log('Adding medical condition to patient', patientId);
         
-        // Create DTO
         const medicalConditionDto = new MedicalConditionDto(name, severity, description);
-        
-        // Add medical condition using service
         const result = await MedicalConditionService.addMedicalCondition(medicalConditionDto);
         
         res.status(201).json({
@@ -29,14 +40,17 @@ exports.addMedicalCondition = async (req, res) => {
     }
 };
 
+/**
+ * Adds a new medical condition to the system catalog
+ * Restricted to admin users only
+ * @param {Object} req - Request object containing condition details
+ * @param {Object} res - Response object
+ * @returns {Object} JSON response with created condition or error message
+ */
 exports.addMedicalConditionModel = async (req, res) => {
     try {
         const { name, severity, description } = req.body;
-
-        // Create DTO
         const medicalConditionDto = new MedicalConditionDto(name, severity, description);
-        
-        // Add medical condition using service
         const result = await MedicalConditionService.addMedicalConditionModel(medicalConditionDto);
         
         res.status(201).json({
@@ -53,13 +67,17 @@ exports.addMedicalConditionModel = async (req, res) => {
     }
 };
 
+/**
+ * Searches for medical conditions based on filters
+ * Restricted to doctor users only
+ * @param {Object} req - Request object containing search parameters
+ * @param {Object} res - Response object
+ * @returns {Object} JSON response with matching conditions or error message
+ */
 exports.searchMedicalConditions = async (req, res) => {
     try {
         const { name, severity } = req.query;
-
-        // Criar um DTO de busca com os filtros
         const searchDto = new SearchMedicalConditionDto(name, severity);
-
         const conditions = await MedicalConditionService.searchMedicalConditions(searchDto);
         res.status(200).json(conditions);
     } catch (error) {

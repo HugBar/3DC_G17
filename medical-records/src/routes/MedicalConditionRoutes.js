@@ -1,10 +1,14 @@
+// Author: Matias Vitorino
+
+/**
+ * This module defines the routes for medical condition operations
+ * Includes endpoints for adding and searching medical conditions
+ */
 const express = require('express');
 const router = express.Router();
 const MedicalConditionController = require('../controllers/medicalConditionController');
 
-// Remover temporariamente a autenticação
-// router.use(authMiddleware.authenticate);
-
+// Define routes for medical condition operations
 router.post('/add-medical-condition', MedicalConditionController.addMedicalConditionModel);
 router.get('/search', MedicalConditionController.searchMedicalConditions);
 

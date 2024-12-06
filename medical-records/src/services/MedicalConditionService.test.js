@@ -1,9 +1,17 @@
+// Author: Matias Vitorino
+
+/**
+ * Test suite for MedicalConditionService
+ * Tests the business logic layer for medical condition operations
+ */
+
 const MedicalConditionService = require('./MedicalConditionService');
 const MedicalRecord = require('../models/MedicalRecord');
 const MedicalCondition = require('../models/MedicalCondition');
 const MedicalConditionDto = require('../dtos/MedicalConditionDto');
 const MedicalConditionRepository = require('../repositories/MedicalConditionRepository');
 
+// Mock dependencies
 jest.mock('../models/MedicalRecord');
 jest.mock('../models/MedicalCondition');
 jest.mock('../repositories/MedicalConditionRepository');
@@ -14,12 +22,16 @@ describe('MedicalConditionService', () => {
     });
 
     describe('addMedicalConditionModel', () => {
+        // Test data setup
         const mockMedicalConditionDto = {
             name: 'Hypertension',
             severity: 'Moderate',
             description: 'High blood pressure condition'
         };
 
+        /**
+         * Tests successful addition of new medical condition
+         */
         test('should add new medical condition model when condition does not exist', async () => {
             const mockAddedCondition = { id: '123', ...mockMedicalConditionDto };
             
@@ -35,6 +47,9 @@ describe('MedicalConditionService', () => {
             expect(result).toEqual(mockAddedCondition);
         });
 
+        /**
+         * Tests duplicate condition handling
+         */
         test('should throw error when medical condition already exists', async () => {
             MedicalCondition.findOne.mockResolvedValue({ id: '123', name: 'Hypertension' });
 
@@ -43,6 +58,9 @@ describe('MedicalConditionService', () => {
                 .toThrow('Medical condition already exists');
         });
 
+        /**
+         * Tests error propagation from repository
+         */
         test('should propagate repository errors', async () => {
             const mockError = new Error('Database error');
             MedicalCondition.findOne.mockRejectedValue(mockError);
@@ -59,6 +77,9 @@ describe('MedicalConditionService', () => {
             severity: 'High'
         };
 
+        /**
+         * Tests successful search and mapping of medical conditions
+         */
         test('should return mapped medical conditions when found', async () => {
             const mockConditions = [
                 { id: '1', name: 'Diabetes', severity: 'High' },
@@ -74,6 +95,9 @@ describe('MedicalConditionService', () => {
             expect(result[0]).toBeInstanceOf(MedicalConditionDto);
         });
 
+        /**
+         * Tests handling of empty search results
+         */
         test('should handle empty search results', async () => {
             MedicalConditionRepository.findByFilters.mockResolvedValue([]);
 
@@ -82,6 +106,9 @@ describe('MedicalConditionService', () => {
             expect(result).toEqual([]);
         });
 
+        /**
+         * Tests error propagation from repository
+         */
         test('should propagate repository errors', async () => {
             const mockError = new Error('Database error');
             MedicalConditionRepository.findByFilters.mockRejectedValue(mockError);
