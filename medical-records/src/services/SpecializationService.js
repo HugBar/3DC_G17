@@ -10,6 +10,7 @@
  */
 
 const SpecializationRepository = require('../repositories/SpecializationRepository');
+const SpecializationDto = require('../dtos/SpecializationDto');
 
 /**
  * Service class that implements business logic for Specializations
@@ -24,6 +25,7 @@ class SpecializationService {
      */
     static async addSpecialization(specializationDto) {
         try {
+            console.log("------------------------------------------")
             const existingSpecialization = await SpecializationRepository.findByName(specializationDto.name);
             if (existingSpecialization) {
                 throw new Error('Specialization already exists');
@@ -67,6 +69,20 @@ class SpecializationService {
         } catch (error) {
             throw error;
         }
+    }
+
+    static async searchSpecializations(SpecializationSearchDto){
+        try{
+
+            const specializations = await SpecializationRepository.searchSpecialization(SpecializationSearchDto);
+
+            return specializations.map(specialization => new SpecializationDto(
+                specialization.name,
+                specialization.description
+            ))
+        } catch (error) {
+            throw error;
+        }    
     }
 }
 

@@ -51,6 +51,19 @@ class SpecializationRepository {
     async findById(id) {
         return await Specialization.findById(id);
     }
+
+    async searchSpecialization (filters){
+        const query = {};
+
+        if(filters.name){
+            query.name = new RegExp(filters.name, 'i');
+        }
+
+        return Specialization.find(query);
+    }
+
 }
+
+
 
 module.exports = new SpecializationRepository();

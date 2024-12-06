@@ -30,7 +30,7 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:3001/allergies/search?allergen=Dermatite
+GET http://localhost:3001/allergies/search
 
 ###
 
@@ -78,3 +78,7 @@ Content-Type: application/json
         "name": "Neurology",
         "description": "Deals with brain conditions"
     }
+
+###
+
+GET http://localhost:3001/api/specializations/search?name=card

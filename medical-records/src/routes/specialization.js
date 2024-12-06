@@ -13,6 +13,9 @@ const router = express.Router();
 const { isAdmin } = require('../middleware/auth');
 const SpecializationController = require('../controllers/SpecializationController');
 
+
+router.get('/search', SpecializationController.searchSpecialization);
+
 /**
  * POST /
  * Creates a new specialization
@@ -34,5 +37,6 @@ router.get('/', SpecializationController.getAllSpecializations);
  * @param {string} id - The ID of the specialization to retrieve
  */
 router.get('/:id', SpecializationController.getSpecializationById);
+
 
 module.exports = router;
