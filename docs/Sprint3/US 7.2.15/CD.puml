@@ -1,52 +1,58 @@
-@startuml namespace class Diagram 
-title "Class Diagram US 6.2.15"
+@startuml Delete Specialization Class Diagram
 
-class UpdateOperationRequest {
-    -values: object
-    -errors: object
-    -successMessage: string
-    -navigate: useNavigate
-    +handleChange(event): void
-    +handleSubmit(event): void
-    +validate(values): boolean
-    +render(): JSX
+' Frontend Components
+class DeleteSpecialization {
+  - specializationId: string
+  - successMessage: string
+  - errorMessage: string
+  + handleDelete(): void
+  + render(): JSX.Element
 }
 
-class OperationRequestService {
-    -API_URL: string
-    +getAuthToken(): string
-    +checkDoctorRole(token): void
-    +updateOperationRequest(requestId, updateData): Promise
-    +getOperationRequestById(requestId): Promise
+class SpecializationService {
+  - API_URL: string
+  + getAllSpecializations(): Promise<Specialization[]>
+  + deleteSpecialization(id: string): Promise<Response>
 }
 
-class UpdateOperationRequestDto {
-    +description: string
-    +priority: Priority
-    +status: Status
-    +operationTypeId: string
-    +deadline: Date
+' Backend Components
+class SpecializationController {
+  + deleteSpecialization(req: Request, res: Response): Promise<void>
+  + getAllSpecializations(req: Request, res: Response): Promise<void>
+  + getSpecializationById(req: Request, res: Response): Promise<void>
 }
 
-enum Priority {
-    LOW
-    MEDIUM
-    HIGH
-    URGENT
+class SpecializationService {
+  + {static} deleteSpecialization(id: string): Promise<Specialization>
+  + {static} getAllSpecializations(): Promise<Specialization[]>
+  + {static} getSpecializationById(id: string): Promise<Specialization>
 }
 
-enum Status {
-    PENDING
-    APPROVED
-    REJECTED
-    IN_PROGRESS
-    COMPLETED
+class SpecializationRepository {
+  + findById(id: string): Promise<Specialization>
+  + delete(id: string): Promise<Specialization>
+  + findAll(): Promise<Specialization[]>
 }
 
-UpdateOperationRequest --> OperationRequestService : uses
-UpdateOperationRequest --> UpdateOperationRequestDto : uses
-OperationRequestService ..> UpdateOperationRequestDto : uses
-UpdateOperationRequestDto --> Priority : uses
-UpdateOperationRequestDto --> Status : uses
+class DeleteSpecializationDto {
+  + id: string
+  + constructor(id: string)
+}
+
+class Specialization {
+  + id: string
+  + name: string
+  + description: string
+  + createdAt: Date
+  + updatedAt: Date
+}
+
+' Relationships
+DeleteSpecialization --> SpecializationService: uses
+SpecializationController --> SpecializationService: uses
+SpecializationService --> SpecializationRepository: uses
+SpecializationService --> DeleteSpecializationDto: uses
+SpecializationController ..> DeleteSpecializationDto: creates
+SpecializationRepository --> Specialization: manages
 
 @enduml

@@ -84,6 +84,25 @@ class SpecializationService {
             throw error;
         }    
     }
+
+    /**
+     * Deletes a specific specialization by its ID
+     * @param {string} id - The ID of the specialization to delete
+     * @returns {Promise<Object>} The deleted specialization
+     * @throws {Error} If specialization not found or other errors occur
+     */
+    static async deleteSpecialization(id) {
+        try {
+            const specialization = await SpecializationRepository.findById(id);
+            if (!specialization) {
+                throw new Error('Specialization not found');
+            }
+            
+            return await SpecializationRepository.delete(id);
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 module.exports = SpecializationService;

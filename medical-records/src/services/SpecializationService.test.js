@@ -186,7 +186,7 @@ describe('SpecializationService', () => {
                 .toThrow('Database error');
         });
     });
-
+    
     describe('searchSpecializations', () => {
         beforeEach(() => {
             jest.clearAllMocks();
@@ -240,6 +240,62 @@ describe('SpecializationService', () => {
             SpecializationRepository.searchSpecialization.mockRejectedValue(mockError);
     
             await expect(SpecializationService.searchSpecializations(mockSearchDto))
+                .rejects
+                .toThrow('Database error');
+        });
+    });
+
+    /**
+     * Test suite for deleteSpecialization method
+     * Validates deletion of specializations and error handling
+     */
+    describe('deleteSpecialization', () => {
+        const mockId = '123';
+    
+        /**
+         * Tests successful deletion of a specialization
+         * Verifies proper repository calls and response format
+         */
+        test('should delete specialization when found', async () => {
+            const mockSpecialization = { 
+                id: mockId, 
+                name: 'Cardiology', 
+                description: 'Heart specialist' 
+            };
+    
+            SpecializationRepository.findById.mockResolvedValue(mockSpecialization);
+            SpecializationRepository.delete.mockResolvedValue(mockSpecialization);
+    
+            const result = await SpecializationService.deleteSpecialization(mockId);
+    
+            expect(SpecializationRepository.findById).toHaveBeenCalledWith(mockId);
+            expect(SpecializationRepository.delete).toHaveBeenCalledWith(mockId);
+            expect(result).toEqual(mockSpecialization);
+        });
+    
+        /**
+         * Tests handling of non-existent specialization requests
+         * Verifies proper error is thrown
+         */
+        test('should throw error when specialization not found', async () => {
+            SpecializationRepository.findById.mockResolvedValue(null);
+    
+            await expect(SpecializationService.deleteSpecialization(mockId))
+                .rejects
+                .toThrow('Specialization not found');
+            
+            expect(SpecializationRepository.delete).not.toHaveBeenCalled();
+        });
+
+        /**
+         * Tests handling of repository errors
+         * Verifies errors are properly propagated
+         */ 
+        test('should propagate repository errors', async () => {
+            const mockError = new Error('Database error');
+            SpecializationRepository.findById.mockRejectedValue(mockError);
+    
+            await expect(SpecializationService.deleteSpecialization(mockId))
                 .rejects
                 .toThrow('Database error');
         });

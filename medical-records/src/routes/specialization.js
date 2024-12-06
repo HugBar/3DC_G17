@@ -38,5 +38,12 @@ router.get('/', SpecializationController.getAllSpecializations);
  */
 router.get('/:id', SpecializationController.getSpecializationById);
 
+/**
+ * DELETE /:id
+ * Deletes a specific specialization by ID
+ * Restricted to admin users only
+ * @param {string} id - The ID of the specialization to delete
+ */
+router.delete('/:id', SpecializationController.deleteSpecialization);
 
 module.exports = router;

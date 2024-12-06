@@ -1,40 +1,60 @@
-@startuml namespace
-title "Sequence Diagram US 6.2.15"
+@startuml SD US 7.2.15
+title "Sequence Diagram - Delete Specialization"
 
-actor Doctor
-participant UpdateOperationRequest
-participant OperationRequestService
-participant API
+actor Admin
+participant "SpecializationRoutes" as Routes
+participant "SpecializationController" as Controller
+participant "DeleteSpecializationDto" as DTO
+participant "SpecializationService" as Service
+participant "SpecializationRepository" as Repo
+database "MongoDB" as DB
 
-activate Doctor
-Doctor->UpdateOperationRequest: Access update page
-activate UpdateOperationRequest
-UpdateOperationRequest->OperationRequestService: getOperationRequestById(requestId)
-activate OperationRequestService
-OperationRequestService->OperationRequestService: getAuthToken()
-OperationRequestService->API: GET /api/operation-request/{id}
-activate API
-API-->OperationRequestService: Return operation request data
-deactivate API
-OperationRequestService-->UpdateOperationRequest: Return operation request data
-deactivate OperationRequestService
-UpdateOperationRequest->UpdateOperationRequest: setRequestData(data)
-UpdateOperationRequest-->Doctor: Display form with current data
+activate Admin
+Admin -> Routes: DELETE /api/specializations/{id}
+activate Routes
 
-Doctor->UpdateOperationRequest: Edit form fields
-UpdateOperationRequest->UpdateOperationRequest: handleChange(event)
-UpdateOperationRequest->UpdateOperationRequest: validate(values)
+Routes -> Controller: deleteSpecialization(req, res)
+activate Controller
 
-Doctor->UpdateOperationRequest: Submit changes
-activate OperationRequestService
-UpdateOperationRequest->OperationRequestService: updateOperationRequest(requestId, updateData)
-OperationRequestService->OperationRequestService: checkDoctorRole(token)
-OperationRequestService->API: PATCH /api/operation-request/{id}
-activate API
-API-->OperationRequestService: Return updated data
-deactivate API
-OperationRequestService-->UpdateOperationRequest: Return success
-deactivate OperationRequestService
-UpdateOperationRequest-->Doctor: Show success message
+Controller -> Controller: Extrai id dos parâmetros
 
+Controller -> DTO: new DeleteSpecializationDto(id)
+activate DTO
+DTO --> Controller: deleteDto
+deactivate DTO
+
+Controller -> Service: deleteSpecialization(id)
+activate Service
+
+Service -> Repo: findById(id)
+activate Repo
+Repo -> DB: findById(id)
+activate DB
+DB --> Repo: specialization
+deactivate DB
+Repo --> Service: specialization
+deactivate Repo
+
+alt Specialization não encontrada
+    Service --> Controller: throw Error('Specialization not found')
+    Controller --> Admin: status(404)\n"Specialization not found"
+else Specialization encontrada
+    Service -> Repo: delete(id)
+    activate Repo
+    Repo -> DB: findByIdAndDelete(id)
+    activate DB
+    DB --> Repo: deletedSpecialization
+    deactivate DB
+    Repo --> Service: deletedSpecialization
+    deactivate Repo
+    
+    Service --> Controller: deletedSpecialization
+    deactivate Service
+    
+    Controller --> Admin: status(200)\n"Specialization deleted successfully"
+    deactivate Controller
+end
+
+deactivate Routes
+deactivate Admin
 @enduml
