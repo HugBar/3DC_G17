@@ -79,14 +79,15 @@ exports.getSpecializationById = async (req, res) => {
 
 exports.searchSpecialization = async (req, res) => {
     try {
-        const { name} = req.query;
+        const { name, description} = req.query;
 
         // Create filters object
         const filters = {};
         if (name) filters.name = name;
+        if (description) filters.description = description;
 
         // Create search DTO
-        const specializationSearchDto = new SpecializationSearchDto(name);
+        const specializationSearchDto = new SpecializationSearchDto(name, description);
 
         const specializations = await SpecializationService.searchSpecializations(specializationSearchDto);
         res.status(200).json(specializations);

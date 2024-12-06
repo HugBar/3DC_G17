@@ -1,76 +1,47 @@
-@startuml namespace "CD US 6.2.12"
-title "Class diagram US 6.2.12 - Staff Deactivation"
+@startuml
+title "Specialization Search Class Diagram"
 
-class DeactivateStaff {
-    -staffId: string
-    -successMessage: string
-    -errorMessage: string
-    +handleDeactivate(): void
-    +render(): JSX
+class SpecializationController {
+    +searchSpecialization(req: Request, res: Response): Promise<void>
 }
 
-class StaffList {
-    -navigate: useNavigate
-    -location: useLocation
-    -staffList: array
-    -errorMessage: string
-    -selectedStaff: object
-    -filters: object
-    -currentPage: number
-    -totalPages: number
-    -pageSize: number
-    +handleFilterChange(event): void
-    +updateURL(filters, page): void
-    +clearFilters(): void
-    +handlePageChange(newPage): void
-    +handleStaffSelect(staffId): void
-    +handleDeactivateClick(staffId): void
-    +fetchStaffList(): void
-    +render(): JSX
+class SearchSpecializationDto {
+    +name: string
+    +description: string
+    +constructor(name: string, description: string)
 }
 
-class App {
-    -navigate: useNavigate
-    -isAdmin: boolean
-    -isDoctor: boolean
-    -isPatient: boolean
-    -isAuthenticated: boolean
-    -showStaffActions: boolean
-    -selectedStaffAction: string
-    -selectedStaffId: string
-    +handleHomeClick(): void
-    +handleStaffClick(): void
-    +handleLogoutAndReset(): void
-    +resetStaffAction(): void
-    +handleDeactivateStaff(staffId): void
-    +render(): JSX
+class SpecializationService {
+    +{static} searchSpecializations(searchDto: SearchSpecializationDto): Promise<SpecializationDto[]>
 }
 
-class StaffService {
-    -API_URL: string
-    +getAuthToken(): string
-    +checkAdminRole(token): void
-    +getAllStaff(filters): Promise
-    +getStaffById(staffId): Promise
-    +deactivateStaff(staffId): Promise
-    +getDeactivatedStaff(): Promise
+class SpecializationRepository {
+    +searchSpecialization(filters: Object): Promise<Specialization[]>
 }
 
-class DeactivateStaffCSS {
-    <<interface>>
-    +deactivate-staff-container: style
-    +deactivate-button: style
-    +back-button: style
-    +success-message: style
-    +error-message: style
-    +button-group: style
+class SpecializationDto {
+    +name: string
+    +description: string
+    +constructor(name: string, description: string)
 }
 
-App --> StaffList : uses
-App --> DeactivateStaff : uses
-StaffList --> StaffService : uses
-DeactivateStaff --> StaffService : uses
-DeactivateStaff --> DeactivateStaffCSS : styles
-StaffList ..> DeactivateStaff : navigates to
+class Specialization {
+    +id: String
+    +name: String
+    +description: String
+    +createdAt: Date
+    +updatedAt: Date
+}
+
+SpecializationController --> SearchSpecializationDto: creates
+SpecializationController --> SpecializationService: uses
+SpecializationService --> SpecializationRepository: uses
+SpecializationService --> SpecializationDto: creates
+SpecializationRepository --> Specialization: manages
+
+note right of SpecializationRepository
+  Handles MongoDB queries with
+  case-insensitive regex search
+end note
 
 @enduml

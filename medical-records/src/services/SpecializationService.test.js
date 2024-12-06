@@ -186,4 +186,62 @@ describe('SpecializationService', () => {
                 .toThrow('Database error');
         });
     });
+
+    describe('searchSpecializations', () => {
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+    
+        test('should return mapped specializations when found', async () => {
+            const mockSearchDto = {
+                name: 'Cardio',
+                description: 'Heart'
+            };
+    
+            const mockSpecializations = [
+                { id: '1', name: 'Cardiology', description: 'Heart specialist' },
+                { id: '2', name: 'Cardio Surgery', description: 'Heart surgery' }
+            ];
+    
+            SpecializationRepository.searchSpecialization.mockResolvedValue(mockSpecializations);
+    
+            const result = await SpecializationService.searchSpecializations(mockSearchDto);
+    
+            expect(SpecializationRepository.searchSpecialization).toHaveBeenCalledWith(mockSearchDto);
+            expect(result).toHaveLength(mockSpecializations.length);
+            expect(result[0]).toBeInstanceOf(SpecializationDto);
+            expect(result[0]).toEqual(
+                expect.objectContaining({
+                    name: mockSpecializations[0].name,
+                    description: mockSpecializations[0].description
+                })
+            );
+        });
+    
+        test('should handle empty search results', async () => {
+            const mockSearchDto = {
+                name: 'NonExistent'
+            };
+    
+            SpecializationRepository.searchSpecialization.mockResolvedValue([]);
+    
+            const result = await SpecializationService.searchSpecializations(mockSearchDto);
+    
+            expect(result).toEqual([]);
+            expect(SpecializationRepository.searchSpecialization).toHaveBeenCalledWith(mockSearchDto);
+        });
+    
+        test('should propagate repository errors', async () => {
+            const mockSearchDto = {
+                name: 'Test'
+            };
+            const mockError = new Error('Database error');
+            
+            SpecializationRepository.searchSpecialization.mockRejectedValue(mockError);
+    
+            await expect(SpecializationService.searchSpecializations(mockSearchDto))
+                .rejects
+                .toThrow('Database error');
+        });
+    });
 }); 

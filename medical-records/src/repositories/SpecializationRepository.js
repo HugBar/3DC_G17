@@ -57,6 +57,8 @@ class SpecializationRepository {
 
         if(filters.name){
             query.name = new RegExp(filters.name, 'i');
+        } if(filters.description){
+            query.description = new RegExp(filters.description, 'i');
         }
 
         return Specialization.find(query);
