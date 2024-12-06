@@ -1,55 +1,52 @@
-@startuml Update Staff UI Frontend Class Diagram
+@startuml Add New Specialization Class Diagram
 
-' React Components
-class UpdateStaff {
-  - staffData: StaffData
+' Frontend Components
+class CreateSpecialization {
+  - specializationData: {name: string, description: string}
   - successMessage: string
   - errorMessage: string
   + handleChange(e: Event): void
-  + handleSlotChange(index: number, e: Event): void
-  + addSlot(): void
-  + removeSlot(index: number): void
   + handleSubmit(e: Event): void
   + render(): JSX.Element
 }
 
-class StaffService {
-  + getStaffById(staffId: string): Promise<StaffDto>
-  + updateStaff(staffId: string, updateData: UpdateStaffDto): Promise<StaffDto>
-  - getAuthToken(): string
-  - checkAdminRole(token: string): void
+class SpecializationService {
+  - API_URL: string
+  + getAllSpecializations(): Promise<Specialization[]>
+  + addSpecialization(data: SpecializationData): Promise<Response>
 }
 
-class FormValidation {
-  + errors: ValidationErrors
-  + validate(data: any): boolean
+' Backend Components
+class SpecializationController {
+  + addSpecialization(req: Request, res: Response): Promise<void>
+  + getAllSpecializations(req: Request, res: Response): Promise<void>
+  + getSpecializationById(req: Request, res: Response): Promise<void>
 }
 
-' Data Types
-class StaffData {
-  + email: string
-  + phoneNumber: string
-  + specialization: string
-  + availabilitySlots: AvailabilitySlot[]
+class SpecializationService {
+  + {static} addSpecialization(specializationDto: SpecializationDto): Promise<Specialization>
+  + {static} getAllSpecializations(): Promise<Specialization[]>
+  + {static} getSpecializationById(id: string): Promise<Specialization>
 }
 
-class AvailabilitySlot {
-  + startTime: string
-  + endTime: string
+class SpecializationRepository {
+  + findByName(name: string): Promise<Specialization>
+  + create(specialization: SpecializationData): Promise<Specialization>
+  + findAll(): Promise<Specialization[]>
+  + findById(id: string): Promise<Specialization>
 }
 
-class ValidationErrors {
-  + email?: string
-  + phoneNumber?: string
-  + specialization?: string
-  + availabilitySlots?: {[key: string]: string}
+class SpecializationDto {
+  + name: string
+  + description: string
+  + constructor(name: string, description: string)
 }
 
 ' Relationships
-UpdateStaff --> StaffService: uses
-UpdateStaff --> FormValidation: uses
-UpdateStaff --> StaffData: manages
-StaffData --> AvailabilitySlot: contains
-FormValidation --> ValidationErrors: produces
+CreateSpecialization --> SpecializationService: uses
+SpecializationController --> SpecializationService: uses
+SpecializationService --> SpecializationRepository: uses
+SpecializationService --> SpecializationDto: uses
+SpecializationController ..> SpecializationDto: creates
 
 @enduml

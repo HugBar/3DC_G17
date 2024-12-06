@@ -1,55 +1,60 @@
-@startuml
+@startuml Add New Specialization Sequence Diagram
+
 actor Admin
-participant "UpdateStaff\nComponent" as UI
-participant "FormValidation" as FV
-participant "StaffService" as SS
-participant "Backend API" as API
-database "Database" as DB
+participant "CreateSpecialization\nComponent" as Frontend
+participant "SpecializationService\n(Frontend)" as FrontendService
+participant "SpecializationController" as Controller
+participant "SpecializationService\n(Backend)" as Service
+participant "SpecializationRepository" as Repository
+database Database
 
-activate Admin
-Admin -> UI: Navigate to Update Staff page
-activate UI
+' Initial Form Display
+Admin -> Frontend: Access Add Specialization Page
+activate Frontend
+Frontend --> Admin: Display specialization form
 
-UI -> UI: Get ID from URL params
-UI -> SS: getStaffById(id)
-activate SS
-SS -> API: GET /api/staff/get-staff-profile/{id}
-activate API
-API --> SS: Return StaffDto
-deactivate API
-SS --> UI: Return staff data
-deactivate SS
+' Form Submission Flow
+Admin -> Frontend: Fill specialization details
+Admin -> Frontend: Submit form
+Frontend -> Frontend: handleSubmit()
 
-UI -> UI: Display staff form with data
+Frontend -> FrontendService: addSpecialization(specializationData)
+activate FrontendService
 
-Admin -> UI: Modify staff information
-Admin -> UI: Submit form
+FrontendService -> Controller: POST /api/specializations
+activate Controller
 
-UI -> FV: validate(staffData)
-activate FV
-FV --> UI: validation result
-deactivate FV
+Controller -> Service: addSpecialization(specializationDto)
+activate Service
 
-alt validation successful
-    UI -> SS: updateStaff(id, staffData)
-    activate SS
-    SS -> API: PATCH /api/staff/edit-staff-profile/{id}
-    activate API
-    API --> SS: Return updated StaffDto
-    deactivate API
-    SS --> UI: Return success
-    UI -> UI: Display success message
-    deactivate SS
-else validation failed
-    UI -> UI: Display validation errors
-    UI --> Admin: Show validation errors
+' Check Existing
+Service -> Repository: findByName(name)
+activate Repository
+Repository -> Database: Query
+Database --> Repository: Result
+Repository --> Service: Return result
+
+alt Specialization Exists
+    Service --> Controller: throw Error('Specialization already exists')
+    Controller --> FrontendService: 409 Conflict
+    FrontendService --> Frontend: Error Response
+    Frontend --> Admin: Show error message
+else Specialization Doesn't Exist
+    Service -> Repository: create(specialization)
+    Repository -> Database: Insert
+    Database --> Repository: Confirm
+    Repository --> Service: Return new specialization
+    Service --> Controller: Return result
+    Controller --> FrontendService: 201 Created
+    FrontendService --> Frontend: Success Response
+    Frontend -> Frontend: Clear form
+    Frontend --> Admin: Show success message
 end
 
-alt Admin clicks Back
-    Admin -> UI: Click Back button
-    UI --> Admin: Navigate to previous page
-end
+deactivate Repository
+deactivate Service
+deactivate Controller
+deactivate FrontendService
+deactivate Frontend
 
-deactivate UI
-deactivate Admin
 @enduml
