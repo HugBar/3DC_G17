@@ -12,6 +12,7 @@
 const SpecializationController = require('./SpecializationController');
 const SpecializationService = require('../services/SpecializationService');
 const SpecializationDto = require('../dtos/SpecializationDto');
+const SpecializationSearchDto = require('../dtos/SearchSpecializationDto')
 
 // Mock the SpecializationService to isolate tests
 jest.mock('../services/SpecializationService');
@@ -216,4 +217,66 @@ describe('SpecializationController', () => {
             });
         });
     });
+
+    describe('searchSpecialization', () => {
+        beforeEach(() => {
+            mockReq = {
+                query: {}
+            };
+        });
+    
+        test('should return specializations with name filter', async () => {
+            const mockFilter = { name: 'Cardio' };
+            mockReq.query = mockFilter;
+            
+            const mockSpecializations = [
+                { id: 1, name: 'Cardiology', description: 'Heart specialist' },
+                { id: 2, name: 'Cardio Surgery', description: 'Heart surgery' }
+            ];
+            
+            SpecializationService.searchSpecializations.mockResolvedValue(mockSpecializations);
+    
+            await SpecializationController.searchSpecialization(mockReq, mockRes);
+    
+            expect(mockRes.status).toHaveBeenCalledWith(200);
+            expect(mockRes.json).toHaveBeenCalledWith(mockSpecializations);
+            expect(SpecializationService.searchSpecializations).toHaveBeenCalledWith(
+                expect.any(SpecializationSearchDto)
+            );
+        });
+    
+        test('should return all specializations without filters', async () => {
+            const mockSpecializations = [
+                { id: 1, name: 'Cardiology', description: 'Heart specialist' }
+            ];
+            
+            SpecializationService.searchSpecializations.mockResolvedValue(mockSpecializations);
+    
+            await SpecializationController.searchSpecialization(mockReq, mockRes);
+    
+            expect(mockRes.status).toHaveBeenCalledWith(200);
+            expect(mockRes.json).toHaveBeenCalledWith(mockSpecializations);
+            expect(SpecializationService.searchSpecializations).toHaveBeenCalledWith(
+                expect.any(SpecializationSearchDto)
+            );
+        });
+    
+        test('should handle search errors', async () => {
+            SpecializationService.searchSpecializations.mockRejectedValue(
+                new Error('Search failed')
+            );
+    
+            await SpecializationController.searchSpecialization(mockReq, mockRes);
+    
+            expect(mockRes.status).toHaveBeenCalledWith(500);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                error: 'Search failed'
+            });
+            expect(console.error).toHaveBeenCalledWith(
+                'Error searching specializations:',
+                expect.any(Error)
+            );
+        });
+    });
+
 });

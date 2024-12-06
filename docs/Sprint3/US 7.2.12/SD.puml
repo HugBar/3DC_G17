@@ -1,59 +1,56 @@
 @startuml
-title "SequenceDiagram 6.2.12 - Staff Deactivation"
+title "Search Specializations Sequence Diagram"
 
 actor Admin
-participant StaffList
-participant DeactivateStaff
-participant StaffService
-participant API
+participant "Express Router" as Router
+participant "SpecializationController" as Controller
+participant "SpecializationSearchDto" as SearchDTO
+participant "SpecializationService" as Service
+participant "SpecializationRepository" as Repository 
+participant "SpecializationDto" as DTO
 
 activate Admin
-Admin->>StaffList: Seleciona staff na lista
-activate StaffList
-StaffList->>StaffList: handleStaffSelect(staffId)
-StaffList->>StaffService: getStaffById(staffId)
-activate StaffService
-StaffService->>API: GET /api/staff/get-staff-profile/{id}
-activate API
-API-->>StaffService: Retorna dados do staff
-deactivate API
-StaffService-->>StaffList: Retorna detalhes do staff
-deactivate StaffService
-StaffList-->>Admin: Exibe modal com detalhes
-deactivate StaffList
-Admin->>StaffList: Clica em "Deactivate Staff"
-activate StaffList
-StaffList->>DeactivateStaff: Navigate to /staff/deactivate/{id}
-deactivate StaffList
-activate DeactivateStaff
-DeactivateStaff-->Admin: Exibe modal de confirmação
-deactivate DeactivateStaff
+Admin -> Router: GET /api/specializations/search?name&description
+activate Router
 
-alt Admin confirma desativação
-    Admin->>DeactivateStaff: Clica em "Deactivate"
-    activate DeactivateStaff
-    DeactivateStaff->>StaffService: deactivateStaff(staffId)
-    activate StaffService
-    StaffService->>StaffService: getAuthToken()
-    StaffService->>StaffService: checkAdminRole(token)
-    StaffService->>API: PATCH /api/staff/{id}/deactivate
-    activate API
-    API-->>StaffService: Retorna sucesso
-    deactivate API
-    StaffService-->>DeactivateStaff: Retorna sucesso
-    deactivate StaffService
-    DeactivateStaff->>DeactivateStaff: setSuccessMessage()
-    DeactivateStaff->>DeactivateStaff: Exibe mensagem de sucesso
-    DeactivateStaff->>StaffList: Navigate to /staff/filter após 3 segundos
-else Admin cancela desativação
-    Admin->>DeactivateStaff: Clica em "Back"
-    DeactivateStaff->>StaffList: Navigate to /staff/filter
-    deactivate DeactivateStaff
+Router -> Controller: searchSpecialization(req, res)
+activate Controller
+
+Controller -> Controller: Extract query params\n(name, description)
+
+Controller -> SearchDTO: new SpecializationSearchDto(name, description)
+activate SearchDTO
+SearchDTO --> Controller: searchDto
+deactivate SearchDTO
+
+Controller -> Service: searchSpecializations(searchDto)
+activate Service
+
+Service -> Repository: searchSpecialization(searchDto)
+activate Repository
+
+Repository --> Service: specializations[]
+deactivate Repository
+
+Service -> Service: Map to DTOs
+loop for each specialization
+    Service -> DTO: new SpecializationDto(name, description)
+    activate DTO
+    DTO --> Service: specializationDto
+    deactivate DTO
 end
 
-activate StaffList
-StaffList->>StaffList: Atualiza lista de staff
-StaffList-->>Admin: Exibe lista atualizada
-deactivate StaffList
+Service --> Controller: specializationDtos[]
+deactivate Service
+
+Controller --> Admin: 200 OK + specializationDtos[]
+deactivate Controller
+
+alt Error occurs
+    Controller --> Admin: 500 + {error: error.message}
+end
+
+deactivate Router
 deactivate Admin
+
 @enduml

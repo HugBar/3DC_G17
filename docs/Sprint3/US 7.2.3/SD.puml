@@ -1,7 +1,7 @@
 @startuml
 title "Search Allergies Sequence Diagram"
 
-actor Client
+actor Doctor
 participant AllergyRoutes
 participant AllergyController
 participant AllergySearchDto
@@ -9,8 +9,8 @@ participant AllergyService
 participant AllergyRepository
 database Database
 
-activate Client
-Client -> AllergyRoutes: GET /allergies/search?allergen&severity
+activate Doctor
+Doctor -> AllergyRoutes: GET /allergies/search?allergen&severity
 activate AllergyRoutes
 
 AllergyRoutes -> AllergyController: searchAllergies(req, res)
@@ -42,14 +42,14 @@ AllergyService -> AllergyService: map to AllergyDto[]
 AllergyService --> AllergyController: allergies[]
 deactivate AllergyService
 
-AllergyController --> Client: 200 - allergies[]
+AllergyController --> Doctor: 200 - allergies[]
 deactivate AllergyController
 deactivate AllergyRoutes
 
 alt Error occurs
-    AllergyController --> Client: 500 - {error: error.message}
+    AllergyController --> Doctor: 500 - {error: error.message}
 end
 
-deactivate Client
+deactivate Doctor
 
 @enduml

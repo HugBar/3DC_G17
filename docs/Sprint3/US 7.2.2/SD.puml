@@ -1,7 +1,7 @@
 @startuml
 title "Add Allergy Sequence Diagram"
 
-actor Client
+actor Admin
 participant AllergyRoutes
 participant AllergyController
 participant AllergyDto
@@ -9,8 +9,8 @@ participant AllergyService
 participant AllergyModel
 participant AllergyRepository
 
-activate Client
-Client -> AllergyRoutes: POST /allergies/add-allergy
+activate Admin
+Admin -> AllergyRoutes: POST /allergies/add-allergy
 activate AllergyRoutes
 
 AllergyRoutes -> AllergyController: addAllergyModel(req, res)
@@ -31,7 +31,7 @@ deactivate AllergyModel
 
 alt Allergy exists
     AllergyService --> AllergyController: throw 'Allergy already exists'
-    AllergyController --> Client: 409 - Allergy already exists
+    AllergyController --> Admin: 409 - Allergy already exists
 else Allergy doesn't exist
     AllergyService -> AllergyModel: new Allergy(allergyDto)
     activate AllergyModel
@@ -44,16 +44,16 @@ else Allergy doesn't exist
     deactivate AllergyRepository
     
     AllergyService --> AllergyController: Return added allergy
-    AllergyController --> Client: 201 - Success response
+    AllergyController --> Admin: 201 - Success response
 end
 
 alt Error occurs
-    AllergyController --> Client: 500 - Internal server error
+    AllergyController --> Admin: 500 - Internal server error
 end
 
 deactivate AllergyService
 deactivate AllergyController
 deactivate AllergyRoutes
-deactivate Client
+deactivate Admin
 
 @enduml
