@@ -64,6 +64,15 @@ class SpecializationRepository {
         return Specialization.find(query);
     }
 
+    /**
+     * Deletes a specific specialization by its ID
+     * @param {string} id - The ID of the specialization to delete
+     * @returns {Promise<Object>} The deleted specialization
+     */
+    async delete(id) {
+        return await Specialization.findByIdAndDelete(id);
+    }
+
 }
 
 

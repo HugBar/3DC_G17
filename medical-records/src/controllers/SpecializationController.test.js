@@ -279,4 +279,79 @@ describe('SpecializationController', () => {
         });
     });
 
+    /**
+     * Test suite for deleteSpecialization endpoint
+     * Validates deletion of specializations and error handling
+         */
+    describe('deleteSpecialization', () => {
+        let mockReq;
+        let mockRes;
+    
+        beforeEach(() => {
+            mockReq = {
+                params: { id: '123' }
+            };
+            mockRes = {
+                status: jest.fn().mockReturnThis(),
+                json: jest.fn()
+            };
+        });
+    
+        /**
+         * Tests successful deletion of a specialization
+         * Verifies proper response format and status code
+         */
+        test('should successfully delete specialization', async () => {
+            const mockSpecialization = {
+                id: '123',
+                name: 'Cardiology',
+                description: 'Heart specialist'
+            };
+    
+            SpecializationService.deleteSpecialization.mockResolvedValue(mockSpecialization);
+    
+            await SpecializationController.deleteSpecialization(mockReq, mockRes);
+    
+            expect(mockRes.status).toHaveBeenCalledWith(200);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                message: 'Specialization deleted successfully',
+                specialization: mockSpecialization
+            });
+        });
+    
+        /**
+         * Tests handling of non-existent specialization requests
+         * Verifies proper not found status code and error message
+         */
+        test('should return 404 when specialization not found', async () => {
+            SpecializationService.deleteSpecialization.mockRejectedValue(
+                new Error('Specialization not found')
+            );
+    
+            await SpecializationController.deleteSpecialization(mockReq, mockRes);
+    
+            expect(mockRes.status).toHaveBeenCalledWith(404);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                message: 'Specialization not found'
+            });
+        });
+    
+        /**
+         * Tests handling of internal server errors
+         * Verifies proper error status code and message
+         */
+        test('should return 500 on internal server error', async () => {
+            SpecializationService.deleteSpecialization.mockRejectedValue(
+                new Error('Database error')
+            );
+    
+            await SpecializationController.deleteSpecialization(mockReq, mockRes);
+    
+            expect(mockRes.status).toHaveBeenCalledWith(500);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                message: 'Internal server error'
+            });
+        });
+    });
+
 });

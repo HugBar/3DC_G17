@@ -96,3 +96,29 @@ exports.searchSpecialization = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+/**
+ * Deletes a specific medical specialization by its ID
+ * @param {Object} req - Express request object containing specialization ID in params
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with deleted specialization or error message
+ */
+exports.deleteSpecialization = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const result = await SpecializationService.deleteSpecialization(id);
+        
+        res.status(200).json({
+            message: 'Specialization deleted successfully',
+            specialization: result
+        });
+    } catch (error) {
+        console.error('Error deleting specialization:', error);
+        if (error.message === 'Specialization not found') {
+            res.status(404).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
+};
