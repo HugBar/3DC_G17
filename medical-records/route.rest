@@ -38,9 +38,9 @@ POST http://localhost:3001/medical-conditions/add-medical-condition
 Content-Type: application/json
 
     {
-        "name": "Asthma",
+        "name": "teste1",
         "severity": "High",
-        "description": "Asthma is a chronic respiratory condition that affects the airways in the lungs."
+        "description": "teste para o sistema."
     }
 
 ###

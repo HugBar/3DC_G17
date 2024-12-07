@@ -26,6 +26,7 @@ import EditPatientProfile from './components/Patient/editPatientProfile/EditPati
 import UpdateOperationRequest from './components/OperationRequest/updateOperationRequest/UpdateOperationRequest'
 import UpdateOperationType from './components/OperationType/updateOperationType/UpdateOperationType';
 import CreateSpecialization from './components/Specialization/createSpecialization/CreateSpecialization';
+import AddMedicalCondition from './components/MedicalCondition/AddMedicalCondition/AddMedicalCondition';
 
 
 const App = () => {
@@ -230,6 +231,15 @@ const App = () => {
                 className={`action-button ${selectedStaffAction === 'Add Specialization' ? 'active' : ''}`}
               >
                 Add Specialization
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('Add Medical Condition');
+                  navigate('/medical-condition/add');
+                }}
+                className={`action-button ${selectedStaffAction === 'Add Medical Condition' ? 'active' : ''}`}
+              >
+                Add Medical Condition
               </button>
               <button
                 onClick={() => {
@@ -469,6 +479,11 @@ const App = () => {
   <Route path="/specialization/create" element={
     <ProtectedRoute requiredRole="admin">
       <CreateSpecialization />
+    </ProtectedRoute>
+  } />
+  <Route path="/medical-condition/add" element={
+    <ProtectedRoute requiredRole="admin">
+      <AddMedicalCondition />
     </ProtectedRoute>
   } />
 </Routes>
