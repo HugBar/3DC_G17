@@ -27,6 +27,7 @@ import UpdateOperationRequest from './components/OperationRequest/updateOperatio
 import UpdateOperationType from './components/OperationType/updateOperationType/UpdateOperationType';
 import CreateSpecialization from './components/Specialization/createSpecialization/CreateSpecialization';
 import AddMedicalCondition from './components/MedicalCondition/AddMedicalCondition/AddMedicalCondition';
+import AddAllergy from './components/Allergy/AddAllergy';
 
 
 const App = () => {
@@ -42,6 +43,7 @@ const App = () => {
   const [selectedOperationRequest, setSelectedOperationRequest] = useState(null);
   const [selectedOperationRequestId, setSelectedOperationRequestId] = useState(null);
   const [/*selectedOperationRequestIdForDetails*/, setSelectedOperationRequestIdForDetails] = useState(null);
+  const [showMoreActions, setShowMoreActions] = useState(false);
  
 
   const handleHomeClick = () => {
@@ -100,18 +102,28 @@ const App = () => {
   };
 
   const handleStaffClick = () => {
-    setShowStaffActions(true);
-    setShowPatientActions(false); // Esconde as ações de paciente
+    setShowStaffActions(!showStaffActions);
+    setShowPatientActions(false); 
+    setShowMoreActions(false); // Add this line
     setSelectedStaffAction(null);
     setSelectedPatientAction(null);
   };
 
   const handlePatientClick = () => {
-    setShowPatientActions(true);
+    setShowPatientActions(!showPatientActions);
     setShowStaffActions(false);
+    setShowMoreActions(false); // Add this line
     setSelectedPatientAction(null);
     setSelectedStaffAction(null);
   };
+  
+  const handleMoreClick = () => {
+    setShowMoreActions(!showMoreActions); // Toggle more actions
+    setShowPatientActions(false);
+    setShowStaffActions(false);
+    setSelectedPatientAction(null);
+    setSelectedStaffAction(null);
+  }
 
   const handleDeactivateStaff = (staffId) => {
     setSelectedStaffId(staffId);
@@ -137,6 +149,7 @@ const App = () => {
     setSelectedPatientAction(null);
     setSelectedStaffAction(null);
   };
+    
 
   return (
     <div>
@@ -177,6 +190,14 @@ const App = () => {
                   className={`nav-button ${showPatientActions ? 'active' : ''}`}
                 >
                   Patient
+                </button>
+              )}
+              {(isAdmin) && (
+                <button
+                  onClick={handleMoreClick}
+                  className={`nav-button ${showMoreActions ? 'active' : ''}`}
+                >
+                  More
                 </button>
               )}
             </>
@@ -222,24 +243,6 @@ const App = () => {
                 className={`action-button ${selectedStaffAction === 'View Deactivated Staffs' ? 'active' : ''}`}
               >
                 View Deactivated Staffs
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedStaffAction('Add Specialization');
-                  navigate('/specialization/create');
-                          }}
-                className={`action-button ${selectedStaffAction === 'Add Specialization' ? 'active' : ''}`}
-              >
-                Add Specialization
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedStaffAction('Add Medical Condition');
-                  navigate('/medical-condition/add');
-                }}
-                className={`action-button ${selectedStaffAction === 'Add Medical Condition' ? 'active' : ''}`}
-              >
-                Add Medical Condition
               </button>
               <button
                 onClick={() => {
@@ -333,6 +336,41 @@ const App = () => {
             </button>
             
             </>
+          )}
+        </div>
+      )}
+      {showMoreActions && (
+        <div className="more-action-bar">
+          {isAdmin && (
+            <>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('Add Medical Condition');
+                  navigate('/medical-condition/add');
+                }}
+                className={`action-button ${selectedStaffAction === 'Add Medical Condition' ? 'active' : ''}`}
+              >
+                Add Medical Condition
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('Add Specialization');
+                  navigate('/specialization/create');
+                          }}
+                className={`action-button ${selectedStaffAction === 'Add Specialization' ? 'active' : ''}`}
+              >
+                Add Specialization
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('Add Allergy');
+                  navigate('/allergy/add-allergy');
+                }}
+                className={`action-button ${selectedStaffAction === 'Add Allergy' ? 'active' : ''}`}
+                >
+                Add Allergy
+                </button>
+                </>
           )}
         </div>
       )}
@@ -484,6 +522,11 @@ const App = () => {
   <Route path="/medical-condition/add" element={
     <ProtectedRoute requiredRole="admin">
       <AddMedicalCondition />
+    </ProtectedRoute>
+  } />
+  <Route path="/allergy/add-allergy" element={
+    <ProtectedRoute requiredRole="admin">
+      <AddAllergy />
     </ProtectedRoute>
   } />
 </Routes>
