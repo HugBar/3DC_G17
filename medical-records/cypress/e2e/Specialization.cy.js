@@ -142,4 +142,98 @@ describe('Specialization API E2E Tests', () => {
     });
   });
 
+  it('should update a specialization successfully', () => {
+    const uniqueName = `TestSpecialization_${Date.now()}`;
+    
+    // First create a specialization
+    cy.request({
+      method: 'POST',
+      url: `${baseUrl}`,
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      body: {
+        name: uniqueName,
+        description: 'Initial description'
+      }
+    }).then((createResponse) => {
+      expect(createResponse.status).to.eq(201);
+      const specializationId = createResponse.body.specialization._id;
+
+      // Now update the specialization
+      const updatedData = {
+        name: `Updated_${uniqueName}`,
+        description: 'Updated description'
+      };
+
+      cy.request({
+        method: 'PUT',
+        url: `${baseUrl}/${specializationId}`,
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        },
+        body: updatedData
+      }).then((updateResponse) => {
+        expect(updateResponse.status).to.eq(200);
+        expect(updateResponse.body.message).to.eq('Specialization updated successfully');
+        expect(updateResponse.body.specialization.name).to.eq(updatedData.name);
+        expect(updateResponse.body.specialization.description).to.eq(updatedData.description);
+      });
+    });
+  });
+
+  it('should handle duplicate name during update', () => {
+    const uniqueName = `TestSpecialization_${Date.now()}`;
+    
+    // First create a specialization
+    cy.request({
+      method: 'POST',
+      url: `${baseUrl}`,
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      body: {
+        name: uniqueName,
+        description: 'Test description'
+      }
+    }).then((createResponse) => {
+      const specializationId = createResponse.body.specialization._id;
+
+      // Try to update with an existing name (Cardiology)
+      cy.request({
+        method: 'PUT',
+        url: `${baseUrl}/${specializationId}`,
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        },
+        body: {
+          name: 'Cardiology',
+          description: 'Updated description'
+        },
+        failOnStatusCode: false
+      }).then((updateResponse) => {
+        expect(updateResponse.status).to.eq(409);
+        expect(updateResponse.body.message).to.eq('Specialization with this name already exists');
+      });
+    });
+  });
+
+  it('should handle update of non-existent specialization', () => {
+    cy.request({
+      method: 'PUT',
+      url: `${baseUrl}/507f1f77bcf86cd799439011`,
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      },
+      body: {
+        name: 'New Name',
+        description: 'New description'
+      },
+      failOnStatusCode: false
+    }).then((response) => {
+      expect(response.status).to.eq(404);
+      expect(response.body.message).to.eq('Specialization not found');
+    });
+  });
+
 });

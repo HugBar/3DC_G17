@@ -46,4 +46,12 @@ router.get('/:id', SpecializationController.getSpecializationById);
  */
 router.delete('/:id', SpecializationController.deleteSpecialization);
 
+/**
+ * PUT /:id
+ * Updates a specific specialization
+ * Restricted to admin users only
+ * @param {string} id - The ID of the specialization to update
+ */
+router.put('/:id', SpecializationController.updateSpecialization);
+
 module.exports = router;

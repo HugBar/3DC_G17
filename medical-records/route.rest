@@ -75,7 +75,7 @@ POST http://localhost:3001/api/specializations
 Content-Type: application/json
 
     {
-        "name": "Neurology",
+        "name": "Test123",
         "description": "Deals with brain conditions"
     }
 
@@ -86,4 +86,22 @@ GET http://localhost:3001/api/specializations/search?description=deals
 ###
 
 DELETE http://localhost:3001/api/specializations/6751fca5e875da6e74931ffc
+
+### Update specialization with valid data
+PUT http://localhost:3001/api/specializations/67504121fd787927bf0dad89
+Content-Type: application/json
+
+{
+    "name": "Cardiology Updated",
+    "description": "Updated description for heart conditions and cardiovascular system"
+}
+
+
+### Update only description (name remains the same)
+PUT http://localhost:3001/api/specializations/67504121fd787927bf0dad89
+Content-Type: application/json
+
+{
+    "description": "Updated description only while keeping the same name"
+}
 

@@ -300,4 +300,144 @@ describe('SpecializationService', () => {
                 .toThrow('Database error');
         });
     });
+
+    describe('updateSpecialization', () => {
+        const mockId = '123';
+        const mockSpecializationDto = {
+            name: 'Updated Cardiology',
+            description: 'Updated heart specialist'
+        };
+
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        /**
+         * Tests successful update of a specialization with valid data
+         * Verifies:
+         * - Proper repository method calls
+         * - Correct data passed to update
+         * - Expected response format
+         */
+        test('should successfully update specialization when valid data provided', async () => {
+            const existingSpecialization = {
+                _id: mockId,
+                name: 'Cardiology',
+                description: 'Heart specialist'
+            };
+
+            const updatedSpecialization = {
+                _id: mockId,
+                ...mockSpecializationDto,
+                updatedAt: new Date()
+            };
+
+            SpecializationRepository.findById.mockResolvedValue(existingSpecialization);
+            SpecializationRepository.findByName.mockResolvedValue(null);
+            SpecializationRepository.update.mockResolvedValue(updatedSpecialization);
+
+            const result = await SpecializationService.updateSpecialization(mockId, mockSpecializationDto);
+
+            expect(result).toEqual(updatedSpecialization);
+            expect(SpecializationRepository.findById).toHaveBeenCalledWith(mockId);
+            expect(SpecializationRepository.update).toHaveBeenCalledWith(
+                mockId,
+                expect.objectContaining({
+                    name: mockSpecializationDto.name,
+                    description: mockSpecializationDto.description,
+                    updatedAt: expect.any(Date)
+                })
+            );
+        });
+
+        /**
+         * Tests handling of non-existent specialization updates
+         * Verifies:
+         * - Error is thrown for non-existent specialization
+         * - Update repository method is not called
+         */
+        test('should throw error when specialization not found', async () => {
+            SpecializationRepository.findById.mockResolvedValue(null);
+
+            await expect(SpecializationService.updateSpecialization(mockId, mockSpecializationDto))
+                .rejects
+                .toThrow('Specialization not found');
+
+            expect(SpecializationRepository.update).not.toHaveBeenCalled();
+        });
+
+        /**
+         * Tests duplicate name validation during update
+         * Verifies:
+         * - Error is thrown when updating to an existing name
+         * - Update repository method is not called
+         * - Proper error message is returned
+         */
+        test('should throw error when updating to existing name', async () => {
+            const existingSpecialization = {
+                _id: mockId,
+                name: 'Cardiology',
+                description: 'Heart specialist'
+            };
+
+            const duplicateSpecialization = {
+                _id: '456',
+                name: mockSpecializationDto.name,
+                description: 'Another description'
+            };
+
+            SpecializationRepository.findById.mockResolvedValue(existingSpecialization);
+            SpecializationRepository.findByName.mockResolvedValue(duplicateSpecialization);
+
+            await expect(SpecializationService.updateSpecialization(mockId, mockSpecializationDto))
+                .rejects
+                .toThrow('Specialization with this name already exists');
+
+            expect(SpecializationRepository.update).not.toHaveBeenCalled();
+        });
+
+        /**
+         * Tests optimization when name is unchanged during update
+         * Verifies:
+         * - Duplicate name check is skipped
+         * - Update proceeds without additional validation
+         * - Update repository method is called
+         */
+        test('should not check for duplicate name if name unchanged', async () => {
+            const existingSpecialization = {
+                _id: mockId,
+                name: mockSpecializationDto.name,
+                description: 'Old description'
+            };
+
+            const updatedSpecialization = {
+                _id: mockId,
+                ...mockSpecializationDto,
+                updatedAt: new Date()
+            };
+
+            SpecializationRepository.findById.mockResolvedValue(existingSpecialization);
+            SpecializationRepository.update.mockResolvedValue(updatedSpecialization);
+
+            await SpecializationService.updateSpecialization(mockId, mockSpecializationDto);
+
+            expect(SpecializationRepository.findByName).not.toHaveBeenCalled();
+            expect(SpecializationRepository.update).toHaveBeenCalled();
+        });
+
+        /**
+         * Tests handling of repository errors during update
+         * Verifies:
+         * - Database errors are properly propagated
+         * - Error message is preserved
+         */
+        test('should propagate repository errors', async () => {
+            const mockError = new Error('Database error');
+            SpecializationRepository.findById.mockRejectedValue(mockError);
+
+            await expect(SpecializationService.updateSpecialization(mockId, mockSpecializationDto))
+                .rejects
+                .toThrow('Database error');
+        });
+    });
 }); 

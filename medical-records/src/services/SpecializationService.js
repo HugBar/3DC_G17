@@ -9,7 +9,7 @@
  * Acts as an intermediary between the controller and repository layers.
  */
 
-const SpecializationRepository = require('../repositories/SpecializationRepository');
+const specializationRepository = require('../repositories/SpecializationRepository');
 const SpecializationDto = require('../dtos/SpecializationDto');
 
 /**
@@ -26,12 +26,12 @@ class SpecializationService {
     static async addSpecialization(specializationDto) {
         try {
             console.log("------------------------------------------")
-            const existingSpecialization = await SpecializationRepository.findByName(specializationDto.name);
+            const existingSpecialization = await specializationRepository.findByName(specializationDto.name);
             if (existingSpecialization) {
                 throw new Error('Specialization already exists');
             }
 
-            return await SpecializationRepository.create({
+            return await specializationRepository.create({
                 name: specializationDto.name,
                 description: specializationDto.description
             });
@@ -47,7 +47,7 @@ class SpecializationService {
      */
     static async getAllSpecializations() {
         try {
-            return await SpecializationRepository.findAll();
+            return await specializationRepository.findAll();
         } catch (error) {
             throw error;
         }
@@ -61,7 +61,7 @@ class SpecializationService {
      */
     static async getSpecializationById(id) {
         try {
-            const specialization = await SpecializationRepository.findById(id);
+            const specialization = await specializationRepository.findById(id);
             if (!specialization) {
                 throw new Error('Specialization not found');
             }
@@ -74,7 +74,7 @@ class SpecializationService {
     static async searchSpecializations(SpecializationSearchDto){
         try{
 
-            const specializations = await SpecializationRepository.searchSpecialization(SpecializationSearchDto);
+            const specializations = await specializationRepository.searchSpecialization(SpecializationSearchDto);
 
             return specializations.map(specialization => new SpecializationDto(
                 specialization.name,
@@ -93,12 +93,43 @@ class SpecializationService {
      */
     static async deleteSpecialization(id) {
         try {
-            const specialization = await SpecializationRepository.findById(id);
+            const specialization = await specializationRepository.findById(id);
             if (!specialization) {
                 throw new Error('Specialization not found');
             }
             
-            return await SpecializationRepository.delete(id);
+            return await specializationRepository.delete(id);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Updates a specific specialization by its ID
+     * @param {string} id - The ID of the specialization to update
+     * @param {SpecializationDto} specializationDto - The DTO containing updated specialization data
+     * @returns {Promise<Object>} The updated specialization
+     * @throws {Error} If specialization not found, name already exists, or other errors occur
+     */
+    static async updateSpecialization(id, specializationDto) {
+        try {
+            const existingSpecialization = await specializationRepository.findById(id);
+            if (!existingSpecialization) {
+                throw new Error('Specialization not found');
+            }
+
+            if (specializationDto.name !== existingSpecialization.name) {
+                const duplicateSpecialization = await specializationRepository.findByName(specializationDto.name);
+                if (duplicateSpecialization) {
+                    throw new Error('Specialization with this name already exists');
+                }
+            }
+
+            return await specializationRepository.update(id, {
+                name: specializationDto.name,
+                description: specializationDto.description,
+                updatedAt: new Date()
+            });
         } catch (error) {
             throw error;
         }

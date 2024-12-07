@@ -354,4 +354,92 @@ describe('SpecializationController', () => {
         });
     });
 
+    describe('updateSpecialization', () => {
+        beforeEach(() => {
+            mockReq = {
+                params: { id: '123' },
+                body: {
+                    name: 'Updated Cardiology',
+                    description: 'Updated heart specialist'
+                }
+            };
+        });
+
+        /**
+         * Tests successful update of a specialization
+         * Verifies proper status code and response format
+         */
+        test('should update and return the modified specialization', async () => {
+            const mockUpdatedSpecialization = { 
+                id: mockReq.params.id,
+                ...mockReq.body,
+                updatedAt: new Date()
+            };
+            SpecializationService.updateSpecialization.mockResolvedValue(mockUpdatedSpecialization);
+
+            await SpecializationController.updateSpecialization(mockReq, mockRes);
+
+            expect(mockRes.status).toHaveBeenCalledWith(200);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                message: 'Specialization updated successfully',
+                specialization: mockUpdatedSpecialization
+            });
+            expect(SpecializationService.updateSpecialization).toHaveBeenCalledWith(
+                mockReq.params.id,
+                expect.any(SpecializationDto)
+            );
+        });
+
+        /**
+         * Tests handling of non-existent specialization updates
+         * Verifies proper not found status code and error message
+         */
+        test('should return 404 when specialization not found', async () => {
+            SpecializationService.updateSpecialization.mockRejectedValue(
+                new Error('Specialization not found')
+            );
+
+            await SpecializationController.updateSpecialization(mockReq, mockRes);
+
+            expect(mockRes.status).toHaveBeenCalledWith(404);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                message: 'Specialization not found'
+            });
+        });
+
+        /**
+         * Tests handling of duplicate name conflicts during update
+         * Verifies proper conflict status code and error message
+         */
+        test('should return 409 when updating to existing name', async () => {
+            SpecializationService.updateSpecialization.mockRejectedValue(
+                new Error('Specialization with this name already exists')
+            );
+
+            await SpecializationController.updateSpecialization(mockReq, mockRes);
+
+            expect(mockRes.status).toHaveBeenCalledWith(409);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                message: 'Specialization with this name already exists'
+            });
+        });
+
+        /**
+         * Tests handling of unexpected errors
+         * Verifies proper internal error status code and generic error message
+         */
+        test('should return 500 for unexpected errors', async () => {
+            SpecializationService.updateSpecialization.mockRejectedValue(
+                new Error('Unexpected error')
+            );
+
+            await SpecializationController.updateSpecialization(mockReq, mockRes);
+
+            expect(mockRes.status).toHaveBeenCalledWith(500);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                message: 'Internal server error'
+            });
+        });
+    });
+
 });

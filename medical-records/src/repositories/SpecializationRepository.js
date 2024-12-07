@@ -16,6 +16,13 @@ const Specialization = require('../models/Specialization');
  * Provides an abstraction layer between the service and database
  */
 class SpecializationRepository {
+    constructor() {
+        if (SpecializationRepository.instance) {
+            return SpecializationRepository.instance;
+        }
+        SpecializationRepository.instance = this;
+    }
+
     /**
      * Finds a specialization by its unique name
      * @param {string} name - The name of the specialization to find
@@ -73,8 +80,21 @@ class SpecializationRepository {
         return await Specialization.findByIdAndDelete(id);
     }
 
+    /**
+     * Updates a specialization by its ID
+     * @param {string} id - The ID of the specialization to update
+     * @param {Object} updateData - The data to update
+     * @returns {Promise<Object>} The updated specialization
+     */
+    async update(id, updateData) {
+        return await Specialization.findByIdAndUpdate(
+            id,
+            updateData,
+            { new: true } // Returns the updated document
+        );
+    }
 }
 
-
-
-module.exports = new SpecializationRepository();
+// Create and export a singleton instance
+const specializationRepository = new SpecializationRepository();
+module.exports = specializationRepository;
