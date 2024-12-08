@@ -1,0 +1,61 @@
+@startuml SD
+title "Sequence Diagram - Add Medical Condition (Frontend)"
+
+actor Admin
+participant "App" as App
+participant "AddMedicalCondition" as AddMC
+participant "MedicalConditionDTO" as DTO
+participant "MedicalConditionService" as Service
+participant "API" as API
+
+activate Admin
+
+Admin -> App: Acessa "/medical-condition/add"
+activate App
+
+App -> AddMC: Renderiza componente
+deactivate App
+activate AddMC
+
+Admin -> AddMC: Preenche formulário\n(nome, severidade, descrição)
+Admin -> AddMC: Clica em "Adicionar Condição Médica"
+
+AddMC -> AddMC: handleSubmit()
+
+AddMC -> DTO: new MedicalConditionDTO(name, severity, description)
+activate DTO
+DTO --> AddMC: medicalConditionDto
+deactivate DTO
+
+AddMC -> DTO: toRequest()
+activate DTO
+DTO --> AddMC: requestData
+deactivate DTO
+
+AddMC -> Service: addMedicalCondition(requestData)
+activate Service
+
+Service -> API: POST /medical-conditions/add-medical-condition
+activate API
+
+alt Sucesso
+    API --> Service: status: 201\n{message: "Medical condition added successfully"}
+    Service --> AddMC: response.data
+    AddMC -> AddMC: setSuccessMessage()\nLimpa formulário
+    AddMC --> Admin: Exibe mensagem de sucesso
+
+else Erro
+    API --> Service: status: 409/500\n{message: error}
+    deactivate API
+    Service --> AddMC: throw error
+    deactivate Service
+    AddMC -> AddMC: setErrorMessage(error.message)
+    AddMC --> Admin: Exibe mensagem de erro
+    deactivate AddMC
+end
+
+deactivate API
+deactivate Service
+deactivate AddMC
+deactivate Admin
+@enduml

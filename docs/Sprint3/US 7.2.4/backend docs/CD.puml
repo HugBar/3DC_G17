@@ -1,24 +1,27 @@
-@startuml
+@startuml CD
+title "Class Diagram - Add Medical Condition (Backend)"
+
 class MedicalConditionRoutes {
-  +searchMedicalConditions()
+  +addMedicalConditionModel()
 }
 
 class MedicalConditionController {
-  +searchMedicalConditions(req, res)
+  +addMedicalConditionModel(req, res)
 }
 
-class SearchMedicalConditionDto {
+class MedicalConditionDto {
   -name: String
   -severity: String
-  +constructor(name, severity)
+  -description: String
+  +constructor(name, severity, description)
 }
 
 class MedicalConditionService {
-  +searchMedicalConditions(searchDto)
+  +addMedicalConditionModel(medicalConditionDto)
 }
 
 class MedicalConditionRepository {
-  +findByFilters(filters)
+  +addMedicalConditionModel(newMedicalCondition)
 }
 
 class MedicalCondition {
@@ -29,10 +32,12 @@ class MedicalCondition {
 }
 
 MedicalConditionRoutes --> MedicalConditionController : uses
-MedicalConditionController --> SearchMedicalConditionDto : creates
+MedicalConditionController --> MedicalConditionDto : creates
 MedicalConditionController --> MedicalConditionService : uses
 MedicalConditionService --> MedicalConditionRepository : uses
 MedicalConditionRepository --> MedicalCondition : manages
-MedicalConditionService ..> SearchMedicalConditionDto : uses
+MedicalConditionService ..> MedicalConditionDto : uses
+
+
 
 @enduml

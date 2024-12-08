@@ -28,6 +28,7 @@ import UpdateOperationType from './components/OperationType/updateOperationType/
 import CreateSpecialization from './components/Specialization/createSpecialization/CreateSpecialization';
 import AddMedicalCondition from './components/MedicalCondition/AddMedicalCondition/AddMedicalCondition';
 import AddAllergy from './components/Allergy/AddAllergy';
+import SearchMedicalCondition from './components/MedicalCondition/SearchMedicalCondition/SearchMedicalCondition';
 
 
 const App = () => {
@@ -274,6 +275,15 @@ const App = () => {
                 className={`action-button ${selectedOperationRequest === 'View Operation Requests' ? 'active' : ''}`}
               >
                 Manage Operation Requests
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('Search Medical Conditions');
+                  navigate('/medical-conditions/search');
+                }}
+                className={`action-button ${selectedStaffAction === 'Search Medical Conditions' ? 'active' : ''}`}
+              >
+                Search Medical Conditions
               </button>
             </>
           )}
@@ -529,6 +539,14 @@ const App = () => {
       <AddAllergy />
     </ProtectedRoute>
   } />
+  <Route 
+  path="/medical-conditions/search" 
+  element={
+    <ProtectedRoute requiredRole="doctor">
+      <SearchMedicalCondition />
+    </ProtectedRoute>
+  } 
+/>
 </Routes>
 
     </div>

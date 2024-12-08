@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import medicalConditionService from '../../../api/medicalConditionService';
+import { MedicalConditionDTO } from '../../../dtos/MedicalConditionDTO';
 import './AddMedicalCondition.css';
 
 const AddMedicalCondition = () => {
@@ -22,30 +23,36 @@ const AddMedicalCondition = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await medicalConditionService.addMedicalCondition(medicalConditionData);
-            setSuccessMessage('Condição médica adicionada com sucesso!');
+            const medicalConditionDto = new MedicalConditionDTO(
+                medicalConditionData.name,
+                medicalConditionData.severity,
+                medicalConditionData.description
+            );
+            
+            await medicalConditionService.addMedicalCondition(medicalConditionDto.toRequest());
+            setSuccessMessage('Medical condition added successfully!');
             setErrorMessage('');
-            // Limpar formulário
+            // Clear form
             setMedicalConditionData({
                 name: '',
                 severity: 'Low',
                 description: ''
             });
         } catch (error) {
-            setErrorMessage(error.response?.data?.message || 'Erro ao adicionar condição médica');
+            setErrorMessage(error.response?.data?.message || 'Error adding medical condition');
             setSuccessMessage('');
         }
     };
 
     return (
         <div className="add-medical-condition-container">
-            <h2>Adicionar Nova Condição Médica</h2>
+            <h2>Add New Medical Condition</h2>
             {successMessage && <p className="success-message">{successMessage}</p>}
             {errorMessage && <p className="error-message">{errorMessage}</p>}
             
             <form onSubmit={handleSubmit} className="medical-condition-form">
                 <div className="form-group">
-                    <label htmlFor="name">Nome da Condição:</label>
+                    <label htmlFor="name">Condition Name:</label>
                     <input
                         id="name"
                         name="name"
@@ -57,7 +64,7 @@ const AddMedicalCondition = () => {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="severity">Severidade:</label>
+                    <label htmlFor="severity">Severity:</label>
                     <select
                         id="severity"
                         name="severity"
@@ -65,14 +72,14 @@ const AddMedicalCondition = () => {
                         onChange={handleChange}
                         required
                     >
-                        <option value="Low">Baixa</option>
-                        <option value="Medium">Média</option>
-                        <option value="High">Alta</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
                     </select>
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="description">Descrição:</label>
+                    <label htmlFor="description">Description:</label>
                     <textarea
                         id="description"
                         name="description"
@@ -83,7 +90,7 @@ const AddMedicalCondition = () => {
                 </div>
 
                 <button type="submit" className="submit-button">
-                    Adicionar Condição Médica
+                    Add Medical Condition
                 </button>
             </form>
         </div>

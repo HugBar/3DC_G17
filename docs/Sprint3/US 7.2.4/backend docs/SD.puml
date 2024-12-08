@@ -1,4 +1,5 @@
-@startuml
+@startuml SD
+title "Sequence Diagram - Add Medical Condition (Backend)"
 actor Admin
 participant "MedicalConditionRoutes" as Routes
 participant "MedicalConditionController" as Controller

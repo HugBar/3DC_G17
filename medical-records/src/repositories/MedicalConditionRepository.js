@@ -81,8 +81,11 @@ exports.findByFilters = async (filters) => {
     }
 
     if (filters.severity) {
-        query.severity = filters.severity;
+        query.severity = filters.severity.toUpperCase();
     }
 
-    return MedicalCondition.find(query);
+    console.log('Query MongoDB:', query);
+    const results = await MedicalCondition.find(query);
+    console.log('Resultados encontrados:', results);
+    return results;
 };

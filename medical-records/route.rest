@@ -45,7 +45,7 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:3001/medical-conditions/search?name=Asthma
+GET http://localhost:3001/medical-conditions/search?name=teste1
 
 
 
