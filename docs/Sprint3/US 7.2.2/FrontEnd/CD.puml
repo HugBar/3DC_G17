@@ -1,0 +1,53 @@
+@startuml
+title "Add Allergy Class Diagram"
+
+class AddAllergy {
+  -allergyData: {allergen: string, severity: string, description: string}
+  -message: {text: string, type: string}
+  +handleChange(event): void
+  +handleSubmit(event): void
+  +render(): JSX.Element
+}
+
+class AllergyService {
+  +addAllergy(allergyData: AllergyDto): Promise<void>
+  +getAuthToken(): string
+}
+
+class AllergyDto {
+  +allergen: string
+  +severity: string
+  +description: string
+  +createdDate: Date
+}
+
+class Allergy {
+  +id: string
+  +allergen: string
+  +severity: string
+  +description: string
+  +createdDate: Date
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+AddAllergy --> AllergyService: uses
+AllergyService --> AllergyDto: creates
+AllergyDto --> Severity: uses
+Allergy --> Severity: uses
+
+note right of AddAllergy
+  React Component that handles
+  allergy creation form
+end note
+
+note right of AllergyService
+  Service layer that handles
+  API communication
+end note
+
+@enduml

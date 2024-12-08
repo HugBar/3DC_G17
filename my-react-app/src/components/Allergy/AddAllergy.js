@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import allergyService from '../../api/allergyService';
 import './Allergy.css';
+import { AllergyDTO } from '../../dtos/AllergyDTO';
 
 const AddAllergy = () => {
     const [allergyData, setAllergyData] = useState({
@@ -22,7 +23,13 @@ const AddAllergy = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await allergyService.addAllergy(allergyData);
+            // Create an instance of AllergyDTO
+            const allergyDto = new AllergyDTO(
+                allergyData.allergen,
+                allergyData.severity,
+                allergyData.description
+            );
+            await allergyService.addAllergy(allergyDto.toRequest());
             setMessage({ text: 'Allergy added successfully', type: 'success' });
             // Clear form
             setAllergyData({
@@ -32,6 +39,9 @@ const AddAllergy = () => {
             });
 
         } catch (error) {
+            if (error.response?.status === 409) {
+                setMessage({ text: 'Allergy already exists', type: 'error' });
+            }
             setMessage({ 
                 text: error.response?.data?.message || 'Error adding allergy', 
                 type: 'error' 
