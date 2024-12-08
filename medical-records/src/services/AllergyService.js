@@ -66,6 +66,18 @@ class AllergyService {
             throw error;
         }
     }
+
+    async getAllAllergies() {
+        try {
+            const allergies = await AlergyRepository.getAllAllergiesWithDetails();
+            if (!allergies || allergies.length === 0) {
+                return [];
+            }
+            return allergies;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 module.exports = new AllergyService();

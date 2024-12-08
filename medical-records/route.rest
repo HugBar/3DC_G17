@@ -1,21 +1,7 @@
-POST http://localhost:3001/medical-records/add-allergies/testPatient123
-Content-Type: application/json
-
-    {
-        "allergen": "Dermetophagoides farinae",
-        "severity": "High",
-        "diagnosedDate": "2024-11-25T00:00:00.000Z",
-        "notes": "Allergy to dust mites"
-    }
-
-
-###
 
 GET http://localhost:3001/medical-records/
 
 ###
-
-GET http://localhost:3001/api/medical-records/
 
 ###
 
@@ -45,7 +31,11 @@ Content-Type: application/json
 
 ###
 
+
 GET http://localhost:3001/medical-conditions/search?name=teste1
+###
+GET http://localhost:3001/medical-conditions/search
+
 
 
 
@@ -105,3 +95,52 @@ Content-Type: application/json
     "description": "Updated description only while keeping the same name"
 }
 
+### Create/Update medical record with conditions and allergies
+PUT http://localhost:3001/medical-records/update/TestPatient1
+Content-Type: application/json
+
+{
+    "conditions": [
+        {
+            "name": "Asthma",
+            "severity": "High"
+        },
+        {
+            "name": "Diabetes",
+            "severity": "Medium"
+        }
+    ],
+    "allergies": [
+        {
+            "name": "Peanuts",
+            "severity": "High"
+        },
+        {
+            "name": "Dust",
+            "severity": "Low"
+        }
+    ]
+}
+
+### Update existing medical record with different conditions
+PUT http://localhost:3001/medical-records/update/TestPatient1
+Content-Type: application/json
+
+{
+    "conditions": [
+        {
+            "name": "Hypertension",
+            "severity": "Medium"
+        }
+    ],
+    "allergies": [
+        {
+            "name": "Penicillin",
+            "severity": "High"
+        }
+    ]
+}
+
+###
+
+GET http://localhost:3001/medical-records/

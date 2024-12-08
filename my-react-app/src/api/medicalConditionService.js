@@ -59,4 +59,5 @@ class MedicalConditionService {
 
 }
 
-export default new MedicalConditionService();
+const medicalConditionService = new MedicalConditionService();
+export default medicalConditionService;

@@ -11,5 +11,6 @@ const MedicalConditionController = require('../controllers/medicalConditionContr
 // Define routes for medical condition operations
 router.post('/add-medical-condition', MedicalConditionController.addMedicalConditionModel);
 router.get('/search', MedicalConditionController.searchMedicalConditions);
+router.get('/getConditionDetails', MedicalConditionController.getConditionDetails);
 
 module.exports = router;

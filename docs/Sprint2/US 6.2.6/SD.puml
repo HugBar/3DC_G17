@@ -1,45 +1,51 @@
-@startuml
-title "US 6.2.6 Create Patient Profile Sequence Diagram"
+@startuml namespace US 7.2.6 sequence diagram
+title US 7.2.6 Update Patient Medical Record sequence diagram
 
-actor Admin
-participant "CreatePatient\nComponent" as UI
-participant "PatientService" as PS
-participant "FormValidation" as FV
-participant "Backend API" as API
+actor Doctor
+participant "Frontend" as FE
+participant "MedicalRecordController" as MC
+participant "MedicalRecordService" as MS
+participant "MedicalRecordRepository" as MR
 database "Database" as DB
 
-activate Admin
-Admin -> UI: Navigate to Create Patient page
-activate UI
+Doctor -> FE: Update Medical Record
+activate FE
 
-Admin -> UI: Fill patient information
-Admin -> UI: Submit form
+FE -> MC: PUT /medical-records/update/{patientId}
+activate MC
 
-UI -> FV: validate(values)
-activate FV
-FV --> UI: validation result
-deactivate FV
+MC -> MC: Create UpdateMedicalRecordDto
+MC -> MR: findByPatientId(patientId)
+activate MR
 
-alt validation successful
-    UI -> PS: registerPatient(patientData)
-    activate PS
-    PS -> PS: getAuthToken()
-    PS -> PS: checkAdminRole(token)
-    PS -> API: POST /api/patient
-    activate API
-    API --> PS: Return PatientDto
-    deactivate API
-    PS --> UI: Return success
-    deactivate PS
-    UI -> UI: Display success message
-    UI -> UI: Navigate to patient list
-    UI --> Admin: Show success notification
-else validation failed
-    UI -> UI: Display validation errors
-    UI --> Admin: Show error messages
-    deactivate
+MR -> DB: findOne({patientId})
+DB --> MR: record/null
+MR --> MC: record/null
+
+MC -> MS: updatePatientConditionsAndAllergies(patientId, dto)
+activate MS
+
+alt No Existing Record
+    MS -> MR: create(newRecordData)
+    MR -> DB: create()
+    DB --> MR: newRecord
+    MR --> MS: newRecord
 end
 
-deactivate UI
-deactivate Admin
+MS -> MR: update(patientId, updateData)
+MR -> DB: findOneAndUpdate()
+DB --> MR: updatedRecord
+MR --> MS: sanitizedRecord
+
+MS --> MC: updatedRecord
+deactivate MS
+
+alt New Record Created
+    MC --> FE: 201 Created
+else Record Updated
+    MC --> FE: 200 OK
+end
+
+FE --> Doctor: Display Success Message
+
 @enduml

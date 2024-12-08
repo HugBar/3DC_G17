@@ -1,26 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const MedicalRecord = require('../models/MedicalRecord');
+const medicalRecordController = require('../controllers/medicalRecordController');
 
-// Create a medical record
-router.post('/', async (req, res) => {
-    try {
-        const medicalRecord = new MedicalRecord(req.body);
-        await medicalRecord.save();
-        res.status(201).json(medicalRecord);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-});
+// Existing routes
+router.get('/', medicalRecordController.getAllMedicalRecords);
+router.get('/:patientId', medicalRecordController.getMedicalRecordByPatientId);
 
-// Get all medical records
-router.get('/', async (req, res) => {
-    try {
-        const records = await MedicalRecord.find();
-        res.json(records);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+// Add the new update route
+router.put('/update/:patientId', medicalRecordController.updatePatientConditionsAndAllergies);
 
 module.exports = router;

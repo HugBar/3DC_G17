@@ -26,6 +26,7 @@ import EditPatientProfile from './components/Patient/editPatientProfile/EditPati
 import UpdateOperationRequest from './components/OperationRequest/updateOperationRequest/UpdateOperationRequest'
 import UpdateOperationType from './components/OperationType/updateOperationType/UpdateOperationType';
 import CreateSpecialization from './components/Specialization/createSpecialization/CreateSpecialization';
+import UpdateMedicalRecord from './components/MedicalRecord/updateRecord/UpdateMedicalRecord';
 import AddMedicalCondition from './components/MedicalCondition/AddMedicalCondition/AddMedicalCondition';
 import AddAllergy from './components/Allergy/AddAllergy';
 import SearchMedicalCondition from './components/MedicalCondition/SearchMedicalCondition/SearchMedicalCondition';
@@ -258,6 +259,15 @@ const App = () => {
           )}
           {isDoctor && (
             <>
+              <button
+                onClick={() => {
+                  setSelectedOperationRequest('Update Medical Records');
+                  navigate('/medical-records/update');
+                }}
+                className={`action-button ${selectedOperationRequest === 'Update Medical Records' ? 'active' : ''}`}
+              >
+                Update Medical Records
+              </button>
               <button
                 onClick={() => {
                   setSelectedOperationRequest('Request Operation');
@@ -539,14 +549,19 @@ const App = () => {
       <AddAllergy />
     </ProtectedRoute>
   } />
-  <Route 
-  path="/medical-conditions/search" 
+  <Route path="/medical-conditions/search" 
   element={
     <ProtectedRoute requiredRole="doctor">
       <SearchMedicalCondition />
     </ProtectedRoute>
-  } 
-/>
+  } />
+    <Route path="/medical-records/update" 
+    element={
+      <ProtectedRoute requiredRole="doctor">
+        <UpdateMedicalRecord />
+      </ProtectedRoute>
+    } 
+  />
 </Routes>
 
     </div>
