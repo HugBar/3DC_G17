@@ -203,4 +203,63 @@ describe('MedicalRecordController', () => {
             expect(console.error).toHaveBeenCalledWith('Error updating medical record:', expect.any(Error));
         });
     });
+
+    describe('searchMedicalRecord', () => {
+        beforeEach(() => {
+            mockReq = {
+                query: {
+                    patientId: 'TEST123',
+                    conditionName: 'Asthma',
+                    allergyName: 'Peanuts'
+                }
+            };
+        });
+
+        test('should return filtered medical record', async () => {
+            const mockRecord = {
+                _id: '1',
+                patientId: 'TEST123',
+                conditions: [
+                    { name: 'Asthma', severity: 'High' }
+                ],
+                allergies: [
+                    { name: 'Peanuts', severity: 'High' }
+                ],
+                lastUpdated: new Date(),
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+
+            MedicalRecordService.searchMedicalRecord = jest.fn().mockResolvedValue(mockRecord);
+
+            await MedicalRecordController.searchMedicalRecord(mockReq, mockRes);
+
+            expect(mockRes.status).toHaveBeenCalledWith(200);
+            expect(mockRes.json).toHaveBeenCalledWith(mockRecord);
+        });
+
+        test('should return 404 when record not found', async () => {
+            MedicalRecordService.searchMedicalRecord = jest.fn().mockResolvedValue(null);
+
+            await MedicalRecordController.searchMedicalRecord(mockReq, mockRes);
+
+            expect(mockRes.status).toHaveBeenCalledWith(404);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                message: 'Medical record not found'
+            });
+        });
+
+        test('should handle service errors', async () => {
+            MedicalRecordService.searchMedicalRecord = jest.fn()
+                .mockRejectedValue(new Error('Service error'));
+
+            await MedicalRecordController.searchMedicalRecord(mockReq, mockRes);
+
+            expect(mockRes.status).toHaveBeenCalledWith(500);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                message: 'Internal server error'
+            });
+            expect(console.error).toHaveBeenCalledWith('Error searching medical record:', expect.any(Error));
+        });
+    });
 }); 

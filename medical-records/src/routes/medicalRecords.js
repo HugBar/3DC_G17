@@ -4,6 +4,7 @@ const medicalRecordController = require('../controllers/medicalRecordController'
 
 // Existing routes
 router.get('/', medicalRecordController.getAllMedicalRecords);
+router.get('/search', medicalRecordController.searchMedicalRecord);
 router.get('/:patientId', medicalRecordController.getMedicalRecordByPatientId);
 
 // Add the new update route

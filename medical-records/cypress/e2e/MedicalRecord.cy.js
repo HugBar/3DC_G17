@@ -187,4 +187,86 @@ describe('Medical Record API E2E Tests', () => {
       });
     });
   });
+
+  it('should search medical records with various filters', () => {
+    const patientId = `searchtest_${Date.now()}`;
+    const updateData = {
+      conditions: [
+        { name: 'Asthma', severity: 'High' },
+        { name: 'Diabetes', severity: 'Medium' }
+      ],
+      allergies: [
+        { name: 'Peanuts', severity: 'High' },
+        { name: 'Shellfish', severity: 'Low' }
+      ]
+    };
+
+    // First create a test record
+    cy.request({
+      method: 'PUT',
+      url: `${baseUrl}/update/${patientId}`,
+      headers: { Authorization: `Bearer ${authToken}` },
+      body: updateData
+    }).then((response) => {
+      expect(response.status).to.eq(201);
+      
+      // Test search with patient ID only
+      cy.request({
+        method: 'GET',
+        url: `${baseUrl}/search?patientId=${patientId}`,
+        headers: { Authorization: `Bearer ${authToken}` }
+      }).then((searchResponse) => {
+        expect(searchResponse.status).to.eq(200);
+        expect(searchResponse.body.conditions).to.have.length(2);
+        expect(searchResponse.body.allergies).to.have.length(2);
+      });
+
+      // Test search with condition filter
+      cy.request({
+        method: 'GET',
+        url: `${baseUrl}/search?patientId=${patientId}&conditionName=Asthma`,
+        headers: { Authorization: `Bearer ${authToken}` }
+      }).then((searchResponse) => {
+        expect(searchResponse.status).to.eq(200);
+        expect(searchResponse.body.conditions).to.have.length(1);
+        expect(searchResponse.body.conditions[0].name).to.eq('Asthma');
+      });
+
+      // Test search with allergy filter
+      cy.request({
+        method: 'GET',
+        url: `${baseUrl}/search?patientId=${patientId}&allergyName=Peanuts`,
+        headers: { Authorization: `Bearer ${authToken}` }
+      }).then((searchResponse) => {
+        expect(searchResponse.status).to.eq(200);
+        expect(searchResponse.body.allergies).to.have.length(1);
+        expect(searchResponse.body.allergies[0].name).to.eq('Peanuts');
+      });
+
+      // Test search with both condition and allergy filters
+      cy.request({
+        method: 'GET',
+        url: `${baseUrl}/search?patientId=${patientId}&conditionName=Asthma&allergyName=Peanuts`,
+        headers: { Authorization: `Bearer ${authToken}` }
+      }).then((searchResponse) => {
+        expect(searchResponse.status).to.eq(200);
+        expect(searchResponse.body.conditions).to.have.length(1);
+        expect(searchResponse.body.allergies).to.have.length(1);
+        expect(searchResponse.body.conditions[0].name).to.eq('Asthma');
+        expect(searchResponse.body.allergies[0].name).to.eq('Peanuts');
+      });
+    });
+  });
+
+  it('should handle non-existent patient ID in search', () => {
+    cy.request({
+      method: 'GET',
+      url: `${baseUrl}/search?patientId=nonexistent`,
+      headers: { Authorization: `Bearer ${authToken}` },
+      failOnStatusCode: false
+    }).then((response) => {
+      expect(response.status).to.eq(404);
+      expect(response.body.message).to.eq('Medical record not found');
+    });
+  });
 }); 

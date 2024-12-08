@@ -30,6 +30,7 @@ import UpdateMedicalRecord from './components/MedicalRecord/updateRecord/UpdateM
 import AddMedicalCondition from './components/MedicalCondition/AddMedicalCondition/AddMedicalCondition';
 import AddAllergy from './components/Allergy/AddAllergy';
 import SearchMedicalCondition from './components/MedicalCondition/SearchMedicalCondition/SearchMedicalCondition';
+import SearchMedicalRecord from './components/MedicalRecord/searchRecord/SearchMedicalRecord';
 
 
 const App = () => {
@@ -267,6 +268,15 @@ const App = () => {
                 className={`action-button ${selectedOperationRequest === 'Update Medical Records' ? 'active' : ''}`}
               >
                 Update Medical Records
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedOperationRequest('Search Medical Records');
+                  navigate('/medical-records/search');
+                }}
+                className={`action-button ${selectedOperationRequest === 'Search Medical Records' ? 'active' : ''}`}
+              >
+                Search Medical Records
               </button>
               <button
                 onClick={() => {
@@ -562,6 +572,13 @@ const App = () => {
       </ProtectedRoute>
     } 
   />
+  <Route path="/medical-records/search" 
+  element={
+    <ProtectedRoute requiredRole="doctor">
+      <SearchMedicalRecord />
+    </ProtectedRoute>
+  } 
+/>
 </Routes>
 
     </div>

@@ -52,6 +52,50 @@ class MedicalRecordService {
             throw error;
         }
     }
+
+    /**
+     * Searches for a medical record by patient ID and optionally filters by condition or allergy
+     * @param {Object} searchDto - DTO containing search parameters (patientId, conditionName, allergyName)
+     * @returns {Promise<Object>} The filtered medical record or null if not found
+     */
+    async searchMedicalRecord(searchDto) {
+        try {
+            searchDto.validate();
+            const record = await MedicalRecordRepository.findByPatientId(searchDto.patientId);
+            
+            if (!record) {
+                return null;
+            }
+
+            let filteredRecord = {
+                _id: record._id,
+                patientId: record.patientId,
+                lastUpdated: record.lastUpdated,
+                createdAt: record.createdAt,
+                updatedAt: record.updatedAt
+            };
+
+            // Only include conditions if searching for conditions or no specific filter
+            if (searchDto.conditionName || (!searchDto.conditionName && !searchDto.allergyName)) {
+                filteredRecord.conditions = record.conditions.filter(condition =>
+                    !searchDto.conditionName || 
+                    condition.name.toLowerCase().includes(searchDto.conditionName.toLowerCase())
+                );
+            }
+
+            // Only include allergies if searching for allergies or no specific filter
+            if (searchDto.allergyName || (!searchDto.conditionName && !searchDto.allergyName)) {
+                filteredRecord.allergies = record.allergies.filter(allergy =>
+                    !searchDto.allergyName || 
+                    allergy.name.toLowerCase().includes(searchDto.allergyName.toLowerCase())
+                );
+            }
+
+            return filteredRecord;
+        } catch (error) {
+            throw new Error(`Error searching medical record: ${error.message}`);
+        }
+    }
 }
 
 module.exports = new MedicalRecordService();

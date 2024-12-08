@@ -144,4 +144,85 @@ describe('MedicalRecordService', () => {
             ).rejects.toThrow('Database error');
         });
     });
+
+    describe('searchMedicalRecord', () => {
+        const mockPatientId = 'TEST123';
+        const mockSearchDto = {
+            patientId: mockPatientId,
+            conditionName: 'Asthma',
+            allergyName: 'Peanuts',
+            validate: jest.fn()
+        };
+
+        test('should filter medical record by condition and allergy', async () => {
+            const mockRecord = {
+                _id: '1',
+                patientId: mockPatientId,
+                conditions: [
+                    { name: 'Asthma', severity: 'High' },
+                    { name: 'Diabetes', severity: 'Medium' }
+                ],
+                allergies: [
+                    { name: 'Peanuts', severity: 'High' },
+                    { name: 'Shellfish', severity: 'Low' }
+                ],
+                lastUpdated: new Date(),
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+
+            MedicalRecordRepository.findByPatientId.mockResolvedValue(mockRecord);
+
+            const result = await MedicalRecordService.searchMedicalRecord(mockSearchDto);
+
+            expect(result.conditions).toHaveLength(1);
+            expect(result.conditions[0].name).toBe('Asthma');
+            expect(result.allergies).toHaveLength(1);
+            expect(result.allergies[0].name).toBe('Peanuts');
+        });
+
+        test('should return null when record not found', async () => {
+            MedicalRecordRepository.findByPatientId.mockResolvedValue(null);
+
+            const result = await MedicalRecordService.searchMedicalRecord(mockSearchDto);
+
+            expect(result).toBeNull();
+        });
+
+        test('should handle validation errors', async () => {
+            mockSearchDto.validate.mockImplementation(() => {
+                throw new Error('Validation error');
+            });
+
+            await expect(MedicalRecordService.searchMedicalRecord(mockSearchDto))
+                .rejects.toThrow('Error searching medical record: Validation error');
+        });
+
+        test('should return only conditions when searching by condition name', async () => {
+            const mockRecord = {
+                _id: '1',
+                patientId: mockPatientId,
+                conditions: [
+                    { name: 'Asthma', severity: 'High' },
+                    { name: 'Diabetes', severity: 'Medium' }
+                ],
+                allergies: [
+                    { name: 'Peanuts', severity: 'High' }
+                ]
+            };
+
+            MedicalRecordRepository.findByPatientId.mockResolvedValue(mockRecord);
+            
+            const result = await MedicalRecordService.searchMedicalRecord({
+                patientId: mockPatientId,
+                conditionName: 'Asthma',
+                validate: jest.fn()
+            });
+
+            expect(result.conditions).toBeDefined();
+            expect(result.allergies).toBeUndefined();
+            expect(result.conditions).toHaveLength(1);
+            expect(result.conditions[0].name).toBe('Asthma');
+        });
+    });
 });

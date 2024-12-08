@@ -144,3 +144,16 @@ Content-Type: application/json
 ###
 
 GET http://localhost:3001/medical-records/
+
+
+### Search medical record by patient ID and condition
+GET http://localhost:3001/medical-records/search?patientId=TestPatient1&conditionName=Asthma
+
+### Search medical record by patient ID and allergy
+GET http://localhost:3001/medical-records/search?patientId=TestPatient1&allergyName=peanut
+
+### Search medical record with both condition and allergy filters
+GET http://localhost:3001/medical-records/search?patientId=TestPatient1&conditionName=Asthma&allergyName=peanut
+
+### Search medical record with patient ID only (returns full record)
+GET http://localhost:3001/medical-records/search?patientId=TestPatient1

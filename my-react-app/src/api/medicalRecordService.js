@@ -66,6 +66,21 @@ const medicalRecordService = {
         } catch (error) {
             throw error;
         }
+    },
+
+    searchMedicalRecord: async (patientId, conditionName, allergyName) => {
+        try {
+            let url = `${API_URL}/medical-records/search?patientId=${patientId}`;
+            if (conditionName) url += `&conditionName=${conditionName}`;
+            if (allergyName) url += `&allergyName=${allergyName}`;
+            
+            const response = await axios.get(url, {
+                headers: { Authorization: `Bearer ${getAuthToken()}` }
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
     }
 };
 

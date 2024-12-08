@@ -9,6 +9,7 @@
 const MedicalRecordRepository = require('../repositories/MedicalRecordRepository');
 const UpdateMedicalRecordDto = require('../dtos/UpdateMedicalRecordDto');
 const MedicalRecordService = require('../services/MedicalRecordService');
+const SearchMedicalRecordDto = require('../dtos/SearchMedicalRecordDto');
 
 /**
  * Creates a new medical record for a patient
@@ -87,6 +88,30 @@ exports.updatePatientConditionsAndAllergies = async (req, res) => {
         });
     } catch (error) {
         console.error('Error updating medical record:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+/**
+ * Searches for a medical record with the specified filters
+ * @param {Object} req - Request object containing query parameters
+ * @param {Object} res - Response object
+ * @returns {Object} JSON response with the searched medical record or error message
+ */
+exports.searchMedicalRecord = async (req, res) => {
+    try {
+        const { patientId, conditionName, allergyName } = req.query;
+        const searchDto = new SearchMedicalRecordDto(patientId, conditionName, allergyName);
+        
+        const result = await MedicalRecordService.searchMedicalRecord(searchDto);
+        
+        if (!result) {
+            return res.status(404).json({ message: 'Medical record not found' });
+        }
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error searching medical record:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
