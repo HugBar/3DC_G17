@@ -1,0 +1,50 @@
+@startuml
+title "Add Allergy Sequence Diagram (Frontend)"
+
+actor Admin
+participant "AddAllergy\nComponent" as AddAllergy
+participant AllergyService
+participant "Express API" as API
+
+activate Admin
+
+Admin -> AddAllergy: Fill allergy form\n(allergen, severity, description)
+activate AddAllergy
+AddAllergy -> AddAllergy: handleChange(event)
+AddAllergy -> AddAllergy: setAllergyData(newData)
+
+Admin -> AddAllergy: Submit form
+activate AddAllergy
+AddAllergy -> AddAllergy: handleSubmit(event)
+AddAllergy -> AddAllergy: preventDefault()
+
+AddAllergy -> AllergyService: addAllergy(allergyData)
+activate AllergyService
+
+AllergyService -> API: POST /allergies/add-allergy
+activate API
+
+alt Successful Response
+    API --> AllergyService: 201 Created
+    AllergyService --> AddAllergy: Success response
+    AddAllergy -> AddAllergy: setMessage(success)
+    AddAllergy -> AddAllergy: Reset form fields
+    AddAllergy --> Admin: Display success message
+else Allergy Already Exists
+    API --> AllergyService: 409 Conflict
+    AllergyService --> AddAllergy: Error response
+    AddAllergy -> AddAllergy: setMessage(error)
+    AddAllergy --> Admin: Display error message
+else Server Error
+    API --> AllergyService: 500 Error
+    AllergyService --> AddAllergy: Error response
+    AddAllergy -> AddAllergy: setMessage(error)
+    AddAllergy --> Admin: Display error message
+end
+
+deactivate API
+deactivate AllergyService
+deactivate AddAllergy
+deactivate Admin
+
+@enduml
