@@ -96,8 +96,9 @@ const UpdateMedicalRecord = () => {
 
             <div className="search-section">
                 <div className="form-group">
-                    <label>Patient Medical Number:</label>
+                    <label htmlFor="patientId">Patient Medical Number:</label>
                     <input
+                        id="patientId"
                         type="text"
                         value={patientId}
                         onChange={(e) => setPatientId(e.target.value)}
@@ -113,13 +114,13 @@ const UpdateMedicalRecord = () => {
             </div>
 
             {error && (
-                <div className="error-message">
+                <div role="alert" className="error-message">
                     {error}
                 </div>
             )}
 
             {successMessage && (
-                <div className="success-message">
+                <div role="alert" className="success-message">
                     {successMessage}
                 </div>
             )}
@@ -151,6 +152,9 @@ const UpdateMedicalRecord = () => {
                         <div className="add-section">
     <h4>Add Medical Condition:</h4>
     <select
+        role="combobox"
+        aria-label="Add Medical Condition"
+        id="conditionSelect"
         onChange={(e) => {
             if (e.target.value) {
                 const selected = availableConditions.find(c => c.name === e.target.value);
@@ -236,6 +240,7 @@ const UpdateMedicalRecord = () => {
 
                     <button
                         className="update-button"
+                        aria-label="Update Medical Record"
                         onClick={handleUpdate}
                         disabled={loading}
                     >

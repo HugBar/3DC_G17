@@ -1,0 +1,55 @@
+@startuml namespace class Diagram 
+title "Class Diagram US 7.2.6"
+
+class MedicalRecordController {
+    -medicalRecordService: MedicalRecordService
+    -medicalRecordRepository: MedicalRecordRepository
+    +updatePatientConditionsAndAllergies(req, res)
+    +getMedicalRecordByPatientId(req, res)
+}
+
+class MedicalRecordService {
+    -medicalRecordRepository: MedicalRecordRepository
+    +updatePatientConditionsAndAllergies(patientId, updateDto)
+}
+
+class MedicalRecordRepository {
+    +findByPatientId(patientId)
+    +create(medicalRecordData)
+    +update(patientId, updateData)
+    -sanitizeMedicalRecord(record)
+}
+
+class MedicalRecord {
+    +patientId: String
+    +conditions: Array<Condition>
+    +allergies: Array<Allergy>
+    +lastUpdated: Date
+    +createdAt: Date
+    +updatedAt: Date
+}
+
+class UpdateMedicalRecordDto {
+    +conditions: Array<Condition>
+    +allergies: Array<Allergy>
+    +constructor(conditions, allergies)
+}
+
+class Condition {
+    +name: String
+    +severity: String
+}
+
+class Allergy {
+    +name: String
+    +severity: String
+}
+
+MedicalRecordController --> MedicalRecordService : uses
+MedicalRecordController --> UpdateMedicalRecordDto : creates
+MedicalRecordService --> MedicalRecordRepository : uses
+MedicalRecordRepository --> MedicalRecord : manages
+MedicalRecord --> Condition : contains
+MedicalRecord --> Allergy : contains
+
+@enduml
