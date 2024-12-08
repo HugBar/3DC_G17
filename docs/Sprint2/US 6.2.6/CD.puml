@@ -1,44 +1,55 @@
 @startuml namespace class Diagram 
-title "Class Diagram US 6.2.6"
+title "Class Diagram US 7.2.6"
 
-class CreatePatient {
-    -values: object
-    -errors: object
-    -successMessage: string
-    -navigate: useNavigate
-    +handleChange(event): void
-    +handleSubmit(event): void
-    +validate(values): boolean
-    +render(): JSX
+class MedicalRecordController {
+    -medicalRecordService: MedicalRecordService
+    -medicalRecordRepository: MedicalRecordRepository
+    +updatePatientConditionsAndAllergies(req, res)
+    +getMedicalRecordByPatientId(req, res)
 }
 
-class PatientService {
-    -API_URL: string
-    +getAuthToken(): string
-    +checkAdminRole(token): void
-    +registerPatient(patientData): Promise
+class MedicalRecordService {
+    -medicalRecordRepository: MedicalRecordRepository
+    +updatePatientConditionsAndAllergies(patientId, updateDto)
 }
 
-class usePatientFormValidation {
-    -errors: object
-    +validate(values): boolean
+class MedicalRecordRepository {
+    +findByPatientId(patientId)
+    +create(medicalRecordData)
+    +update(patientId, updateData)
+    -sanitizeMedicalRecord(record)
 }
 
-class RegisterPatientDto {
-    +firstName: string
-    +lastName: string
-    +email: string
-    +phoneNumber: string
-    +dateOfBirth: string
-    +gender: string
-    +contactInfo: string
-    +emergencyContact: string
-    +medicalNr: string
+class MedicalRecord {
+    +patientId: String
+    +conditions: Array<Condition>
+    +allergies: Array<Allergy>
+    +lastUpdated: Date
+    +createdAt: Date
+    +updatedAt: Date
 }
 
-CreatePatient --> PatientService : uses
-CreatePatient --> usePatientFormValidation : uses
-CreatePatient ..> RegisterPatientDto : uses
-PatientService ..> RegisterPatientDto : uses
+class UpdateMedicalRecordDto {
+    +conditions: Array<Condition>
+    +allergies: Array<Allergy>
+    +constructor(conditions, allergies)
+}
+
+class Condition {
+    +name: String
+    +severity: String
+}
+
+class Allergy {
+    +name: String
+    +severity: String
+}
+
+MedicalRecordController --> MedicalRecordService : uses
+MedicalRecordController --> UpdateMedicalRecordDto : creates
+MedicalRecordService --> MedicalRecordRepository : uses
+MedicalRecordRepository --> MedicalRecord : manages
+MedicalRecord --> Condition : contains
+MedicalRecord --> Allergy : contains
 
 @enduml

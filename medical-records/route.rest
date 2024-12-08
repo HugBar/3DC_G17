@@ -137,3 +137,6 @@ Content-Type: application/json
     ]
 }
 
+###
+
+GET http://localhost:3001/medical-records/
