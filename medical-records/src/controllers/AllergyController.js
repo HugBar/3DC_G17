@@ -81,3 +81,13 @@ exports.searchAllergies = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getAllergyDetails = async (req, res) => {
+    try {
+        const allergies = await AllergyService.getAllAllergies();
+        res.status(200).json(allergies);
+    } catch (error) {
+        console.error('Error fetching allergies:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};

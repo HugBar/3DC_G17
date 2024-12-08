@@ -1,4 +1,6 @@
 const MedicalRecord = require('../models/MedicalRecord');
+const UpdateMedicalRecordDto = require('../dtos/UpdateMedicalRecordDto');
+const MedicalRecordService = require('../services/MedicalRecordService');
 
 exports.createMedicalRecord = async (req, res) => {
     try {
@@ -31,18 +33,29 @@ exports.getMedicalRecordByPatientId = async (req, res) => {
     }
 };
 
-exports.updateMedicalRecord = async (req, res) => {
+exports.updatePatientConditionsAndAllergies = async (req, res) => {
     try {
-        const record = await MedicalRecord.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
+        const { patientId } = req.params;
+        const { conditions, allergies } = req.body;
+        
+        const updateDto = new UpdateMedicalRecordDto(conditions, allergies);
+        
+        const existingRecord = await MedicalRecord.findOne({ patientId });
+        const isNewRecord = !existingRecord;
+        
+        const updatedRecord = await MedicalRecordService.updatePatientConditionsAndAllergies(
+            patientId, 
+            updateDto
         );
-        if (!record) {
-            return res.status(404).json({ message: 'Medical record not found' });
-        }
-        res.json(record);
+
+        res.status(isNewRecord ? 201 : 200).json({
+            message: isNewRecord ? 
+                'Medical record created successfully' : 
+                'Medical record updated successfully',
+            record: updatedRecord
+        });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        console.error('Error updating medical record:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };

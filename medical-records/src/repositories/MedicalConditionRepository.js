@@ -11,6 +11,12 @@
 const MedicalRecord = require('../models/MedicalRecord');
 const MedicalCondition = require('../models/MedicalCondition');
 
+const sanitizeCondition = (condition) => ({
+    _id: condition._id,
+    name: condition.name,
+    severity: condition.severity
+});
+
 /**
  * Finds a medical record by patient ID
  * @param {string} patientId - The ID of the patient
@@ -85,4 +91,9 @@ exports.findByFilters = async (filters) => {
     }
 
     return MedicalCondition.find(query);
+};
+
+exports.getAllConditionsWithDetails = async () => {
+    const conditions = await MedicalCondition.find();
+    return conditions ? conditions.map(condition => sanitizeCondition(condition)) : [];
 };

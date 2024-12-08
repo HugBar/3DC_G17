@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/database');
-const medicalRecordRoute = require('./routes/MedicalRecord');
 require('dotenv').config();
 
 const medicalRecordsRoutes = require('./routes/medicalRecords');
@@ -22,10 +21,9 @@ app.use(cors({
 }));
 
 //Routes
-app.use('/medical-records', medicalRecordRoute);
 app.use('/allergies', allergyRoutes);
 app.use('/medical-conditions', medicalConditionRoutes);
-app.use('/api/medical-records', medicalRecordsRoutes);
+app.use('/medical-records', medicalRecordsRoutes);
 app.use('/api/specializations', specializationRoutes);
 
 // Basic health check route

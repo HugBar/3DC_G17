@@ -77,6 +77,19 @@ class MedicalConditionService {
             throw error;
         }
     }
+
+
+    async getAllConditions() {
+        try {
+            const conditions = await MedicalConditionRepository.getAllConditionsWithDetails();
+            if (!conditions || conditions.length === 0) {
+                return [];
+            }
+            return conditions;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 module.exports = new MedicalConditionService();

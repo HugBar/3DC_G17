@@ -7,5 +7,6 @@ const AllergyController = require('../controllers/AllergyController');
 router.post('/add-allergy', AllergyController.addAllergyModel);
 
 router.get('/search', AllergyController.searchAllergies);
+router.get('/getAllergyDetails', AllergyController.getAllergyDetails);
 
 module.exports = router;

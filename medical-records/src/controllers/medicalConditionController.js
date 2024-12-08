@@ -84,3 +84,13 @@ exports.searchMedicalConditions = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getConditionDetails = async (req, res) => {
+    try {
+        const conditions = await MedicalConditionService.getAllConditions();
+        res.status(200).json(conditions);
+    } catch (error) {
+        console.error('Error fetching conditions:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};

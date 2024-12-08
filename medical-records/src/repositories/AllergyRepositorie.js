@@ -1,6 +1,12 @@
 const MedicalRecord = require('../models/MedicalRecord');
 const Allergy = require('../models/Allergy');
 
+const sanitizeAllergy = (allergy) => ({
+    _id: allergy._id,
+    name: allergy.allergen,
+    severity: allergy.severity
+});
+
 exports.findByPatientId = async (patientId) => {
     return await MedicalRecord.findOne({ patientId });
 };
@@ -53,3 +59,8 @@ exports.findByFilters = async (filters) => {
 
     return Allergy.find(query);
 }
+
+exports.getAllAllergiesWithDetails = async () => {
+    const allergies = await Allergy.find();
+    return allergies ? allergies.map(allergy => sanitizeAllergy(allergy)) : [];
+};
