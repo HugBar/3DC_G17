@@ -1,51 +1,77 @@
-@startuml namespace US 7.2.6 sequence diagram
-title US 7.2.6 Update Patient Medical Record sequence diagram
+@startuml Update Medical Record Sequence Diagram
 
 actor Doctor
-participant "Frontend" as FE
-participant "MedicalRecordController" as MC
-participant "MedicalRecordService" as MS
-participant "MedicalRecordRepository" as MR
-database "Database" as DB
+participant Frontend as "UpdateMedicalRecord Component"
+participant FrontendService as "MedicalRecordService (Frontend)"
+participant Controller as "MedicalRecordController"
+participant Service as "MedicalRecordService (Backend)"
+participant Repository as "MedicalRecordRepository"
+participant Database as "MongoDB"
 
-Doctor -> FE: Update Medical Record
-activate FE
+Doctor -> Frontend: Access Update Medical Record Page
+activate Frontend
 
-FE -> MC: PUT /medical-records/update/{patientId}
-activate MC
+Frontend -> FrontendService: getAllMedicalConditions()
+Frontend -> FrontendService: getAllAllergies()
+activate FrontendService
 
-MC -> MC: Create UpdateMedicalRecordDto
-MC -> MR: findByPatientId(patientId)
-activate MR
+FrontendService --> Frontend: Available conditions and allergies
+deactivate FrontendService
 
-MR -> DB: findOne({patientId})
-DB --> MR: record/null
-MR --> MC: record/null
+Doctor -> Frontend: Enter patient ID
+Doctor -> Frontend: Click Search
+Frontend -> FrontendService: getMedicalRecord(patientId)
+activate FrontendService
 
-MC -> MS: updatePatientConditionsAndAllergies(patientId, dto)
-activate MS
+FrontendService -> Controller: GET /medical-records/{patientId}
+activate Controller
 
-alt No Existing Record
-    MS -> MR: create(newRecordData)
-    MR -> DB: create()
-    DB --> MR: newRecord
-    MR --> MS: newRecord
+Controller -> Repository: findByPatientId(patientId)
+activate Repository
+Repository -> Database: Query
+Database --> Repository: Result
+Repository --> Controller: Medical Record
+deactivate Repository
+
+Controller --> FrontendService: Response
+FrontendService --> Frontend: Medical Record data
+deactivate FrontendService
+
+Frontend --> Doctor: Display current conditions and allergies
+
+Doctor -> Frontend: Modify conditions/allergies
+Doctor -> Frontend: Click Update
+Frontend -> FrontendService: updateMedicalRecord(patientId, updateData)
+activate FrontendService
+
+FrontendService -> Controller: PUT /medical-records/update/{patientId}
+activate Controller
+
+Controller -> Service: updatePatientConditionsAndAllergies(patientId, updateDto)
+activate Service
+
+Service -> Repository: findByPatientId(patientId)
+Repository -> Database: Query
+Database --> Repository: Result
+
+alt Record Exists
+    Service -> Repository: update(patientId, updateData)
+else Record Not Found
+    Service -> Repository: create(newRecordData)
 end
 
-MS -> MR: update(patientId, updateData)
-MR -> DB: findOneAndUpdate()
-DB --> MR: updatedRecord
-MR --> MS: sanitizedRecord
+Repository -> Database: Save
+Database --> Repository: Updated Record
+Repository --> Service: Result
+Service --> Controller: Updated Record
+Controller --> FrontendService: Response
+FrontendService --> Frontend: Success message
 
-MS --> MC: updatedRecord
-deactivate MS
+Frontend --> Doctor: Display success message
 
-alt New Record Created
-    MC --> FE: 201 Created
-else Record Updated
-    MC --> FE: 200 OK
-end
-
-FE --> Doctor: Display Success Message
+deactivate Service
+deactivate Controller
+deactivate FrontendService
+deactivate Frontend
 
 @enduml

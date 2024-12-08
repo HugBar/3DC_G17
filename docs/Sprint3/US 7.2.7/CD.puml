@@ -1,53 +1,55 @@
-@startuml namespace class Diagram 
-title "Class Diagram US 6.2.7"
+@startuml Search Medical Record Class Diagram
 
-class UpdatePatientAdmin {
-    -originalData: object
-    -patientData: object
-    -successMessage: string
-    -errorMessage: string
-    -navigate: useNavigate
-    +handleChange(event): void
-    +validateFields(): string|null
-    +handleSubmit(event): void
-    +fetchPatientData(): Promise
-    +render(): JSX
+' Frontend Components
+class SearchMedicalRecord {
+  -patientId: string
+  -conditionName: string
+  -allergyName: string
+  -record: MedicalRecord
+  -loading: boolean
+  -error: string
+  +handleSearch(): void
+  +render(): JSX.Element
 }
 
-class PatientService {
-    -API_URL: string
-    +getAuthToken(): string
-    +checkAdminRole(token): void
-    +getPatientById(patientId): Promise
-    +updatePatientProfile(patientId, updateData): Promise
+class MedicalRecordService {
+  -API_URL: string
+  +searchMedicalRecord(patientId: string, conditionName?: string, allergyName?: string): Promise<Response>
 }
 
-class UpdatePatientDto {
-    +firstName: string
-    +lastName: string
-    +email: string
-    +phoneNumber: string
-    +dateOfBirth: string
-    +gender: string
-    +contactInfo: string
-    +emergencyContact: string
-    +medicalHistory: string
-    +medicalNr: string
+' Backend Components
+class MedicalRecordController {
+  +searchMedicalRecord(req: Request, res: Response): Promise<void>
 }
 
-class UpdatePatientCSS {
-    <<interface>>
-    +update-profile-container: style
-    +update-profile-form: style
-    +form-group: style
-    +update-button: style
-    +success-message: style
-    +error-message: style
+class MedicalRecordService {
+  +searchMedicalRecord(searchDto: SearchMedicalRecordDto): Promise<MedicalRecord>
 }
 
-UpdatePatientAdmin --> PatientService : uses
-UpdatePatientAdmin --> UpdatePatientDto : uses
-UpdatePatientAdmin --> UpdatePatientCSS : styles
-PatientService ..> UpdatePatientDto : handles
+class MedicalRecordRepository {
+  +findByPatientId(patientId: string): Promise<MedicalRecord>
+}
+
+class SearchMedicalRecordDto {
+  +patientId: string
+  +conditionName: string
+  +allergyName: string
+  +validate(): void
+}
+
+class MedicalRecord {
+  +patientId: string
+  +conditions: Condition[]
+  +allergies: Allergy[]
+  +lastUpdated: Date
+}
+
+' Relationships
+SearchMedicalRecord --> MedicalRecordService: uses
+MedicalRecordController --> MedicalRecordService: uses
+MedicalRecordService --> MedicalRecordRepository: uses
+MedicalRecordService --> SearchMedicalRecordDto: uses
+MedicalRecordController ..> SearchMedicalRecordDto: creates
+MedicalRecordRepository --> MedicalRecord: manages
 
 @enduml

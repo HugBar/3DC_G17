@@ -1,45 +1,46 @@
-@startuml Add New Specialization Class Diagram
+@startuml Create Specialization Class Diagram
 
 ' Frontend Components
 class CreateSpecialization {
-  - specializationData: {name: string, description: string}
-  - successMessage: string
-  - errorMessage: string
-  + handleChange(e: Event): void
-  + handleSubmit(e: Event): void
-  + render(): JSX.Element
+  -specializationData: {name: string, description: string}
+  -successMessage: string
+  -errorMessage: string
+  +handleChange(e: Event): void
+  +handleSubmit(e: Event): void
+  +render(): JSX.Element
 }
 
 class SpecializationService {
-  - API_URL: string
-  + getAllSpecializations(): Promise<Specialization[]>
-  + addSpecialization(data: SpecializationData): Promise<Response>
+  -API_URL: string
+  +addSpecialization(data: SpecializationData): Promise<Response>
 }
 
 ' Backend Components
 class SpecializationController {
-  + addSpecialization(req: Request, res: Response): Promise<void>
-  + getAllSpecializations(req: Request, res: Response): Promise<void>
-  + getSpecializationById(req: Request, res: Response): Promise<void>
+  +addSpecialization(req: Request, res: Response): Promise<void>
 }
 
 class SpecializationService {
-  + {static} addSpecialization(specializationDto: SpecializationDto): Promise<Specialization>
-  + {static} getAllSpecializations(): Promise<Specialization[]>
-  + {static} getSpecializationById(id: string): Promise<Specialization>
+  +{static} addSpecialization(specializationDto: SpecializationDto): Promise<Specialization>
 }
 
 class SpecializationRepository {
-  + findByName(name: string): Promise<Specialization>
-  + create(specialization: SpecializationData): Promise<Specialization>
-  + findAll(): Promise<Specialization[]>
-  + findById(id: string): Promise<Specialization>
+  +findByName(name: string): Promise<Specialization>
+  +create(specialization: SpecializationData): Promise<Specialization>
 }
 
 class SpecializationDto {
-  + name: string
-  + description: string
-  + constructor(name: string, description: string)
+  +name: string
+  +description: string
+  +constructor(name: string, description: string)
+}
+
+class Specialization {
+  +id: string
+  +name: string
+  +description: string
+  +createdAt: Date
+  +updatedAt: Date
 }
 
 ' Relationships
@@ -48,5 +49,6 @@ SpecializationController --> SpecializationService: uses
 SpecializationService --> SpecializationRepository: uses
 SpecializationService --> SpecializationDto: uses
 SpecializationController ..> SpecializationDto: creates
+SpecializationRepository --> Specialization: manages
 
 @enduml

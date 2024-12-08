@@ -1,19 +1,17 @@
-@startuml Add New Specialization Sequence Diagram
+@startuml Create Specialization Sequence Diagram
 
 actor Admin
-participant "CreateSpecialization\nComponent" as Frontend
-participant "SpecializationService\n(Frontend)" as FrontendService
-participant "SpecializationController" as Controller
-participant "SpecializationService\n(Backend)" as Service
-participant "SpecializationRepository" as Repository
-database Database
+participant Frontend as "CreateSpecialization Component"
+participant FrontendService as "SpecializationService (Frontend)"
+participant Controller as "SpecializationController"
+participant Service as "SpecializationService (Backend)"
+participant Repository as "SpecializationRepository"
+participant Database as "MongoDB"
 
-' Initial Form Display
 Admin -> Frontend: Access Add Specialization Page
 activate Frontend
 Frontend --> Admin: Display specialization form
 
-' Form Submission Flow
 Admin -> Frontend: Fill specialization details
 Admin -> Frontend: Submit form
 Frontend -> Frontend: handleSubmit()
@@ -27,7 +25,6 @@ activate Controller
 Controller -> Service: addSpecialization(specializationDto)
 activate Service
 
-' Check Existing
 Service -> Repository: findByName(name)
 activate Repository
 Repository -> Database: Query
