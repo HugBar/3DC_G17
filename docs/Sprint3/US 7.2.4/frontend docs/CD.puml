@@ -1,0 +1,50 @@
+@startuml CD
+title "Class Diagram - Add Medical Condition (Frontend)"
+
+class AddMedicalCondition {
+  -medicalConditionData: {name: string, severity: string, description: string}
+  -successMessage: string
+  -errorMessage: string
+  +handleChange(event): void
+  +handleSubmit(event): void
+  +render(): JSX.Element
+}
+
+class MedicalConditionService {
+  -baseUrl: string
+  +addMedicalCondition(medicalConditionData: MedicalConditionDTO): Promise<void>
+  +getAuthToken(): string
+}
+
+class MedicalConditionDTO {
+  +name: string
+  +severity: string
+  +description: string
+  +toRequest(): object
+  +{static} fromResponse(data: any): MedicalConditionDTO
+}
+
+class AddMedicalConditionCSS {
+  +add-medical-condition-container
+  +medical-condition-form
+  +form-group
+  +submit-button
+  +success-message
+  +error-message
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+AddMedicalCondition --> MedicalConditionService: uses
+AddMedicalCondition --> MedicalConditionDTO: creates
+AddMedicalCondition --> AddMedicalConditionCSS: styles
+MedicalConditionService --> MedicalConditionDTO: uses
+MedicalConditionDTO --> Severity: uses
+
+
+
+@enduml

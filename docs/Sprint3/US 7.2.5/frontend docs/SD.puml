@@ -1,0 +1,70 @@
+@startuml SD
+title "Sequence Diagram - Search Medical Conditions (Frontend)"
+
+actor Doctor
+participant "App" as App
+participant "SearchMedicalCondition" as SearchMC
+participant "MedicalConditionDTO" as DTO
+participant "MedicalConditionService" as Service
+participant "API" as API
+
+activate Doctor
+
+Doctor -> App: Acessa "/medical-conditions/search"
+activate App
+
+App -> SearchMC: Renderiza componente
+deactivate App
+activate SearchMC
+
+SearchMC -> SearchMC: useEffect()\nCarrega filtros da URL
+
+alt Preenche Filtros
+    Doctor -> SearchMC: Preenche nome e/ou severidade
+    SearchMC -> SearchMC: handleFilterChange()
+    SearchMC -> SearchMC: updateURL()\nAtualiza URL com filtros
+end
+
+Doctor -> SearchMC: Clica em "Search"
+SearchMC -> SearchMC: handleSearch()
+SearchMC -> SearchMC: setShouldSearch(true)
+
+SearchMC -> SearchMC: useEffect(shouldSearch)
+SearchMC -> SearchMC: searchConditions()
+
+SearchMC -> Service: searchMedicalConditions(activeFilters)
+activate Service
+
+Service -> API: GET /medical-conditions/search
+activate API
+
+alt Sucesso
+    API --> Service: status: 200\n{conditions: [...]}
+    Service --> SearchMC: response.data
+    
+    loop Para cada condição
+        SearchMC -> DTO: fromResponse(condition)
+        activate DTO
+        DTO --> SearchMC: medicalConditionDto
+        deactivate DTO
+    end
+    
+    SearchMC -> SearchMC: setConditions(mappedConditions)
+    SearchMC --> Doctor: Exibe lista de condições
+
+else Não Encontrado (404)
+    API --> Service: status: 404
+    Service --> SearchMC: throw error
+    SearchMC -> SearchMC: setConditions([])\nsetErrorMessage()
+    SearchMC --> Doctor: Exibe "Nenhuma condição médica encontrada"
+
+else Erro (500)
+    API --> Service: status: 500
+    deactivate API
+    Service --> SearchMC: throw error
+    deactivate Service
+    SearchMC -> SearchMC: setErrorMessage()
+    SearchMC --> Doctor: Exibe mensagem de erro
+    deactivate SearchMC
+end
+@enduml

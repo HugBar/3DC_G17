@@ -1,0 +1,75 @@
+@startuml CD
+title "Class Diagram - Search Medical Conditions (Frontend)"
+
+class SearchMedicalCondition {
+  -navigate: function
+  -location: Location
+  -conditions: MedicalConditionDTO[]
+  -errorMessage: string
+  -selectedCondition: MedicalConditionDTO
+  -filters: {name: string, severity: string}
+  -shouldSearch: boolean
+  +handleFilterChange(event): void
+  +updateURL(currentFilters): void
+  +clearFilters(): void
+  +searchConditions(): Promise<void>
+  +handleSearch(): void
+  +render(): JSX.Element
+}
+
+class MedicalConditionService {
+  -baseUrl: string
+  +getAuthToken(): string
+  +searchMedicalConditions(searchParams): Promise<any>
+}
+
+class MedicalConditionDTO {
+  +name: string
+  +severity: string
+  +description: string
+  +constructor(name, severity, description)
+  +{static} fromResponse(data): MedicalConditionDTO
+  +toRequest(): object
+}
+
+class SearchMedicalConditionCSS {
+  +medical-condition-search-container
+  +filter-group
+  +filters-section
+  +filters-inputs
+  +filters-buttons
+  +conditions-grid
+  +condition-card
+  +condition-details-modal
+  +modal-content
+  +details-grid
+  +modal-actions
+  +error-message
+  +no-results
+  +search-button
+  +clear-filters-button
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+class App {
+  -showStaffActions: boolean
+  -selectedStaffAction: string
+  +handleStaffClick(): void
+  +handleMoreClick(): void
+  +render(): JSX.Element
+}
+
+SearchMedicalCondition --> MedicalConditionService: uses
+SearchMedicalCondition --> MedicalConditionDTO: creates/uses
+SearchMedicalCondition --> SearchMedicalConditionCSS: styles
+MedicalConditionService --> MedicalConditionDTO: uses
+MedicalConditionDTO --> Severity: uses
+App --> SearchMedicalCondition: routes to
+
+
+@enduml

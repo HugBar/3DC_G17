@@ -87,13 +87,17 @@ exports.findByFilters = async (filters) => {
     }
 
     if (filters.severity) {
-        query.severity = filters.severity;
+        query.severity = filters.severity.toUpperCase();
     }
 
+
+    const results = await MedicalCondition.find(query);
+    return results;
     return MedicalCondition.find(query);
 };
 
 exports.getAllConditionsWithDetails = async () => {
     const conditions = await MedicalCondition.find();
     return conditions ? conditions.map(condition => sanitizeCondition(condition)) : [];
+
 };

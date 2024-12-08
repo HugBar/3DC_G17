@@ -1,5 +1,5 @@
-@startuml
-title "Sequence Diagram - Search Medical Condition"
+@startuml SD
+title "Sequence Diagram - Search Medical Condition (Backend)"
 
 actor Doctor
 participant "MedicalConditionRoutes" as Routes
