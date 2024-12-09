@@ -32,7 +32,7 @@ Content-Type: application/json
 ###
 
 
-GET http://localhost:3001/medical-conditions/search?name=teste1
+GET http://localhost:3001/medical-conditions/search?severity=High
 ###
 GET http://localhost:3001/medical-conditions/search
 
