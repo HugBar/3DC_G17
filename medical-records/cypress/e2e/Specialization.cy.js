@@ -235,5 +235,107 @@ describe('Specialization API E2E Tests', () => {
       expect(response.body.message).to.eq('Specialization not found');
     });
   });
-
-});
+    it('should delete a specialization successfully', () => {
+      const uniqueName = `TestSpecialization_ToDelete_${Date.now()}`;
+      
+      // First create a specialization to delete
+      cy.request({
+        method: 'POST',
+        url: `${baseUrl}`,
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        },
+        body: {
+          name: uniqueName,
+          description: 'Test description for deletion'
+        }
+      }).then((createResponse) => {
+        expect(createResponse.status).to.eq(201);
+        const specializationId = createResponse.body.specialization._id;
+  
+        // Now delete the specialization
+        cy.request({
+          method: 'DELETE',
+          url: `${baseUrl}/${specializationId}`,
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        }).then((deleteResponse) => {
+          expect(deleteResponse.status).to.eq(200);
+          expect(deleteResponse.body.message).to.eq('Specialization deleted successfully');
+          
+          // Verify the specialization was deleted by attempting to get it
+          cy.request({
+            method: 'GET',
+            url: `${baseUrl}/${specializationId}`,
+            headers: {
+              Authorization: `Bearer ${authToken}`
+            },
+            failOnStatusCode: false
+          }).then((getResponse) => {
+            expect(getResponse.status).to.eq(404);
+            expect(getResponse.body.message).to.eq('Specialization not found');
+          });
+        });
+      });
+    });
+  
+    it('should handle deletion of non-existent specialization', () => {
+      const nonExistentId = '507f1f77bcf86cd799439011';
+  
+      cy.request({
+        method: 'DELETE',
+        url: `${baseUrl}/${nonExistentId}`,
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        },
+        failOnStatusCode: false
+      }).then((response) => {
+        expect(response.status).to.eq(404);
+        expect(response.body.message).to.eq('Specialization not found');
+      });
+    });
+  
+    it('should verify specialization is removed from the list after deletion', () => {
+      const uniqueName = `TestSpecialization_VerifyDelete_${Date.now()}`;
+      
+      // First create a specialization
+      cy.request({
+        method: 'POST',
+        url: `${baseUrl}`,
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        },
+        body: {
+          name: uniqueName,
+          description: 'Test description for deletion verification'
+        }
+      }).then((createResponse) => {
+        const specializationId = createResponse.body.specialization._id;
+  
+        // Delete the specialization
+        cy.request({
+          method: 'DELETE',
+          url: `${baseUrl}/${specializationId}`,
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        }).then(() => {
+          // Get all specializations and verify the deleted one is not present
+          cy.request({
+            method: 'GET',
+            url: `${baseUrl}`,
+            headers: {
+              Authorization: `Bearer ${authToken}`
+            }
+          }).then((getAllResponse) => {
+            expect(getAllResponse.status).to.eq(200);
+            const specializations = getAllResponse.body.map(spec => spec.name);
+            expect(specializations).to.not.include(uniqueName);
+          });
+        });
+      });
+    });
+  
+  });
+  
