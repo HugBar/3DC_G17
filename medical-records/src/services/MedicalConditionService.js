@@ -71,15 +71,18 @@ class MedicalConditionService {
      */
     async searchMedicalConditions(searchDto) {
         try {
-            console.log('Recebido no service:', searchDto);
+            console.log('====== SERVICE ======');
+            console.log('SearchDTO received:', searchDto);
+    
             const conditions = await MedicalConditionRepository.findByFilters(searchDto);
-            // Retornar as condições diretamente
+    
             return conditions;
         } catch (error) {
-            console.error('Erro na busca:', error);
+            console.error('Service error:', error);
             throw error;
         }
     }
+    
 
 
     async getAllConditions() {

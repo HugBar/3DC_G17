@@ -85,15 +85,12 @@ exports.findByFilters = async (filters) => {
     if (filters.name) {
         query.name = new RegExp(filters.name, 'i');
     }
-
     if (filters.severity) {
-        query.severity = filters.severity.toUpperCase();
+        query.severity = filters.severity;
     }
-
-
     const results = await MedicalCondition.find(query);
+
     return results;
-    return MedicalCondition.find(query);
 };
 
 exports.getAllConditionsWithDetails = async () => {

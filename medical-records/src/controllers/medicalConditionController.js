@@ -77,13 +77,18 @@ exports.addMedicalConditionModel = async (req, res) => {
 exports.searchMedicalConditions = async (req, res) => {
     try {
         const { name, severity } = req.query;
+
         const searchDto = new SearchMedicalConditionDto(name, severity);
+
         const conditions = await MedicalConditionService.searchMedicalConditions(searchDto);
+
         res.status(200).json(conditions);
     } catch (error) {
+        console.error('Controller error:', error);
         res.status(500).json({ error: error.message });
     }
 };
+
 
 exports.getConditionDetails = async (req, res) => {
     try {
