@@ -71,7 +71,7 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:3001/api/specializations/search?description=deals
+GET http://localhost:3001/api/specializations/search?name=Cardio
 
 ###
 
