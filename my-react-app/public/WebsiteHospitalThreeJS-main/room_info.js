@@ -3,50 +3,23 @@ class RoomInfo {
         this.visible = false;
         this.currentRoom = null;
         this.overlay = this.createOverlay();
-        
-        // Informações estáticas das salas
-        this.roomsData = {
-            'OR-101': {
-                id: 'OR-101',
-                status: "Ocupada",
-                type: "Sala de Cirurgia",
-                capacity: 4,
-                assignedDoctor: "Dr. Silva",
-                assignedPatient: "João Santos"
-            },
-            'OR-102': {
-                id: 'OR-102',
-                status: "Disponível",
-                type: "Sala de Cirurgia",
-                capacity: 4,
-                assignedDoctor: "Não atribuído",
-                assignedPatient: "Não atribuído"
-            },
-            'OR-103': {
-                id: 'OR-103',
-                status: "Ocupada",
-                type: "Sala de Cirurgia",
-                capacity: 4,
-                assignedDoctor: "Dra. Costa",
-                assignedPatient: "Maria Oliveira"
-            },
-            'OR-104': {
-                id: 'OR-104',
-                status: "Em Limpeza",
-                type: "Sala de Cirurgia",
-                capacity: 4,
-                assignedDoctor: "Não atribuído",
-                assignedPatient: "Não atribuído"
-            },
-            'OR-105': {
-                id: 'OR-105',
-                status: "Ocupada",
-                type: "Sala de Cirurgia",
-                capacity: 4,
-                assignedDoctor: "Dr. Pereira",
-                assignedPatient: "Ana Lima"
+        this.roomsData = {};
+        this.loadRoomsData();
+    }
+
+    async loadRoomsData() {
+        try {
+            const rooms = ['OR-101', 'OR-102', 'OR-103', 'OR-104', 'OR-105'];
+            for (const roomId of rooms) {
+                const response = await fetch(`https://localhost:5001/api/surgery-room/${roomId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    this.roomsData[roomId] = data;
+                }
             }
-        };
+        } catch (error) {
+            console.error("Error fetching room data:", error);
+        }
     }
 
     createOverlay() {
@@ -54,12 +27,16 @@ class RoomInfo {
         overlay.style.position = 'absolute';
         overlay.style.top = '20px';
         overlay.style.right = '20px';
-        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-        overlay.style.color = 'white';
-        overlay.style.padding = '20px';
-        overlay.style.borderRadius = '5px';
+        overlay.style.backgroundColor = 'rgba(25, 25, 25, 0.95)';
+        overlay.style.color = '#ffffff';
+        overlay.style.padding = '25px';
+        overlay.style.borderRadius = '10px';
         overlay.style.display = 'none';
         overlay.style.zIndex = '1000';
+        overlay.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.3)';
+        overlay.style.minWidth = '300px';
+        overlay.style.fontFamily = 'Arial, sans-serif';
+        overlay.style.border = '1px solid rgba(255, 255, 255, 0.1)';
         document.body.appendChild(overlay);
         return overlay;
     }
@@ -68,13 +45,82 @@ class RoomInfo {
         const roomData = this.roomsData[roomNumber];
         if (!roomData) return;
 
+        const getStatusColor = (status) => {
+            switch(status.toLowerCase()) {
+                case 'available': return '#4CAF50'; // Green
+                case 'occupied': return '#f44336';  // Red
+                case 'maintenance': return '#ff9800'; // Yellow
+                default: return '#ffffff';
+            }
+        };
+
+        const maintenanceInfo = roomData.maintenanceSlots.length > 0 
+            ? roomData.maintenanceSlots.map(slot => 
+                `<div class="maintenance-slot">
+                    <span>📅 ${new Date(slot.startTime).toLocaleDateString()}</span>
+                    <span>${new Date(slot.startTime).toLocaleTimeString()} - ${new Date(slot.endTime).toLocaleTimeString()}</span>
+                 </div>`
+              ).join('')
+            : '<p class="no-maintenance">No scheduled maintenance</p>';
+
         this.overlay.innerHTML = `
-            <h3>Sala ${roomData.id}</h3>
-            <p>Status: ${roomData.status}</p>
-            <p>Tipo: ${roomData.type}</p>
-            <p>Capacidade: ${roomData.capacity}</p>
-            <p>Médico: ${roomData.assignedDoctor}</p>
-            <p>Paciente: ${roomData.assignedPatient}</p>
+            <style>
+                .room-header { 
+                    font-size: 24px;
+                    margin-bottom: 20px;
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                    padding-bottom: 10px;
+                }
+                .room-info-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 10px 0;
+                    align-items: center;
+                }
+                .status-badge {
+                    padding: 5px 10px;
+                    border-radius: 15px;
+                    font-weight: bold;
+                }
+                .maintenance-slot {
+                    background: rgba(255,255,255,0.1);
+                    padding: 10px;
+                    margin: 5px 0;
+                    border-radius: 5px;
+                    display: flex;
+                    justify-content: space-between;
+                }
+                .section-title {
+                    font-size: 16px;
+                    margin: 15px 0 10px 0;
+                    color: #aaa;
+                }
+                .no-maintenance {
+                    color: #888;
+                    font-style: italic;
+                }
+            </style>
+            <div class="room-header">Room ${roomData.id}</div>
+            <div class="room-info-row">
+                <span>Status:</span>
+                <span class="status-badge" style="background-color: ${getStatusColor(roomData.status)}">
+                    ${roomData.status}
+                </span>
+            </div>
+            <div class="room-info-row">
+                <span>Type:</span>
+                <span>${roomData.type}</span>
+            </div>
+            <div class="room-info-row">
+                <span>Capacity:</span>
+                <span>${roomData.capacity} people</span>
+            </div>
+            <div class="section-title">Equipment</div>
+            <div style="color: #ddd">
+                ${roomData.assignedEquipment.length ? roomData.assignedEquipment.join(', ') : 'No equipment assigned'}
+            </div>
+            <div class="section-title">Maintenance Schedule</div>
+            ${maintenanceInfo}
         `;
     }
 

@@ -180,6 +180,7 @@ export default class ThumbRaiser {
         this.vendingMachineParameters = merge({}, vendingMachineData, vendingMachineParameters);
         
         this.roomInfo = new RoomInfo();
+        this.initialize().catch(console.error);
         
         // Create a 2D scene (the viewports frames)
         this.scene2D = new THREE.Scene();
@@ -427,12 +428,33 @@ export default class ThumbRaiser {
 
     }
 
+    async initialize() {
+        await this.loadRoomData();
+        this.checkRoomStatus();
+    }
+
+    async loadRoomData() {
+        try {
+            const rooms = ['OR-101', 'OR-102', 'OR-103', 'OR-104', 'OR-105'];
+            for (const roomId of rooms) {
+                const response = await fetch(`https://localhost:5001/api/surgery-room/${roomId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    this.roomInfo.roomsData[roomId] = data;
+                }
+            }
+        } catch (error) {
+            console.error("Error loading room data:", error);
+        }
+    }
+
     async checkRoomStatus() {
         const rooms = [
             { id: 'OR-101', patientPosition: { x: 6.70, z: 3.40 } },
             { id: 'OR-102', patientPosition: { x: 3.70, z: 3.40 } },
             { id: 'OR-103', patientPosition: { x: 0.70, z: 3.40 } },
             { id: 'OR-104', patientPosition: { x: -2.30, z: 3.40 } }
+            
         ];
     
         try {
