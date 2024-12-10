@@ -117,10 +117,12 @@ const SearchAllergy = () => {
                             value={filters.allergen}
                             onChange={handleFilterChange}
                         />
-                        <select
+                        <select 
                             name="severity"
                             value={filters.severity}
                             onChange={handleFilterChange}
+                            data-testid="severity-select"
+                            className="form-control"
                         >
                             <option value="">Select Severity</option>
                             <option value="Low">Low</option>
