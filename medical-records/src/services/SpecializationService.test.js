@@ -199,8 +199,16 @@ describe('SpecializationService', () => {
             };
     
             const mockSpecializations = [
-                { id: '1', name: 'Cardiology', description: 'Heart specialist' },
-                { id: '2', name: 'Cardio Surgery', description: 'Heart surgery' }
+                { 
+                    _id: '1', 
+                    name: 'Cardiology', 
+                    description: 'Heart specialist' 
+                },
+                { 
+                    _id: '2', 
+                    name: 'Cardio Surgery', 
+                    description: 'Heart surgery' 
+                }
             ];
     
             SpecializationRepository.searchSpecialization.mockResolvedValue(mockSpecializations);
@@ -209,13 +217,12 @@ describe('SpecializationService', () => {
     
             expect(SpecializationRepository.searchSpecialization).toHaveBeenCalledWith(mockSearchDto);
             expect(result).toHaveLength(mockSpecializations.length);
-            expect(result[0]).toBeInstanceOf(SpecializationDto);
-            expect(result[0]).toEqual(
-                expect.objectContaining({
-                    name: mockSpecializations[0].name,
-                    description: mockSpecializations[0].description
-                })
-            );
+            // Remove SpecializationDto instance check since we're returning plain objects
+            expect(result[0]).toEqual({
+                _id: mockSpecializations[0]._id,
+                name: mockSpecializations[0].name,
+                description: mockSpecializations[0].description
+            });
         });
     
         test('should handle empty search results', async () => {
@@ -440,4 +447,4 @@ describe('SpecializationService', () => {
                 .toThrow('Database error');
         });
     });
-}); 
+});
