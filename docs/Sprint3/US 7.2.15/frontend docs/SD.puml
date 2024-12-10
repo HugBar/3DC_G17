@@ -1,0 +1,68 @@
+@startuml SD
+title "Sequence Diagram - Remove Specialization (Frontend)"
+
+actor Admin
+participant "App" as App
+participant "SearchSpecialization" as SearchSpec
+participant "RemoveSpecialization" as RemoveSpec
+participant "SpecializationService" as Service
+participant "API" as API
+
+activate Admin
+Admin -> App: Acessa "/specializations/search"
+activate App
+App -> SearchSpec: Renderiza componente
+deactivate App
+activate SearchSpec
+
+' Initial load
+SearchSpec -> Service: searchSpecializations({})
+activate Service
+Service -> API: GET /api/specializations/search
+activate API
+API --> Service: status: 200\n{specializations: [...]}
+deactivate API
+Service --> SearchSpec: response.data
+deactivate Service
+deactivate API
+
+Admin -> SearchSpec: Seleciona especialização
+SearchSpec -> SearchSpec: setSelectedSpecialization()
+SearchSpec --> Admin: Exibe modal de detalhes
+deactivate SearchSpec
+
+Admin -> SearchSpec: Clica em "Delete"
+activate SearchSpec
+SearchSpec -> App: navigate(`/specializations/remove/${id}`)
+deactivate SearchSpec
+activate App
+App -> RemoveSpec: Renderiza componente
+deactivate App
+activate RemoveSpec
+
+Admin -> RemoveSpec: Clica em "Yes, Delete"
+RemoveSpec -> Service: deleteSpecialization(id)
+activate Service
+Service -> API: DELETE /api/specializations/{id}
+activate API
+alt Sucesso
+    API --> Service: status: 200\n{message: "Deleted successfully"}
+    Service --> RemoveSpec: response.data
+    RemoveSpec -> RemoveSpec: setIsDeleted(true)
+    RemoveSpec -> RemoveSpec: setSuccessMessage()
+    RemoveSpec --> Admin: Exibe mensagem de sucesso
+    RemoveSpec -> App: navigate('/specializations/search')
+else Erro
+    API --> Service: status: 404/500
+    deactivate API
+    Service --> RemoveSpec: error
+    deactivate Service
+    RemoveSpec -> RemoveSpec: setError()
+    RemoveSpec --> Admin: Exibe mensagem de erro
+    deactivate RemoveSpec
+end
+deactivate API
+deactivate Service
+deactivate RemoveSpec
+deactivate SearchSpec
+@enduml
