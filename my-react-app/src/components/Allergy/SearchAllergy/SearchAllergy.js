@@ -20,6 +20,21 @@ const SearchAllergy = () => {
     const [shouldSearch, setShouldSearch] = useState(false);
 
     useEffect(() => {
+        const loadInitialAllergies = async () => {
+            try {
+                const response = await allergyService.searchAllergies({});
+                setAllergies(response);
+                setErrorMessage('');
+            } catch (error) {
+                setAllergies([]);
+                setErrorMessage('Error loading allergies');
+            }
+        };
+    
+        loadInitialAllergies();
+    }, []); 
+
+    useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const urlFilters = {
             allergen: searchParams.get('allergen') || '',
@@ -58,8 +73,12 @@ const SearchAllergy = () => {
             if (filters.severity) activeFilters.severity = filters.severity;
 
             console.log('Enviando filtros para API:', activeFilters);
+            const searchParams = {
+                allergen: filters.allergen, // Include even if empty
+                severity: filters.severity
+            };
 
-            const response = await allergyService.searchAllergies(activeFilters);
+            const response = await allergyService.searchAllergies(searchParams);
 
             const mappedConditions = response.map(condition => 
                 AllergyDTO.fromResponse(condition)
@@ -68,7 +87,7 @@ const SearchAllergy = () => {
             setErrorMessage('');
         } catch (error) {
             setAllergies([]);
-            setErrorMessage('Erro ao buscar alergias');
+            setErrorMessage('Error searching allergies');
         }
     }, [filters]);
 
