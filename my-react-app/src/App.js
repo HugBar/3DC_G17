@@ -31,6 +31,7 @@ import AddMedicalCondition from './components/MedicalCondition/AddMedicalConditi
 import AddAllergy from './components/Allergy/AddAllergy';
 import SearchMedicalCondition from './components/MedicalCondition/SearchMedicalCondition/SearchMedicalCondition';
 import SearchMedicalRecord from './components/MedicalRecord/searchRecord/SearchMedicalRecord';
+import SearchAllergy from './components/Allergy/SearchAllergy/SearchAllergy';
 
 
 const App = () => {
@@ -304,6 +305,15 @@ const App = () => {
                 className={`action-button ${selectedStaffAction === 'Search Medical Conditions' ? 'active' : ''}`}
               >
                 Search Medical Conditions
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('Search Allergies');
+                  navigate('/allergies/search');
+                }}
+                className={`action-button ${selectedStaffAction === 'Search Allergies' ? 'active' : ''}`}
+              >
+                Search Allergies
               </button>
             </>
           )}
@@ -579,6 +589,13 @@ const App = () => {
     </ProtectedRoute>
   } 
 />
+  <Route path="/allergies/search" 
+  element={
+    <ProtectedRoute requiredRole="doctor">
+      <SearchAllergy />
+    </ProtectedRoute>
+  }
+  />
 </Routes>
 
     </div>
