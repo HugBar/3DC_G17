@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import medicalConditionService from '../../../api/medicalConditionService';
 import { MedicalConditionDTO } from '../../../dtos/MedicalConditionDTO';
@@ -49,7 +49,7 @@ const SearchMedicalCondition = () => {
         navigate('/medical-conditions/search');
     };
 
-    const searchConditions = async () => {
+    const searchConditions = useCallback(async () => {
         try {
             const activeFilters = {};
             if (filters.name) activeFilters.name = filters.name;
@@ -74,7 +74,7 @@ const SearchMedicalCondition = () => {
                 setErrorMessage('Erro ao buscar condições médicas.');
             }
         }
-    };
+    }, [filters]);
 
     const handleSearch = () => {
         setShouldSearch(true);
@@ -85,7 +85,7 @@ const SearchMedicalCondition = () => {
             searchConditions();
             setShouldSearch(false);
         }
-    }, [shouldSearch]);
+    }, [shouldSearch, searchConditions]);
 
     return (
         <div className="medical-condition-search-container">
