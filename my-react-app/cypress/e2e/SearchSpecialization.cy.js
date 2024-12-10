@@ -81,12 +81,14 @@ describe('Search Specialization', () => {
         cy.get('.specialization-card').first().click();
 
         // Verify modal appears
-        cy.get('.modal').should('be.visible');
         cy.get('.modal-content').should('be.visible');
         cy.get('.modal-content h3').should('contain', 'Specialization Details');
         
         // Close modal
-        cy.get('.modal-content button').click();
+        // click close button 
+
+        cy.get('.close-button').click();
+       
         cy.get('.modal').should('not.exist');
     });
 

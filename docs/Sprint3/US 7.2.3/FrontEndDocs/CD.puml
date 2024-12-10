@@ -1,0 +1,49 @@
+@startuml
+title "Search Allergy Class Diagram (Frontend)"
+
+class SearchAllergy {
+  -allergies: Allergy[]
+  -errorMessage: string
+  -selectedAllergy: Allergy
+  -filters: {allergen: string, severity: string}
+  -shouldSearch: boolean
+  +handleFilterChange(event): void
+  +updateURL(currentFilters): void
+  +clearFilters(): void
+  +searchAllergies(): Promise<void>
+  +render(): JSX.Element
+}
+
+class AllergyService {
+  +searchAllergies(filters: AllergySearchDto): Promise<Allergy[]>
+}
+
+class AllergyDTO {
+  +allergen: string
+  +severity: string
+  +description: string
+  +toRequest(): object
+}
+
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+SearchAllergy --> AllergyService: uses
+SearchAllergy --> AllergyDTO: uses
+AllergyDTO --> Severity: uses
+
+note right of SearchAllergy
+  React Component that handles
+  allergy search functionality
+end note
+
+note right of AllergyService
+  Service layer that handles
+  API communication
+end note
+
+@enduml
