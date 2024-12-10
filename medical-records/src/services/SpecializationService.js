@@ -73,13 +73,12 @@ class SpecializationService {
 
     static async searchSpecializations(SpecializationSearchDto){
         try{
-
             const specializations = await specializationRepository.searchSpecialization(SpecializationSearchDto);
-
-            return specializations.map(specialization => new SpecializationDto(
-                specialization.name,
-                specialization.description
-            ))
+            return specializations.map(specialization => ({
+                _id: specialization._id, // Include the MongoDB ID
+                name: specialization.name,
+                description: specialization.description
+            }));
         } catch (error) {
             throw error;
         }    

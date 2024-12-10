@@ -33,6 +33,7 @@ import SearchMedicalCondition from './components/MedicalCondition/SearchMedicalC
 import SearchMedicalRecord from './components/MedicalRecord/searchRecord/SearchMedicalRecord';
 import SearchAllergy from './components/Allergy/SearchAllergy/SearchAllergy';
 import SearchSpecialization from './components/Specialization/SearchSpecialization/SearchSpecialization';
+import RemoveSpecialization from './components/Specialization/RemoveSpecialization/RemoveSpecialization';
 
 const App = () => {
   const navigate = useNavigate();
@@ -613,6 +614,13 @@ const App = () => {
     </ProtectedRoute>
   }
   />
+
+  <Route path="/specializations/remove/:id" element={
+    <ProtectedRoute requiredRole="admin">
+      <RemoveSpecialization />
+    </ProtectedRoute>
+  } />
+  
 </Routes>
 
     </div>

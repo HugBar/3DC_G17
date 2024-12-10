@@ -150,14 +150,33 @@ const SearchSpecialization = () => {
             )}
 
             {selectedSpecialization && (
-                <div className="modal">
+                <div className="specialization-details-modal">
                     <div className="modal-content">
                         <h3>Specialization Details</h3>
                         <div className="details-grid">
                             <p><strong>Name:</strong> {selectedSpecialization.name}</p>
                             <p><strong>Description:</strong> {selectedSpecialization.description}</p>
                         </div>
-                        <button onClick={() => setSelectedSpecialization(null)}>Close</button>
+                        <div className="modal-actions">
+                            <button 
+                                onClick={() => {
+                                    const selectedId = selectedSpecialization?._id;
+                                    console.log('Selected Specialization:', selectedSpecialization);
+                                    console.log('ID to delete:', selectedId);
+                                    if (selectedId) {
+                                        navigate(`/specializations/remove/${selectedId}`);
+                                    } else {
+                                        console.error('No ID found in specialization:', selectedSpecialization);
+                                    }
+                                }} 
+                                className="delete-button"
+                            >
+                                Delete
+                            </button>
+                            <button onClick={() => setSelectedSpecialization(null)} className="close-button">
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
