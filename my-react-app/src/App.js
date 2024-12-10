@@ -32,7 +32,7 @@ import AddAllergy from './components/Allergy/AddAllergy';
 import SearchMedicalCondition from './components/MedicalCondition/SearchMedicalCondition/SearchMedicalCondition';
 import SearchMedicalRecord from './components/MedicalRecord/searchRecord/SearchMedicalRecord';
 import SearchAllergy from './components/Allergy/SearchAllergy/SearchAllergy';
-
+import SearchSpecialization from './components/Specialization/SearchSpecialization/SearchSpecialization';
 
 const App = () => {
   const navigate = useNavigate();
@@ -410,6 +410,15 @@ const App = () => {
                 >
                 Add Allergy
                 </button>
+                <button
+                  onClick={() => {
+                    setSelectedStaffAction('Search Specializations');
+                    navigate('/specializations/search');
+                  }}
+                  className={`action-button ${selectedStaffAction === 'Search Specializations' ? 'active' : ''}`}
+                >
+                  Search Specializations
+                </button>
                 </>
           )}
         </div>
@@ -593,6 +602,14 @@ const App = () => {
   element={
     <ProtectedRoute requiredRole="doctor">
       <SearchAllergy />
+    </ProtectedRoute>
+  }
+  />
+
+  <Route path="/specializations/search"
+  element={
+    <ProtectedRoute requiredRole="admin">
+      <SearchSpecialization />
     </ProtectedRoute>
   }
   />
