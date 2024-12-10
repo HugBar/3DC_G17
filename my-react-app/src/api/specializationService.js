@@ -2,6 +2,14 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
+const getAuthToken = () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        throw new Error('No auth token found');
+    }
+    return token;
+};
+
 const specializationService = {
     
     getAllSpecializations: async () => {
@@ -26,23 +34,35 @@ const specializationService = {
 
     searchSpecializations: async (searchParams) => {
         try {
-            console.log('Enviando requisição com params:', searchParams);
-            
             const response = await axios.get(
                 `${API_URL}/specializations/search`,
                 {
-                    params: searchParams // Pass searchParams in the config object
+                    params: searchParams
                 }
             );
-            
-            console.log('Resposta recebida:', response.data);
+            console.log('Search response:', response.data); // Log the response
             return response.data;
         } catch (error) {
-            console.error('Erro detalhado:', {
-                message: error.message,
-                response: error.response?.data,
+            console.error('Search error details:', {
+                data: error.response?.data,
                 status: error.response?.status
             });
+            throw error;
+        }
+    },
+    
+    deleteSpecialization: async (id) => {
+        const token = getAuthToken();
+        try {
+            const response = await axios.delete(`${API_URL}/specializations/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting specialization:', error);
             throw error;
         }
     }
@@ -50,4 +70,4 @@ const specializationService = {
 
 
 
-export default specializationService; 
+export default specializationService;
