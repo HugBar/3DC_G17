@@ -1,0 +1,72 @@
+@startuml Delete Specialization Class Diagram (Frontend)
+title "Remove Specialization - Frontend Class Diagram"
+
+' Components
+class App {
+  -showStaffActions: boolean
+  -selectedStaffAction: string
+  +handleHomeClick(): void
+  +render(): JSX.Element
+}
+
+class SearchSpecialization {
+  -specializations: Specialization[]
+  -selectedSpecialization: Specialization
+  -filters: {name: string, description: string}
+  -errorMessage: string
+  +handleFilterChange(e: Event): void
+  +handleSearch(): void
+  +clearFilters(): void
+  +render(): JSX.Element
+}
+
+class RemoveSpecialization {
+  -specializationId: string
+  -isDeleted: boolean
+  -successMessage: string
+  -error: string
+  +handleDelete(): void
+  +render(): JSX.Element
+}
+
+class SpecializationService {
+  -API_URL: string
+  +searchSpecializations(filters: Object): Promise<Response>
+  +deleteSpecialization(id: string): Promise<Response>
+}
+
+' Styles
+class SearchSpecializationCSS {
+  +.specialization-search-container
+  +.filter-group
+  +.filters-section
+  +.specializations-grid
+  +.specialization-card
+  +.specialization-details-modal
+  +.modal-content
+  +.modal-actions
+  +.delete-button
+  +.close-button
+}
+
+class RemoveSpecializationCSS {
+  +.delete-specialization-container
+  +.modal-content
+  +.modal-actions
+  +.confirm-button
+  +.cancel-button
+  +.success-message
+  +.error-message
+}
+
+' Relationships
+App --> SearchSpecialization: routes to
+App --> RemoveSpecialization: routes to
+SearchSpecialization --> SpecializationService: uses
+RemoveSpecialization --> SpecializationService: uses
+SearchSpecialization ..> SearchSpecializationCSS: styles
+RemoveSpecialization ..> RemoveSpecializationCSS: styles
+
+
+
+@enduml

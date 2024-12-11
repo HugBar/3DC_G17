@@ -31,7 +31,10 @@ import AddMedicalCondition from './components/MedicalCondition/AddMedicalConditi
 import AddAllergy from './components/Allergy/AddAllergy';
 import SearchMedicalCondition from './components/MedicalCondition/SearchMedicalCondition/SearchMedicalCondition';
 import SearchMedicalRecord from './components/MedicalRecord/searchRecord/SearchMedicalRecord';
-
+import SearchAllergy from './components/Allergy/SearchAllergy/SearchAllergy';
+import SearchSpecialization from './components/Specialization/SearchSpecialization/SearchSpecialization';
+import RemoveSpecialization from './components/Specialization/RemoveSpecialization/RemoveSpecialization';
+import CreateSurgeryAppointment from './components/SurgeryAppointment/createSurgeryAppointment';
 
 const App = () => {
   const navigate = useNavigate();
@@ -47,7 +50,7 @@ const App = () => {
   const [selectedOperationRequestId, setSelectedOperationRequestId] = useState(null);
   const [/*selectedOperationRequestIdForDetails*/, setSelectedOperationRequestIdForDetails] = useState(null);
   const [showMoreActions, setShowMoreActions] = useState(false);
- 
+  const [selectedSurgeryAction, setSelectedSurgeryAction] = useState(null);
 
   const handleHomeClick = () => {
     setShowStaffActions(false);
@@ -289,12 +292,30 @@ const App = () => {
               </button>
               <button
                 onClick={() => {
+                  setSelectedSurgeryAction('Create Surgery Appointment');
+                  navigate('/surgery-appointment/create');
+                }}
+                className={`action-button ${selectedSurgeryAction === 'Create Surgery Appointment' ? 'active' : ''}`}
+              >
+                Create Surgery Appointment
+              </button>
+              <button
+                onClick={() => {
                   setSelectedStaffAction('Search Medical Conditions');
                   navigate('/medical-conditions/search');
                 }}
                 className={`action-button ${selectedStaffAction === 'Search Medical Conditions' ? 'active' : ''}`}
               >
                 Search Medical Conditions
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedStaffAction('Search Allergies');
+                  navigate('/allergies/search');
+                }}
+                className={`action-button ${selectedStaffAction === 'Search Allergies' ? 'active' : ''}`}
+              >
+                Search Allergies
               </button>
             </>
           )}
@@ -390,6 +411,15 @@ const App = () => {
                 className={`action-button ${selectedStaffAction === 'Add Allergy' ? 'active' : ''}`}
                 >
                 Add Allergy
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedStaffAction('Search Specializations');
+                    navigate('/specializations/search');
+                  }}
+                  className={`action-button ${selectedStaffAction === 'Search Specializations' ? 'active' : ''}`}
+                >
+                  Search Specializations
                 </button>
                 </>
           )}
@@ -572,6 +602,33 @@ const App = () => {
         </ProtectedRoute>
     } 
 />
+  <Route path="/allergies/search" 
+  element={
+    <ProtectedRoute requiredRole="doctor">
+      <SearchAllergy />
+    </ProtectedRoute>
+  }
+  />
+
+  <Route path="/specializations/search"
+  element={
+    <ProtectedRoute requiredRole="admin">
+      <SearchSpecialization />
+    </ProtectedRoute>
+  }
+  />
+
+  <Route path="/specializations/remove/:id" element={
+    <ProtectedRoute requiredRole="admin">
+      <RemoveSpecialization />
+    </ProtectedRoute>
+  } />
+  
+  <Route path="/surgery-appointment/create" element={
+    <ProtectedRoute requiredRole="doctor">
+      <CreateSurgeryAppointment />
+    </ProtectedRoute>
+  } />
 </Routes>
 
     </div>

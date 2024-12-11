@@ -66,7 +66,7 @@ namespace DDDSample1
 
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowAllOrigins",
+                options.AddPolicy("AllowAll",
                     builder => builder.AllowAnyOrigin()
                                         .AllowAnyMethod()
                                         .AllowAnyHeader());
@@ -144,6 +144,7 @@ namespace DDDSample1
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<StaffService>();
             services.AddScoped<ISurgeryRoomRepository, SurgeryRoomRepository>();
+            services.AddScoped<IRoomApiService, RoomApiService>();
 
             // Add this logging configuration
             services.AddLogging(logging =>
@@ -191,7 +192,7 @@ namespace DDDSample1
 
             app.UseRouting();
 
-            app.UseCors("AllowAllOrigins");
+            app.UseCors("AllowAll");
 
             // Enable authentication and authorization
             app.UseAuthentication();

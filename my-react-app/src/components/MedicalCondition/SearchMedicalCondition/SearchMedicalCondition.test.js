@@ -1,3 +1,19 @@
+// Author: Matias Vitorino
+
+/**
+ * This test suite covers the process of searching for medical conditions in the system.
+ * It tests the following scenarios:
+ * - Displaying the search form elements
+ * - Searching with name filter
+ * - Searching with severity filter
+ * - Searching with both name and severity filters
+ * - Clearing search filters
+ * - Viewing condition details
+ * - Handling no results gracefully
+ * - Handling server errors gracefully
+ * - Updating URL with search parameters
+ * - Displaying error message when search fails
+ */
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';

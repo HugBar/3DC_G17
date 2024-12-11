@@ -234,3 +234,7 @@ export const vendingMachineData = [
 export const doorData = [
 
 ];
+
+export const roomData = {
+    surgery: []
+}

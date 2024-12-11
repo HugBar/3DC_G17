@@ -1,0 +1,63 @@
+@startuml
+title "Search Specialization Class Diagram"
+
+class SearchSpecialization {
+  -specializations: Specialization[]
+  -errorMessage: string
+  -selectedSpecialization: Specialization
+  -filters: {name: string, description: string}
+  -shouldSearch: boolean
+  +handleFilterChange(event): void
+  +updateURL(currentFilters): void
+  +clearFilters(): void
+  +searchSpecializations(): Promise<void>
+  +handleSearch(): void
+  +render(): JSX.Element
+}
+
+class SpecializationService {
+  +searchSpecializations(filters: SpecializationSearchDto): Promise<Specialization[]>
+}
+
+class SpecializationSearchDto {
+  +name: string
+  +description: string
+  +constructor(name: string, description: string)
+}
+
+class SpecializationDto {
+  +name: string
+  +description: string
+  +constructor(name: string, description: string)
+}
+
+class Specialization {
+  +id: string
+  +name: string
+  +description: string
+  +createdAt: Date
+  +updatedAt: Date
+}
+
+interface ReactRouter {
+  +useNavigate(): function
+  +useLocation(): Location
+}
+
+SearchSpecialization --> SpecializationService: uses
+SearchSpecialization --> ReactRouter: uses
+SpecializationService --> SpecializationSearchDto: creates
+SpecializationService --> SpecializationDto: returns
+Specialization --|> SpecializationDto: implements
+
+note right of SearchSpecialization
+  React Component for searching
+  and filtering specializations
+end note
+
+note right of SpecializationService
+  Handles API communication and
+  data transformation
+end note
+
+@enduml

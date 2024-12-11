@@ -1,0 +1,72 @@
+@startuml
+title "Search Specializations Sequence Diagram (Frontend)"
+
+actor User
+participant "SearchSpecialization\nComponent" as Search
+participant "SpecializationService" as Service
+participant "API" as API
+
+activate User
+
+' Initial Load
+User -> Search : Access /specializations/search
+activate Search
+Search -> Search : useEffect(loadInitialSpecializations)
+Search -> Service : searchSpecializations({})
+activate Service
+Service -> API : GET /specializations/search
+activate API
+API --> Service : 200 OK [specializations]
+deactivate API
+Service --> Search : response.data
+deactivate Service
+Search -> Search : setSpecializations(response)
+Search --> User : Display initial specializations
+deactivate Search
+
+' Filter Changes
+User -> Search : Enter filter criteria
+activate Search
+Search -> Search : handleFilterChange(event)
+Search -> Search : updateURL(filters)
+Search --> User : URL updated with filters
+deactivate Search
+
+' Search Action
+User -> Search : Click Search
+activate Search
+Search -> Search : handleSearch()
+Search -> Search : setShouldSearch(true)
+Search -> Search : useEffect(searchSpecializations)
+Search -> Service : searchSpecializations(activeFilters)
+activate Service
+Service -> API : GET /specializations/search?name&description
+activate API
+
+alt Success
+    API --> Service : 200 OK [filtered specializations]
+    Service --> Search : response.data
+    Search -> Search : setSpecializations(response)
+    Search -> Search : setErrorMessage('')
+else Error
+    API --> Service : Error
+    Service --> Search : error
+    Search -> Search : setSpecializations([])
+    Search -> Search : setErrorMessage('Error searching specializations')
+end
+
+deactivate API
+deactivate Service
+Search --> User : Display results/error
+deactivate Search
+
+' Clear Filters
+User -> Search : Click Clear Filters
+activate Search
+Search -> Search : clearFilters()
+Search -> Search : setFilters({ name: '', description: '' })
+Search -> Search : navigate('/specializations/search')
+Search --> User : Reset form and results
+deactivate Search
+
+@enduml

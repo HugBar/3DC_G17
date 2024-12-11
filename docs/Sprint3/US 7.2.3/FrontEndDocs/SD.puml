@@ -1,0 +1,72 @@
+@startuml
+title "Search Allergies Sequence Diagram (Frontend)"
+
+actor User
+participant "SearchAllergy\nComponent" as Search
+participant "AllergyService" as Service
+participant "API" as API
+
+activate User
+
+' Initial Load
+User -> Search : Access /allergies/search
+activate Search
+Search -> Search : useEffect(loadInitialAllergies)
+Search -> Service : searchAllergies({})
+activate Service
+Service -> API : GET /allergies/search
+activate API
+API --> Service : 200 OK [allergies]
+deactivate API
+Service --> Search : allergies[]
+deactivate Service
+Search -> Search : setAllergies(response)
+Search --> User : Display initial allergies
+deactivate Search
+
+' Filter Changes
+User -> Search : Enter filter criteria
+activate Search
+Search -> Search : handleFilterChange(event)
+Search -> Search : updateURL(filters)
+Search --> User : URL updated with filters
+deactivate Search
+
+' Search Action
+User -> Search : Click Search
+activate Search
+Search -> Search : handleSearch()
+Search -> Search : setShouldSearch(true)
+Search -> Search : useEffect(searchAllergies)
+Search -> Search : searchAllergies()
+Search -> Service : searchAllergies(filters)
+activate Service
+Service -> API : GET /allergies/search?allergen&severity
+activate API
+
+alt Success
+    API --> Service : 200 OK [filtered allergies]
+    Service --> Search : allergies[]
+    Search -> Search : setAllergies(mappedConditions)
+    Search --> User : Display filtered allergies
+else Error
+    API --> Service : Error
+    Service --> Search : Error
+    Search -> Search : setErrorMessage()
+    Search --> User : Display error message
+end
+
+deactivate API
+deactivate Service
+deactivate Search
+
+' Clear Filters
+User -> Search : Click Clear Filters
+activate Search
+Search -> Search : clearFilters()
+Search -> Search : setFilters(empty)
+Search -> Search : navigate('/allergies/search')
+Search --> User : Reset form and results
+deactivate Search
+
+@enduml

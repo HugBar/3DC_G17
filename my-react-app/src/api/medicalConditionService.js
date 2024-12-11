@@ -1,3 +1,5 @@
+// Author: Matias Vitorino
+
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
@@ -10,7 +12,12 @@ class MedicalConditionService {
     getAuthToken() {
         return localStorage.getItem('authToken');
     }
-
+    /**
+     * This function adds a new medical condition to the system.
+     * @param {Object} medicalConditionRequest - The medical condition data to add.
+     * @returns {Promise} A promise that resolves with the added medical condition data.
+     * @throws {Error} When the addition fails 
+     */
     async addMedicalCondition(medicalConditionRequest) {
         try {
             const response = await axios.post(
@@ -30,6 +37,12 @@ class MedicalConditionService {
         }
     }
     
+    /**
+     * This function searches for medical conditions in the system based on the provided parameters.
+     * @param {Object} searchParams - The search parameters to use.
+     * @returns {Promise} A promise that resolves with the search results.
+     * @throws {Error} When the search fails.
+     */
     async searchMedicalConditions(searchParams) {
         try {
             console.log('Enviando requisição com params:', searchParams); // Debug

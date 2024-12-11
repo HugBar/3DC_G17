@@ -7,6 +7,7 @@ const medicalRecordsRoutes = require('./routes/medicalRecords');
 const allergyRoutes = require('./routes/AllergyRoutes');
 const specializationRoutes = require('./routes/specialization');
 const medicalConditionRoutes = require('./routes/MedicalConditionRoutes');
+const surgeryAppointmentRoutes = require('./routes/surgeryAppointments');
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use('/allergies', allergyRoutes);
 app.use('/medical-conditions', medicalConditionRoutes);
 app.use('/medical-records', medicalRecordsRoutes);
 app.use('/api/specializations', specializationRoutes);
+app.use('/api/surgery-appointments', surgeryAppointmentRoutes);
 
 // Basic health check route
 app.get('/api/health', (req, res) => {

@@ -71,7 +71,7 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:3001/api/specializations/search?description=deals
+GET http://localhost:3001/api/specializations/search?name=Cardio
 
 ###
 
@@ -141,6 +141,31 @@ Content-Type: application/json
     ]
 }
 
+### Create a new surgery appointment
+POST http://localhost:3001/api/surgery-appointments/
+Content-Type: application/json
+
+{
+    "operationRequestId": "65a123b456c789d012345678",
+    "surgeryRoomId": "room3",
+    "scheduledDateTime": "2024-01-20T10:00:00.000Z",
+    "estimatedDuration": 120,
+    "staffAssignments": [
+        {
+            "staffId": "doc1",
+            "role": "SURGEON"
+        },
+        {
+            "staffId": "nurse1",
+            "role": "NURSE"
+        },
+        {
+            "staffId": "anes1",
+            "role": "ANESTHESIOLOGIST"
+        }
+    ],
+    "description": "Appendectomy procedure"
+}
 ###
 
 GET http://localhost:3001/medical-records/202412000001

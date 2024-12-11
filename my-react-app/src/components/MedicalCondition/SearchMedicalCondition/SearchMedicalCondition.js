@@ -1,4 +1,17 @@
-import React, { useState, useEffect } from 'react';
+// Author: Matias Vitorino
+
+/**
+ * This component allows Doctors to search for medical conditions in the system.
+ * It includes form fields for filtering by condition name and severity.
+ * - The search triggers a GET request to the backend to retrieve matching conditions.
+ * - The results are displayed in a grid with condition name, severity, and description.
+ * - Clicking on a condition opens a modal with detailed information.
+ * - The modal can be closed by clicking a button or outside the content area.
+ * - Error messages are displayed when no conditions are found or an error occurs.
+ * - The search results are cleared when the filters are reset.
+ */
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import medicalConditionService from '../../../api/medicalConditionService';
 import { MedicalConditionDTO } from '../../../dtos/MedicalConditionDTO';
@@ -49,7 +62,7 @@ const SearchMedicalCondition = () => {
         navigate('/medical-conditions/search');
     };
 
-    const searchConditions = async () => {
+    const searchConditions = useCallback(async () => {
         try {
             const activeFilters = {};
             if (filters.name) activeFilters.name = filters.name;
@@ -74,7 +87,7 @@ const SearchMedicalCondition = () => {
                 setErrorMessage('Erro ao buscar condições médicas.');
             }
         }
-    };
+    }, [filters]);
 
     const handleSearch = () => {
         setShouldSearch(true);
@@ -85,7 +98,7 @@ const SearchMedicalCondition = () => {
             searchConditions();
             setShouldSearch(false);
         }
-    }, [shouldSearch]);
+    }, [shouldSearch, searchConditions]);
 
     return (
         <div className="medical-condition-search-container">
