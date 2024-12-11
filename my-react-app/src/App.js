@@ -34,6 +34,7 @@ import SearchMedicalRecord from './components/MedicalRecord/searchRecord/SearchM
 import SearchAllergy from './components/Allergy/SearchAllergy/SearchAllergy';
 import SearchSpecialization from './components/Specialization/SearchSpecialization/SearchSpecialization';
 import RemoveSpecialization from './components/Specialization/RemoveSpecialization/RemoveSpecialization';
+import CreateSurgeryAppointment from './components/SurgeryAppointment/createSurgeryAppointment';
 
 const App = () => {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ const App = () => {
   const [selectedOperationRequestId, setSelectedOperationRequestId] = useState(null);
   const [/*selectedOperationRequestIdForDetails*/, setSelectedOperationRequestIdForDetails] = useState(null);
   const [showMoreActions, setShowMoreActions] = useState(false);
- 
+  const [selectedSurgeryAction, setSelectedSurgeryAction] = useState(null);
 
   const handleHomeClick = () => {
     setShowStaffActions(false);
@@ -297,6 +298,15 @@ const App = () => {
                 className={`action-button ${selectedOperationRequest === 'View Operation Requests' ? 'active' : ''}`}
               >
                 Manage Operation Requests
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedSurgeryAction('Create Surgery Appointment');
+                  navigate('/surgery-appointment/create');
+                }}
+                className={`action-button ${selectedSurgeryAction === 'Create Surgery Appointment' ? 'active' : ''}`}
+              >
+                Create Surgery Appointment
               </button>
               <button
                 onClick={() => {
@@ -621,6 +631,11 @@ const App = () => {
     </ProtectedRoute>
   } />
   
+  <Route path="/surgery-appointment/create" element={
+    <ProtectedRoute requiredRole="doctor">
+      <CreateSurgeryAppointment />
+    </ProtectedRoute>
+  } />
 </Routes>
 
     </div>
