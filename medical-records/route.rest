@@ -78,11 +78,11 @@ GET http://localhost:3001/api/specializations/search?name=Cardio
 DELETE http://localhost:3001/api/specializations/6751fca5e875da6e74931ffc
 
 ### Update specialization with valid data
-PUT http://localhost:3001/api/specializations/67504121fd787927bf0dad89
+PUT http://localhost:3001/api/specializations/675045164d3094d884b96155
 Content-Type: application/json
 
 {
-    "name": "Cardiology Updated",
+    "name": "Updated",
     "description": "Updated description for heart conditions and cardiovascular system"
 }
 

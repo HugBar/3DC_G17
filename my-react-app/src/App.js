@@ -35,6 +35,7 @@ import SearchAllergy from './components/Allergy/SearchAllergy/SearchAllergy';
 import SearchSpecialization from './components/Specialization/SearchSpecialization/SearchSpecialization';
 import RemoveSpecialization from './components/Specialization/RemoveSpecialization/RemoveSpecialization';
 import CreateSurgeryAppointment from './components/SurgeryAppointment/createSurgeryAppointment';
+import UpdateSpecialization from './components/Specialization/updateSpecialization/UpdateSpecialization';
 
 const App = () => {
   const navigate = useNavigate();
@@ -629,6 +630,7 @@ const App = () => {
       <CreateSurgeryAppointment />
     </ProtectedRoute>
   } />
+  <Route path="/specialization/update/:id" element={<UpdateSpecialization />} />
 </Routes>
 
     </div>

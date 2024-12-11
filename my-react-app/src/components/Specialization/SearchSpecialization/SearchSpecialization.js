@@ -95,6 +95,15 @@ const SearchSpecialization = () => {
         }
     }, [shouldSearch, searchSpecializations]);
 
+    const handleUpdateClick = (specializationName) => {
+        if (!specializationName) {
+            console.error('No specialization name provided');
+            return;
+        }
+        console.log('Navigating to update with name:', specializationName);
+        navigate(`/specialization/update/${encodeURIComponent(specializationName)}`);
+    };
+
     return (
         <div className="specialization-search-container">
             <h2>Search Specializations</h2>
@@ -160,6 +169,15 @@ const SearchSpecialization = () => {
                         <div className="modal-actions">
                             <button 
                                 onClick={() => {
+                                    console.log('Selected Specialization for update:', selectedSpecialization);
+                                    handleUpdateClick(selectedSpecialization.name)
+                                }}
+                                className="update-button"
+                            >
+                                Update
+                            </button>
+                            <button 
+                                onClick={() => {
                                     const selectedId = selectedSpecialization?._id;
                                     console.log('Selected Specialization:', selectedSpecialization);
                                     console.log('ID to delete:', selectedId);
@@ -173,7 +191,10 @@ const SearchSpecialization = () => {
                             >
                                 Delete
                             </button>
-                            <button onClick={() => setSelectedSpecialization(null)} className="close-button">
+                            <button 
+                                onClick={() => setSelectedSpecialization(null)} 
+                                className="close-button"
+                            >
                                 Close
                             </button>
                         </div>

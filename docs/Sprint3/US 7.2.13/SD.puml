@@ -1,104 +1,92 @@
-@startuml
-title "Staff List Management Flow"
+@startuml Update Specialization Sequence Diagram
 
-actor User
-participant StaffList
-participant StaffService
-participant API
+actor Admin
+participant Frontend as "UpdateSpecialization Component"
+participant FrontendService as "SpecializationService (Frontend)"
+participant Controller as "SpecializationController"
+participant Service as "SpecializationService (Backend)"
+participant Repository as "SpecializationRepository"
+participant Database as "MongoDB"
 
-activate User
+Admin -> Frontend: Access Update Specialization Page
+activate Frontend
 
-User -> StaffList: Access staff list page
-activate StaffList
+Frontend -> FrontendService: searchSpecializations(name)
+activate FrontendService
 
-StaffList -> StaffService: getAllStaff(filters, currentPage, pageSize)
-activate StaffService
+FrontendService -> Controller: GET /specializations/search
+activate Controller
 
-StaffService -> API: GET /api/staff/filter
-activate API
+Controller -> Service: searchSpecializations(searchDto)
+activate Service
 
+Service -> Repository: searchSpecialization(filters)
+activate Repository
+Repository -> Database: Query
+Database --> Repository: Result
+Repository --> Service: Return result
+deactivate Repository
 
+Service --> Controller: Return specializations
+Controller --> FrontendService: 200 OK with specializations
+FrontendService --> Frontend: Return specialization data
 
-alt API Error
-    API --> StaffService: Return error
-    StaffService --> StaffList: Throw error
-    StaffList -> StaffList: setErrorMessage("Error fetching staff list")
-    StaffList --> User: Display error message
-else No Staff Found
-    API --> StaffService: Return empty array
-    StaffService --> StaffList: Return empty result
-    StaffList -> StaffList: setStaffList([])
-    StaffList -> StaffList: setErrorMessage("No staff members found")
-    StaffList --> User: Display no results message
-else Success
-    API --> StaffService: Return response
-    deactivate API
-    StaffService --> StaffList: Return staff data
-    deactivate StaffService
-    StaffList -> StaffList: setStaffList(response.items)
-    StaffList -> StaffList: setTotalPages(response.totalPages)
-    StaffList --> User: Display staff list
-end
+Frontend -> Frontend: Display form with current data
 
-alt Apply Filter
-    User -> StaffList: Enter filter criteria
-    StaffList -> StaffList: handleFilterChange(event)
-    StaffList -> StaffList: updateURLWithFilters(filters, page)
-    StaffList -> StaffList: setCurrentPage(1)
-    StaffList -> StaffService: getAllStaff(newFilters, 1, pageSize)
-else Clear Filters
-    User -> StaffList: Click "Clear Filters"
-    StaffList -> StaffList: clearFilters()
-    StaffList -> StaffList: setFilters({})
-    StaffList -> StaffList: setCurrentPage(1)
-    StaffList -> StaffService: getAllStaff({}, 1, pageSize)
-end
+Admin -> Frontend: Modify specialization details
+Admin -> Frontend: Submit form
+Frontend -> Frontend: handleSubmit()
 
-alt Select Staff Member
-    User -> StaffList: Click staff card
-    StaffList -> StaffService: getStaffById(staffId)
-    activate StaffService
-    StaffService -> API: GET /api/staff/{id}
-    activate API
-    API --> StaffService: Return response
-    deactivate API
-    alt Staff Not Found
-        StaffService --> StaffList: Throw error
-        StaffList -> StaffList: setErrorMessage("Error fetching staff details")
-        StaffList --> User: Display error message
-    else Success
-        StaffService --> StaffList: Return staff details
-        StaffList -> StaffList: setSelectedStaff(staffDetails)
-        StaffList --> User: Display staff modal
+Frontend -> FrontendService: updateSpecialization(id, specializationData)
+FrontendService -> Controller: PUT /specializations/{id}
+activate Controller
+
+Controller -> Service: updateSpecialization(id, specializationDto)
+activate Service
+
+Service -> Repository: findById(id)
+activate Repository
+Repository -> Database: Query
+Database --> Repository: Result
+Repository --> Service: Return result
+deactivate Repository
+
+alt Specialization Not Found
+    Service --> Controller: throw Error('Specialization not found')
+    Controller --> FrontendService: 404 Not Found
+    FrontendService --> Frontend: Error Message
+    Frontend --> Admin: Display "Not Found" message
+else Specialization Found
+    Service -> Repository: findByName(name)
+    activate Repository
+    Repository -> Database: Query
+    Database --> Repository: Result
+    Repository --> Service: Return result
+    deactivate Repository
+
+    alt Name Already Exists
+        Service --> Controller: throw Error('Name already exists')
+        Controller --> FrontendService: 409 Conflict
+        FrontendService --> Frontend: Error Message
+        Frontend --> Admin: Display error message
+    else Name Available
+        Service -> Repository: update(id, updateData)
+        activate Repository
+        Repository -> Database: Update
+        Database --> Repository: Updated Record
+        Repository --> Service: Return result
+        deactivate Repository
+        
+        Service --> Controller: Return updated specialization
+        Controller --> FrontendService: 200 OK with updated data
+        FrontendService --> Frontend: Success Response
+        Frontend --> Admin: Show success message
     end
-    deactivate StaffService
 end
 
-alt Update Staff
-    User -> StaffList: Click "Update Staff"
-    StaffList -> StaffList: handleUpdateClick()
-    StaffList -> StaffList: onSelectStaff(selectedStaff.id)
-    StaffList -> User: Navigate to update page
-else Deactivate Staff
-    User -> StaffList: Click "Deactivate Staff"
-    StaffList -> StaffList: handleDeactivateClick()
-    StaffList -> StaffList: onDeactivateStaff(selectedStaff.id)
-    StaffList -> User: Navigate to deactivation page
-else Close Modal
-    User -> StaffList: Click "Close"
-    StaffList -> StaffList: handleCloseDetails()
-    StaffList -> StaffList: setSelectedStaff(null)
-    StaffList --> User: Close staff modal
-end
+deactivate Service
+deactivate Controller
+deactivate FrontendService
+deactivate Frontend
 
-alt Pagination
-    User -> StaffList: Click pagination control
-    StaffList -> StaffList: handlePageChange(newPage)
-    StaffList -> StaffList: updateURLWithFilters(filters, newPage)
-    StaffList -> StaffList: setCurrentPage(newPage)
-    StaffList -> StaffService: getAllStaff(filters, newPage, pageSize)
-end
-
-deactivate StaffList
-deactivate User
 @enduml

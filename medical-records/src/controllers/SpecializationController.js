@@ -87,17 +87,17 @@ exports.getSpecializationById = async (req, res) => {
 exports.searchSpecialization = async (req, res) => {
     try {
         const { name, description} = req.query;
-
-        // Create filters object
-        const filters = {};
-        if (name) filters.name = name;
-        if (description) filters.description = description;
-
-        // Create search DTO
         const specializationSearchDto = new SpecializationSearchDto(name, description);
-
         const specializations = await SpecializationService.searchSpecializations(specializationSearchDto);
-        res.status(200).json(specializations);
+        
+        // Ensure each specialization has its ID
+        const formattedSpecializations = specializations.map(spec => ({
+            _id: spec._id.toString(), // Ensure ID is converted to string
+            name: spec.name,
+            description: spec.description
+        }));
+        
+        res.status(200).json(formattedSpecializations);
     } catch (error) {
         console.error('Error searching specializations:', error);
         res.status(500).json({ error: error.message });

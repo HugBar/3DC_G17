@@ -1,55 +1,61 @@
-@startuml StaffList Class Diagram
+@startuml Update Specialization Class Diagram
 
-class StaffList {
-  - navigate: useNavigate
-  - location: useLocation
-  - staffList: Staff[]
-  - errorMessage: string
-  - selectedStaff: Staff | null
-  - filters: StaffFilters
-  
-  + handleFilterChange(event: Event): void
-  + updateURLWithFilters(filters: StaffFilters): void
-  + clearFilters(): void
-  + handleStaffSelect(staffId: string): void
-  + handleUpdateClick(): void
-  + handleDeactivateClick(): void
-  + handleCloseDetails(): void
-  + fetchStaffList(): Promise<void>
+skinparam classAttributeIconSize 0
+
+package "Frontend" {
+    class UpdateSpecialization {
+        - specializationData: Object
+        - successMessage: string
+        - errorMessage: string
+        + handleChange(event): void
+        + handleSubmit(event): void
+        + render(): JSX
+    }
+
+    class SpecializationService {
+        + searchSpecializations(searchParams): Promise
+        + updateSpecialization(id, data): Promise
+    }
 }
 
-class Staff {
-  + id: string
-  + firstName: string
-  + lastName: string
-  + email: string
-  + phoneNumber: string
-  + specialization: string
-  + licenseNumber: string
-  + availabilitySlots: AvailabilitySlot[]
+package "Backend" {
+    class SpecializationController {
+        + updateSpecialization(req, res): Promise
+    }
+
+    class SpecializationService {
+        + {static} updateSpecialization(id, specializationDto): Promise
+    }
+
+    class SpecializationRepository {
+        - instance: SpecializationRepository
+        + findById(id): Promise
+        + findByName(name): Promise
+        + update(id, updateData): Promise
+    }
+
+    class SpecializationDto {
+        + name: string
+        + description: string
+        + constructor(name, description)
+    }
+
+    class Specialization {
+        + id: string
+        + name: string
+        + description: string
+        + createdAt: Date
+        + updatedAt: Date
+    }
 }
 
-class StaffFilters {
-  + firstName: string
-  + lastName: string
-  + email: string
-  + specialization: string
-}
-
-class AvailabilitySlot {
-  + startTime: Date
-  + endTime: Date
-}
-
-class StaffService {
-  + getAllStaff(filters: StaffFilters): Promise<Staff[]>
-  + getStaffById(id: string): Promise<Staff>
-  + deactivateStaff(id: string): Promise<void>
-}
-
-StaffList --> Staff: displays
-StaffList --> StaffFilters: uses
-StaffList --> StaffService: uses
-Staff --> AvailabilitySlot: contains
+' Relationships
+UpdateSpecialization --> SpecializationService: uses
+SpecializationService --> "HTTP" : uses
+SpecializationController --> SpecializationService: uses
+SpecializationService --> SpecializationRepository: uses
+SpecializationService --> SpecializationDto: uses
+SpecializationController ..> SpecializationDto: creates
+SpecializationRepository --> Specialization: manages
 
 @enduml

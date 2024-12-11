@@ -73,6 +73,26 @@ const specializationService = {
             console.error('Error deleting specialization:', error);
             throw error;
         }
+    },
+
+    getSpecializationById: async (id) => {
+        try {
+            const response = await axios.get(`${API_URL}/specializations/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching specialization:', error);
+            throw error;
+        }
+    },
+
+    updateSpecialization: async (id, specializationData) => {
+        try {
+            const response = await axios.put(`${API_URL}/specializations/${id}`, specializationData);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating specialization:', error);
+            throw error;
+        }
     }
 };
 
