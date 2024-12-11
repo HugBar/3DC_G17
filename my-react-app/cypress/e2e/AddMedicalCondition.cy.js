@@ -1,3 +1,15 @@
+// Author: Matias Vitorino
+
+/**
+ * This test suite covers the process of adding a new medical condition to the system.
+ * It tests the following scenarios:
+ * - Displaying the add medical condition form
+ * - Successfully adding a new medical condition
+ * - Handling network errors gracefully
+ * - Validating required fields
+ * - Persisting form data after failed submission
+ * - Selecting different severity levels
+ */
 describe('Add Medical Condition', () => {
     const baseUrl = 'http://localhost:3001';
     const frontendUrl = 'http://localhost:3000';

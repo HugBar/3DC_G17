@@ -1,3 +1,16 @@
+// Author: Matias Vitorino
+
+/**
+ * This test suite covers the process of removing a specialization from the system.
+ * It tests the following scenarios:
+ * - Displaying the delete confirmation modal
+ * - Successfully deleting a specialization
+ * - Canceling the deletion process
+ * - Handling invalid specialization ID
+ * - Handling deletion error
+ * - Navigating back after deletion
+ */
+
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { useNavigate, useParams } from 'react-router-dom';

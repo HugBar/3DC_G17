@@ -1,9 +1,26 @@
+// Autor: Matias Vitorion
+
+/** 
+ * This test suite covers the process of removing a specialization from the system.
+ * It tests the following scenarios:
+ * - Displaying the delete confirmation modal
+ * - Successfully deleting a specialization
+ * - Canceling the deletion process
+ */
+ 
+    
 describe('Remove Specialization', () => {
     let specializationId;
     let authToken;
     const authUrl = 'https://localhost:5001/api'; 
     const baseUrl = 'http://localhost:3001/api'; 
     const frontendUrl = 'http://localhost:3000';
+
+    /**
+     * Before running the tests, authenticate the user and create a specialization to
+     * be removed. The specialization ID is stored in a variable for later use.
+     * The authentication token is also stored for use in the tests.
+     */
 
     before(() => {
         cy.request({
@@ -33,7 +50,11 @@ describe('Remove Specialization', () => {
             cy.log('Created specialization with ID:', specializationId);
         });
     });
-
+    /**
+     * After running the tests, delete the specialization that was created for testing.
+     * This ensures that the system is in the same state as before the tests were run.
+     * The user is also logged out to prevent issues with other tests.
+     */
     beforeEach(() => {
         cy.clearLocalStorage();
         cy.window().then((win) => {
@@ -45,7 +66,7 @@ describe('Remove Specialization', () => {
             }
         });
     });
-
+    
     it('displays delete confirmation modal', () => {
         // Click first specialization card
         cy.get('.specialization-card')

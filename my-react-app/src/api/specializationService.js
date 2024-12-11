@@ -50,7 +50,15 @@ const specializationService = {
             throw error;
         }
     },
-    
+    // Author: Matias Vitorino
+
+    /**
+     * This function deletes a specialization from the system.
+     * @param {string} id - The ID of the specialization to delete.
+     * @returns {Promise} A promise that resolves with the deleted specialization data.
+     * @throws {Error} When the deletion fails.
+     * 
+     */
     deleteSpecialization: async (id) => {
         const token = getAuthToken();
         try {
