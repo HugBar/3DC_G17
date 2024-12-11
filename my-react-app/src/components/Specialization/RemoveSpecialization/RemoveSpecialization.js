@@ -1,4 +1,13 @@
-// src/components/Specialization/removeSpecialization/RemoveSpecialization.js
+// Author: Matias Vitorino
+
+/**
+ * This component allows Admins to remove a specialization from the system.
+ * It displays a confirmation message and handles the deletion process.
+ * - The user can confirm or cancel the deletion.
+ * - On successful deletion, a success message is displayed.
+ * - On error, an error message is displayed.
+ * - The user is redirected to the search page after 3 seconds.
+ */
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';

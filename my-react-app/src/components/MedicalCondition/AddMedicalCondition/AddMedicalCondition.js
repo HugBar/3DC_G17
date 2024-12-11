@@ -1,3 +1,16 @@
+//Author: Matias Vitorino
+
+/**
+ * This component allows Admins to add a new medical condition to the system.
+ * It includes form fields for the condition name, severity, and description.
+ *  - The name field is required and must be unique.
+ * - The severity field is a dropdown with Low, Medium, and High options.
+ * - The description field is optional and allows for additional details.
+ * - The form submission triggers a POST request to the backend to add the new condition.
+ * - Success and error messages are displayed based on the response from the server.
+ * - The form is cleared after a successful submission.S
+ */
+
 import React, { useState } from 'react';
 import medicalConditionService from '../../../api/medicalConditionService';
 import { MedicalConditionDTO } from '../../../dtos/MedicalConditionDTO';

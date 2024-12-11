@@ -1,3 +1,20 @@
+// Author: Matias Vitorino
+
+/**
+ * This test suite covers the process of adding a new medical condition to the system.
+ * It tests the following scenarios:
+ * - Displaying the add medical condition form
+ * - Successfully adding a new medical condition
+ * - Handling network errors gracefully
+ * - Validating required fields
+ * - Persisting form data after failed submission
+ * - Selecting different severity levels
+ * - Clearing form after successful submission
+ * - Displaying success message after successful submission
+ * - Displaying error message after failed submission
+ * - Verifying all fields are required
+ */
+
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
