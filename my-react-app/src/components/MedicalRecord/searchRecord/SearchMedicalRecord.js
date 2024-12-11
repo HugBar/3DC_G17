@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import medicalRecordService from '../../../api/medicalRecordService';
 import './SearchMedicalRecord.css';
 
 const SearchMedicalRecord = () => {
+    const navigate = useNavigate();
     const [patientId, setPatientId] = useState('');
     const [conditionName, setConditionName] = useState('');
     const [allergyName, setAllergyName] = useState('');
@@ -26,6 +28,10 @@ const SearchMedicalRecord = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleUpdate = () => {
+        navigate(`/medical-records/update/${patientId}`);
     };
 
     return (
@@ -79,7 +85,7 @@ const SearchMedicalRecord = () => {
             {record && (
                 <div className="medical-record-details">
                     <h3>Medical Record Details</h3>
-                    {record.conditions && (
+                    {record.conditions && conditionName && (
                         <div className="section">
                             <h4>Medical Conditions</h4>
                             {record.conditions.length > 0 ? (
@@ -96,7 +102,7 @@ const SearchMedicalRecord = () => {
                         </div>
                     )}
 
-                    {record.allergies && (
+                    {record.allergies && allergyName && (
                         <div className="section">
                             <h4>Allergies</h4>
                             {record.allergies.length > 0 ? (
@@ -112,6 +118,46 @@ const SearchMedicalRecord = () => {
                             )}
                         </div>
                     )}
+                    
+                    {!conditionName && !allergyName && (
+                        <>
+                            <div className="section">
+                                <h4>Medical Conditions</h4>
+                                {record.conditions.length > 0 ? (
+                                    <ul>
+                                        {record.conditions.map((condition, index) => (
+                                            <li key={index} className="list-item">
+                                                {condition.name} - Severity: {condition.severity}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p>No medical conditions found</p>
+                                )}
+                            </div>
+                            <div className="section">
+                                <h4>Allergies</h4>
+                                {record.allergies.length > 0 ? (
+                                    <ul>
+                                        {record.allergies.map((allergy, index) => (
+                                            <li key={index} className="list-item">
+                                                {allergy.name} - Severity: {allergy.severity}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p>No allergies found</p>
+                                )}
+                            </div>
+                        </>
+                    )}
+                    
+                    <button
+                        className="update-button"
+                        onClick={handleUpdate}
+                    >
+                        Update Medical Record
+                    </button>
                 </div>
             )}
         </div>

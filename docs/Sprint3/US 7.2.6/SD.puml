@@ -11,18 +11,16 @@ participant Database as "MongoDB"
 Doctor -> Frontend: Access Update Medical Record Page
 activate Frontend
 
+' Initial Data Loading
 Frontend -> FrontendService: getAllMedicalConditions()
 Frontend -> FrontendService: getAllAllergies()
 activate FrontendService
-
 FrontendService --> Frontend: Available conditions and allergies
 deactivate FrontendService
 
-Doctor -> Frontend: Enter patient ID
-Doctor -> Frontend: Click Search
+' Load Existing Record
 Frontend -> FrontendService: getMedicalRecord(patientId)
 activate FrontendService
-
 FrontendService -> Controller: GET /medical-records/{patientId}
 activate Controller
 
@@ -39,7 +37,8 @@ deactivate FrontendService
 
 Frontend --> Doctor: Display current conditions and allergies
 
-Doctor -> Frontend: Modify conditions/allergies
+' Update Process
+Doctor -> Frontend: Add/Remove conditions/allergies
 Doctor -> Frontend: Click Update
 Frontend -> FrontendService: updateMedicalRecord(patientId, updateData)
 activate FrontendService
@@ -47,29 +46,34 @@ activate FrontendService
 FrontendService -> Controller: PUT /medical-records/update/{patientId}
 activate Controller
 
-Controller -> Service: updatePatientConditionsAndAllergies(patientId, updateDto)
-activate Service
-
-Service -> Repository: findByPatientId(patientId)
+Controller -> Repository: findByPatientId(patientId)
+activate Repository
 Repository -> Database: Query
 Database --> Repository: Result
+deactivate Repository
 
-alt Record Exists
+alt Record Not Found
+    Controller --> FrontendService: 404 Not Found
+    FrontendService --> Frontend: Error Message
+else Record Found
+    Controller -> Service: updatePatientConditionsAndAllergies(patientId, updateDto)
+    activate Service
+    
     Service -> Repository: update(patientId, updateData)
-else Record Not Found
-    Service -> Repository: create(newRecordData)
+    activate Repository
+    Repository -> Database: Save
+    Database --> Repository: Updated Record
+    Repository --> Service: Result
+    deactivate Repository
+    
+    Service --> Controller: Updated Record
+    Controller --> FrontendService: Success Response
+    FrontendService --> Frontend: Success Message
+    deactivate Service
 end
 
-Repository -> Database: Save
-Database --> Repository: Updated Record
-Repository --> Service: Result
-Service --> Controller: Updated Record
-Controller --> FrontendService: Response
-FrontendService --> Frontend: Success message
+Frontend --> Doctor: Display status message
 
-Frontend --> Doctor: Display success message
-
-deactivate Service
 deactivate Controller
 deactivate FrontendService
 deactivate Frontend

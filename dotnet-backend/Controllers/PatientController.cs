@@ -260,6 +260,25 @@ namespace DDDSample1.Controllers
             }
         }
 
+        [HttpGet("verify/{medicalNumber}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyPatientExists([FromRoute] string medicalNumber)
+        {
+            try
+            {
+                var exists = await _service.ExistsByMedicalNumberAsync(medicalNumber);
+                if (!exists)
+                {
+                    return NotFound();
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
 
 

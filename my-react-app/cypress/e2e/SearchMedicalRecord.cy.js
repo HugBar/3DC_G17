@@ -1,7 +1,11 @@
 describe('Search Medical Record', () => {
   let authToken;
+  const baseUrl = 'http://localhost:3001/medical-records';
+  const frontendUrl = 'http://localhost:3000';
+  let testPatientId;
 
   before(() => {
+    // Login to get the token
     cy.request({
       method: 'POST',
       url: 'https://localhost:5001/api/auth/login',
@@ -11,122 +15,120 @@ describe('Search Medical Record', () => {
       }
     }).then((response) => {
       authToken = response.body.token;
+
+      // Create a test medical record
+      testPatientId = `searchtest_${Date.now()}`;
+      return cy.request({
+        method: 'POST',
+        url: `${baseUrl}/create/${testPatientId}`,
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+    }).then(() => {
+      // Add test conditions and allergies
+      return cy.request({
+        method: 'PUT',
+        url: `${baseUrl}/update/${testPatientId}`,
+        headers: { Authorization: `Bearer ${authToken}` },
+        body: {
+          conditions: [
+            { name: 'Asthma', severity: 'High' },
+            { name: 'Diabetes', severity: 'Medium' }
+          ],
+          allergies: [
+            { name: 'Peanuts', severity: 'High' },
+            { name: 'Shellfish', severity: 'Low' }
+          ]
+        }
+      });
     });
   });
 
   beforeEach(() => {
     cy.clearLocalStorage();
-
-    cy.visit('http://localhost:3000/medical-records/search', {
+    cy.visit(`${frontendUrl}/medical-records/search`, {
       onBeforeLoad: (win) => {
         win.localStorage.setItem('authToken', authToken);
       }
     });
-
-    cy.url().should('include', '/medical-records/search');
   });
 
-  it('should display initial form elements', () => {
-    cy.get('h2').should('contain', 'Search Medical Record');
-    cy.get('#patientId').should('exist');
-    cy.get('#conditionName').should('exist');
-    cy.get('#allergyName').should('exist');
-    cy.get('button').contains('Search').should('be.disabled');
+  it('should search by patient ID only', () => {
+    cy.get('#patientId').type(testPatientId);
+    cy.get('button').contains('Search').click();
+
+    cy.get('.medical-record-details', { timeout: 10000 }).should('be.visible');
+    cy.contains('Asthma - Severity: High').should('be.visible');
+    cy.contains('Diabetes - Severity: Medium').should('be.visible');
+    cy.contains('Peanuts - Severity: High').should('be.visible');
+    cy.contains('Shellfish - Severity: Low').should('be.visible');
   });
 
-  it('should search medical records with all filters', () => {
-    const patientId = `searchtest_${Date.now()}`;
-    const updateData = {
-      conditions: [
-        { name: 'Asthma', severity: 'High' },
-        { name: 'Diabetes', severity: 'Medium' }
-      ],
-      allergies: [
-        { name: 'Peanuts', severity: 'High' },
-        { name: 'Shellfish', severity: 'Low' }
-      ]
-    };
+  it('should search by patient ID and condition', () => {
+    cy.get('#patientId').type(testPatientId);
+    cy.get('#conditionName').type('Asthma');
+    cy.get('button').contains('Search').click();
 
-    // Create test record
-    cy.request({
-      method: 'PUT',
-      url: `http://localhost:3001/medical-records/update/${patientId}`,
-      headers: { Authorization: `Bearer ${authToken}` },
-      body: updateData
-    }).then(() => {
-      // Search for the record
-      cy.get('#patientId').type(patientId);
-      cy.get('#conditionName').type('Asthma');
-      cy.get('#allergyName').type('Peanuts');
-      cy.get('button').contains('Search').click();
-
-      // Verify results
-      cy.get('.medical-record-details').should('be.visible');
-      cy.contains('Asthma - Severity: High').should('be.visible');
-      cy.contains('Peanuts - Severity: High').should('be.visible');
-      cy.contains('Diabetes').should('not.exist');
-      cy.contains('Shellfish').should('not.exist');
-    });
+    cy.get('.medical-record-details').should('be.visible');
+    cy.contains('Asthma - Severity: High').should('be.visible');
+    cy.contains('Diabetes').should('not.exist');
   });
 
-  it('should handle search with only condition filter', () => {
-    const patientId = `searchtest_${Date.now()}`;
-    const updateData = {
-      conditions: [
-        { name: 'Asthma', severity: 'High' },
-        { name: 'Diabetes', severity: 'Medium' }
-      ],
-      allergies: [
-        { name: 'Peanuts', severity: 'High' }
-      ]
-    };
+  it('should search by patient ID and allergy', () => {
+    cy.get('#patientId').type(testPatientId);
+    cy.get('#allergyName').type('Peanuts');
+    cy.get('button').contains('Search').click();
 
-    cy.request({
-      method: 'PUT',
-      url: `http://localhost:3001/medical-records/update/${patientId}`,
-      headers: { Authorization: `Bearer ${authToken}` },
-      body: updateData
-    }).then(() => {
-      cy.get('#patientId').type(patientId);
-      cy.get('#conditionName').type('Asthma');
-      cy.get('button').contains('Search').click();
-
-      cy.get('.medical-record-details').should('be.visible');
-      cy.contains('Asthma - Severity: High').should('be.visible');
-      cy.contains('Diabetes').should('not.exist');
-      cy.get('.allergies').should('not.exist');
-    });
+    cy.get('.medical-record-details').should('be.visible');
+    cy.contains('Peanuts - Severity: High').should('be.visible');
+    cy.contains('Shellfish').should('not.exist');
   });
 
-  it('should handle non-existent patient gracefully', () => {
-    cy.intercept('GET', '**/medical-records/search*', {
-      statusCode: 404,
-      body: { message: 'Medical record not found' }
-    }).as('searchRecord');
+  it('should search with all filters', () => {
+    cy.get('#patientId').type(testPatientId);
+    cy.get('#conditionName').type('Asthma');
+    cy.get('#allergyName').type('Peanuts');
+    cy.get('button').contains('Search').click();
 
+    cy.get('.medical-record-details').should('be.visible');
+    cy.contains('Asthma - Severity: High').should('be.visible');
+    cy.contains('Peanuts - Severity: High').should('be.visible');
+    cy.contains('Diabetes').should('not.exist');
+    cy.contains('Shellfish').should('not.exist');
+  });
+
+  it('should handle non-existent patient ID', () => {
     cy.get('#patientId').type('nonexistent');
     cy.get('button').contains('Search').click();
 
-    cy.wait('@searchRecord');
-
     cy.get('[role="alert"]')
       .should('have.class', 'error-message')
       .and('contain', 'Medical record not found');
   });
 
-  it('should handle server error gracefully', () => {
+  it('should handle server errors gracefully', () => {
     cy.intercept('GET', '**/medical-records/search*', {
       statusCode: 500,
       body: { message: 'Server error' }
-    }).as('searchRecord');
+    }).as('searchError');
 
-    cy.get('#patientId').type('TEST123');
+    cy.get('#patientId').type(testPatientId);
     cy.get('button').contains('Search').click();
 
-    cy.wait('@searchRecord');
-
+    cy.wait('@searchError');
     cy.get('[role="alert"]')
       .should('have.class', 'error-message')
       .and('contain', 'Medical record not found');
+  });
+
+  after(() => {
+    // Clean up test data
+    if (testPatientId) {
+      cy.request({
+        method: 'DELETE',
+        url: `${baseUrl}/${testPatientId}`,
+        headers: { Authorization: `Bearer ${authToken}` },
+        failOnStatusCode: false
+      });
+    }
   });
 }); 

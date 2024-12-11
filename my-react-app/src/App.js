@@ -262,15 +262,6 @@ const App = () => {
             <>
               <button
                 onClick={() => {
-                  setSelectedOperationRequest('Update Medical Records');
-                  navigate('/medical-records/update');
-                }}
-                className={`action-button ${selectedOperationRequest === 'Update Medical Records' ? 'active' : ''}`}
-              >
-                Update Medical Records
-              </button>
-              <button
-                onClick={() => {
                   setSelectedOperationRequest('Search Medical Records');
                   navigate('/medical-records/search');
                 }}
@@ -565,19 +556,21 @@ const App = () => {
       <SearchMedicalCondition />
     </ProtectedRoute>
   } />
-    <Route path="/medical-records/update" 
+    <Route 
+    path="/medical-records/search" 
     element={
-      <ProtectedRoute requiredRole="doctor">
-        <UpdateMedicalRecord />
-      </ProtectedRoute>
+        <ProtectedRoute requiredRole="doctor">
+            <SearchMedicalRecord />
+        </ProtectedRoute>
     } 
-  />
-  <Route path="/medical-records/search" 
-  element={
-    <ProtectedRoute requiredRole="doctor">
-      <SearchMedicalRecord />
-    </ProtectedRoute>
-  } 
+/>
+<Route 
+    path="/medical-records/update/:patientId" 
+    element={
+        <ProtectedRoute requiredRole="doctor">
+            <UpdateMedicalRecord />
+        </ProtectedRoute>
+    } 
 />
 </Routes>
 

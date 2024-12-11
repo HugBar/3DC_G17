@@ -79,62 +79,19 @@ describe('MedicalRecordService', () => {
         });
 
         /**
-         * Tests creating a new medical record when none exists
-         * Verifies:
-         * - New record is created with empty conditions/allergies
-         * - Record is then updated with provided data
-         * - Repository methods are called in correct order
-         */
-        test('should create new medical record when none exists', async () => {
-            // Mock new record
-            const mockNewRecord = {
-                _id: '1',
-                patientId: mockPatientId,
-                conditions: [],
-                allergies: []
-            };
-
-            // Mock updated record
-            const mockUpdatedRecord = {
-                _id: '1',
-                patientId: mockPatientId,
-                conditions: mockUpdateDto.conditions,
-                allergies: mockUpdateDto.allergies,
-                lastUpdated: expect.any(Date)
-            };
-
-            MedicalRecordRepository.findByPatientId.mockResolvedValue(null);
-            MedicalRecordRepository.create.mockResolvedValue(mockNewRecord);
-            MedicalRecordRepository.update.mockResolvedValue(mockUpdatedRecord);
-
-            const result = await MedicalRecordService.updatePatientConditionsAndAllergies(
-                mockPatientId,
-                mockUpdateDto
-            );
-
-            expect(result).toEqual(mockUpdatedRecord);
-            expect(MedicalRecordRepository.findByPatientId).toHaveBeenCalledWith(mockPatientId);
-            expect(MedicalRecordRepository.create).toHaveBeenCalledWith({
-                patientId: mockPatientId,
-                conditions: [],
-                allergies: []
-            });
-            expect(MedicalRecordRepository.update).toHaveBeenCalledWith(
-                mockPatientId,
-                expect.objectContaining({
-                    conditions: mockUpdateDto.conditions,
-                    allergies: mockUpdateDto.allergies,
-                    lastUpdated: expect.any(Date)
-                })
-            );
-        });
-
-        /**
          * Tests error handling when repository operations fail
          * Verifies:
          * - Database errors are properly propagated
          * - Error message is preserved
          */
+        test('should throw error when medical record not found', async () => {
+            MedicalRecordRepository.findByPatientId.mockResolvedValue(null);
+
+            await expect(
+                MedicalRecordService.updatePatientConditionsAndAllergies(mockPatientId, mockUpdateDto)
+            ).rejects.toThrow('Medical record not found');
+        });
+
         test('should propagate repository errors', async () => {
             const mockError = new Error('Database error');
             MedicalRecordRepository.findByPatientId.mockRejectedValue(mockError);
@@ -216,13 +173,14 @@ describe('MedicalRecordService', () => {
             const result = await MedicalRecordService.searchMedicalRecord({
                 patientId: mockPatientId,
                 conditionName: 'Asthma',
+                allergyName: null,
                 validate: jest.fn()
             });
 
             expect(result.conditions).toBeDefined();
-            expect(result.allergies).toBeUndefined();
             expect(result.conditions).toHaveLength(1);
             expect(result.conditions[0].name).toBe('Asthma');
+            expect(result.allergies).toEqual([]);
         });
     });
 });

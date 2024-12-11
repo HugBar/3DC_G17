@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import UpdateMedicalRecord from './UpdateMedicalRecord';
 import medicalRecordService from '../../../api/medicalRecordService';
 
@@ -11,6 +12,16 @@ jest.mock('../../../api/medicalRecordService', () => ({
     getMedicalRecord: jest.fn(),
     updateMedicalRecord: jest.fn()
 }));
+
+const renderWithRouter = (patientId = 'TEST123') => {
+    return render(
+        <MemoryRouter initialEntries={[`/update/${patientId}`]}>
+            <Routes>
+                <Route path="/update/:patientId" element={<UpdateMedicalRecord />} />
+            </Routes>
+        </MemoryRouter>
+    );
+};
 
 describe('UpdateMedicalRecord Component', () => {
     const mockAvailableConditions = [
@@ -30,16 +41,22 @@ describe('UpdateMedicalRecord Component', () => {
     });
 
     test('should load and display initial form', async () => {
+        const mockRecord = {
+            patientId: 'TEST123',
+            conditions: [],
+            allergies: []
+        };
+        medicalRecordService.getMedicalRecord.mockResolvedValue(mockRecord);
+
         await act(async () => {
-            render(<UpdateMedicalRecord />);
+            renderWithRouter();
         });
         
-        expect(screen.getByText('Update Medical Record')).toBeInTheDocument();
-        expect(screen.getByRole('textbox', { name: /patient medical number/i })).toBeInTheDocument();
-        expect(screen.getByText('Search Patient')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Update Medical Record' })).toBeInTheDocument();
+        expect(screen.getByText('Patient ID: TEST123')).toBeInTheDocument();
     });
 
-    test('should handle patient search successfully', async () => {
+    test('should display medical record data when loaded', async () => {
         const mockRecord = {
             patientId: 'TEST123',
             conditions: [{ name: 'Hypertension', severity: 'High' }],
@@ -49,13 +66,7 @@ describe('UpdateMedicalRecord Component', () => {
         medicalRecordService.getMedicalRecord.mockResolvedValue(mockRecord);
 
         await act(async () => {
-            render(<UpdateMedicalRecord />);
-        });
-        
-        const input = screen.getByRole('textbox', { name: /patient medical number/i });
-        await act(async () => {
-            fireEvent.change(input, { target: { value: 'TEST123' } });
-            fireEvent.click(screen.getByText('Search Patient'));
+            renderWithRouter();
         });
 
         await waitFor(() => {
@@ -65,16 +76,16 @@ describe('UpdateMedicalRecord Component', () => {
     });
 
     test('should handle adding and removing conditions', async () => {
-        const mockRecord = { patientId: 'TEST123', conditions: [], allergies: [] };
+        const mockRecord = { 
+            patientId: 'TEST123', 
+            conditions: [], 
+            allergies: [] 
+        };
         medicalRecordService.getMedicalRecord.mockResolvedValue(mockRecord);
 
-        render(<UpdateMedicalRecord />);
-        
-        // Search for patient first
-        fireEvent.change(screen.getByLabelText('Patient Medical Number:'), { 
-            target: { value: 'TEST123' } 
+        await act(async () => {
+            renderWithRouter();
         });
-        fireEvent.click(screen.getByText('Search Patient'));
 
         await waitFor(() => {
             expect(screen.getByText('Select a condition')).toBeInTheDocument();
@@ -97,7 +108,11 @@ describe('UpdateMedicalRecord Component', () => {
     });
 
     test('should handle successful record update', async () => {
-        const mockRecord = { patientId: 'TEST123', conditions: [], allergies: [] };
+        const mockRecord = { 
+            patientId: 'TEST123', 
+            conditions: [], 
+            allergies: [] 
+        };
         medicalRecordService.getMedicalRecord.mockResolvedValue(mockRecord);
         medicalRecordService.updateMedicalRecord.mockResolvedValue({
             message: 'Medical record updated successfully',
@@ -105,19 +120,12 @@ describe('UpdateMedicalRecord Component', () => {
         });
 
         await act(async () => {
-            render(<UpdateMedicalRecord />);
-        });
-
-        // Search for patient
-        const input = screen.getByRole('textbox', { name: /patient medical number/i });
-        await act(async () => {
-            fireEvent.change(input, { target: { value: 'TEST123' } });
-            fireEvent.click(screen.getByText('Search Patient'));
+            renderWithRouter();
         });
 
         // Add a condition
-        const conditionSelect = screen.getByRole('combobox', { name: /add medical condition/i });
-        await act(async () => {
+        await waitFor(() => {
+            const conditionSelect = screen.getByRole('combobox', { name: /add medical condition/i });
             fireEvent.change(conditionSelect, { target: { value: 'Hypertension' } });
         });
 
@@ -134,22 +142,18 @@ describe('UpdateMedicalRecord Component', () => {
     });
 
     test('should handle update error', async () => {
-        const mockRecord = { patientId: 'TEST123', conditions: [], allergies: [] };
+        const mockRecord = { 
+            patientId: 'TEST123', 
+            conditions: [], 
+            allergies: [] 
+        };
         medicalRecordService.getMedicalRecord.mockResolvedValue(mockRecord);
         medicalRecordService.updateMedicalRecord.mockRejectedValue(new Error('Update failed'));
 
         await act(async () => {
-            render(<UpdateMedicalRecord />);
+            renderWithRouter();
         });
 
-        // Search for patient
-        const input = screen.getByRole('textbox', { name: /patient medical number/i });
-        await act(async () => {
-            fireEvent.change(input, { target: { value: 'TEST123' } });
-            fireEvent.click(screen.getByText('Search Patient'));
-        });
-
-        // Update record
         const updateButton = screen.getByRole('button', { name: /update medical record/i });
         await act(async () => {
             fireEvent.click(updateButton);

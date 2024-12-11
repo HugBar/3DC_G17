@@ -81,6 +81,19 @@ const medicalRecordService = {
         } catch (error) {
             throw error;
         }
+    },
+
+    verifyPatient: async (patientId) => {
+        try {
+            const response = await axios.get(`https://localhost:5001/api/patient/verify/${patientId}`, {
+                headers: {
+                    Authorization: `Bearer ${getAuthToken()}`
+                }
+            });
+            return response.status === 200;
+        } catch (error) {
+            return false;
+        }
     }
 };
 

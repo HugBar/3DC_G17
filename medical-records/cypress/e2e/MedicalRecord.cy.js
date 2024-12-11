@@ -1,6 +1,7 @@
 describe('Medical Record API E2E Tests', () => {
   const baseUrl = 'http://localhost:3001/medical-records';
   let authToken;
+  let testPatientId;
 
   before(() => {
     cy.request({
@@ -17,7 +18,7 @@ describe('Medical Record API E2E Tests', () => {
   });
 
   it('should update conditions and allergies for existing record', () => {
-    const patientId = 'TestPatient12';
+    const patientId = '202412000001';
     const updateData = {
       conditions: [
         { 
@@ -61,56 +62,8 @@ describe('Medical Record API E2E Tests', () => {
     });
   });
 
-  it('should get medical record by patient ID', () => {
-    const patientId = `patient_${Date.now()}`;
-    const updateData = {
-      conditions: [{
-        name: 'Diabetes',
-        severity: 'High'
-      }],
-      allergies: [{
-        name: 'Peanuts',
-        severity: 'High'
-      }]
-    };
-
-    cy.request({
-      method: 'PUT',
-      url: `${baseUrl}/update/${patientId}`,
-      headers: {
-        Authorization: `Bearer ${authToken}`
-      },
-      body: updateData,
-      failOnStatusCode: false
-    }).then(() => {
-      cy.wait(1000);
-      
-      cy.request({
-        method: 'GET',
-        url: `${baseUrl}/${patientId}`,
-        headers: {
-          Authorization: `Bearer ${authToken}`
-        }
-      }).then((response) => {
-        expect(response.status).to.eq(200);
-        expect(response.body.patientId).to.eq(patientId);
-        
-        // Compare only the relevant properties
-        const receivedCondition = response.body.conditions[0];
-        const expectedCondition = updateData.conditions[0];
-        expect(receivedCondition.name).to.eq(expectedCondition.name);
-        expect(receivedCondition.severity).to.eq(expectedCondition.severity);
-
-        const receivedAllergy = response.body.allergies[0];
-        const expectedAllergy = updateData.allergies[0];
-        expect(receivedAllergy.name).to.eq(expectedAllergy.name);
-        expect(receivedAllergy.severity).to.eq(expectedAllergy.severity);
-      });
-    });
-  });
-
-  it('should create new record when updating non-existent patient record', () => {
-    const patientId = `newpatient_${Date.now()}`;
+  it('should create new patient record', () => {
+    testPatientId = `newpatient_${Date.now()}`;
     const updateData = {
       conditions: [
         { 
@@ -126,135 +79,162 @@ describe('Medical Record API E2E Tests', () => {
       ]
     };
 
-    // First attempt should create a new record
+    // First create a blank medical record
     cy.request({
-      method: 'PUT',
-      url: `${baseUrl}/update/${patientId}`,
+      method: 'POST',
+      url: `${baseUrl}/create/${testPatientId}`,
       headers: {
         Authorization: `Bearer ${authToken}`
-      },
-      body: updateData,
-      failOnStatusCode: false
-    }).then((response) => {
-      expect(response.status).to.eq(201);
-      expect(response.body.message).to.eq('Medical record created successfully');
-      expect(response.body.record.patientId).to.eq(patientId);
-      
-      const receivedCondition = response.body.record.conditions[0];
-      const expectedCondition = updateData.conditions[0];
-      expect(receivedCondition.name).to.eq(expectedCondition.name);
-      expect(receivedCondition.severity).to.eq(expectedCondition.severity);
+      }
+    }).then((createResponse) => {
+      expect(createResponse.status).to.eq(201);
+      expect(createResponse.body.message).to.eq('Blank medical record created successfully');
+      expect(createResponse.body.record.patientId).to.eq(testPatientId);
+      expect(createResponse.body.record.conditions).to.be.an('array').that.is.empty;
+      expect(createResponse.body.record.allergies).to.be.an('array').that.is.empty;
 
-      const receivedAllergy = response.body.record.allergies[0];
-      const expectedAllergy = updateData.allergies[0];
-      expect(receivedAllergy.name).to.eq(expectedAllergy.name);
-      expect(receivedAllergy.severity).to.eq(expectedAllergy.severity);
-
-      // Now update the newly created record
-      const newUpdateData = {
-        conditions: [
-          { 
-            name: 'Asthma',
-            severity: 'High'
-          }
-        ],
-        allergies: [
-          {
-            name: 'Dust',
-            severity: 'Medium'
-          }
-        ]
-      };
-
+      // Then update the newly created record
       cy.request({
         method: 'PUT',
-        url: `${baseUrl}/update/${patientId}`,
+        url: `${baseUrl}/update/${testPatientId}`,
         headers: {
           Authorization: `Bearer ${authToken}`
         },
-        body: newUpdateData
+        body: updateData
       }).then((updateResponse) => {
         expect(updateResponse.status).to.eq(200);
         expect(updateResponse.body.message).to.eq('Medical record updated successfully');
         
-        const updatedCondition = updateResponse.body.record.conditions[0];
-        expect(updatedCondition.name).to.eq(newUpdateData.conditions[0].name);
-        expect(updatedCondition.severity).to.eq(newUpdateData.conditions[0].severity);
+        const receivedCondition = updateResponse.body.record.conditions[0];
+        const expectedCondition = updateData.conditions[0];
+        expect(receivedCondition.name).to.eq(expectedCondition.name);
+        expect(receivedCondition.severity).to.eq(expectedCondition.severity);
 
-        const updatedAllergy = updateResponse.body.record.allergies[0];
-        expect(updatedAllergy.name).to.eq(newUpdateData.allergies[0].name);
-        expect(updatedAllergy.severity).to.eq(newUpdateData.allergies[0].severity);
+        const receivedAllergy = updateResponse.body.record.allergies[0];
+        const expectedAllergy = updateData.allergies[0];
+        expect(receivedAllergy.name).to.eq(expectedAllergy.name);
+        expect(receivedAllergy.severity).to.eq(expectedAllergy.severity);
+
+        // Update the record again with new data
+        const newUpdateData = {
+          conditions: [
+            { 
+              name: 'Asthma',
+              severity: 'High'
+            }
+          ],
+          allergies: [
+            {
+              name: 'Dust',
+              severity: 'Medium'
+            }
+          ]
+        };
+
+        cy.request({
+          method: 'PUT',
+          url: `${baseUrl}/update/${testPatientId}`,
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          },
+          body: newUpdateData
+        }).then((secondUpdateResponse) => {
+          expect(secondUpdateResponse.status).to.eq(200);
+          expect(secondUpdateResponse.body.message).to.eq('Medical record updated successfully');
+          
+          const updatedCondition = secondUpdateResponse.body.record.conditions[0];
+          expect(updatedCondition.name).to.eq(newUpdateData.conditions[0].name);
+          expect(updatedCondition.severity).to.eq(newUpdateData.conditions[0].severity);
+
+          const updatedAllergy = secondUpdateResponse.body.record.allergies[0];
+          expect(updatedAllergy.name).to.eq(newUpdateData.allergies[0].name);
+          expect(updatedAllergy.severity).to.eq(newUpdateData.allergies[0].severity);
+        });
       });
     });
   });
 
-  it('should search medical records with various filters', () => {
-    const patientId = `searchtest_${Date.now()}`;
-    const updateData = {
-      conditions: [
-        { name: 'Asthma', severity: 'High' },
-        { name: 'Diabetes', severity: 'Medium' }
-      ],
-      allergies: [
-        { name: 'Peanuts', severity: 'High' },
-        { name: 'Shellfish', severity: 'Low' }
-      ]
-    };
-
-    // First create a test record
+  it('should get medical record by patient ID', () => {
+    // Get the record created in the previous test
     cy.request({
-      method: 'PUT',
-      url: `${baseUrl}/update/${patientId}`,
-      headers: { Authorization: `Bearer ${authToken}` },
-      body: updateData
+      method: 'GET',
+      url: `${baseUrl}/${testPatientId}`,
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      }
     }).then((response) => {
-      expect(response.status).to.eq(201);
+      expect(response.status).to.eq(200);
+      expect(response.body.patientId).to.eq(testPatientId);
       
-      // Test search with patient ID only
-      cy.request({
-        method: 'GET',
-        url: `${baseUrl}/search?patientId=${patientId}`,
-        headers: { Authorization: `Bearer ${authToken}` }
-      }).then((searchResponse) => {
-        expect(searchResponse.status).to.eq(200);
-        expect(searchResponse.body.conditions).to.have.length(2);
-        expect(searchResponse.body.allergies).to.have.length(2);
-      });
+      // Verify the final state from the previous test
+      const expectedCondition = {
+        name: 'Asthma',
+        severity: 'High'
+      };
+      const expectedAllergy = {
+        name: 'Dust',
+        severity: 'Medium'
+      };
 
-      // Test search with condition filter
-      cy.request({
-        method: 'GET',
-        url: `${baseUrl}/search?patientId=${patientId}&conditionName=Asthma`,
-        headers: { Authorization: `Bearer ${authToken}` }
-      }).then((searchResponse) => {
-        expect(searchResponse.status).to.eq(200);
-        expect(searchResponse.body.conditions).to.have.length(1);
-        expect(searchResponse.body.conditions[0].name).to.eq('Asthma');
-      });
+      const receivedCondition = response.body.conditions[0];
+      expect(receivedCondition.name).to.eq(expectedCondition.name);
+      expect(receivedCondition.severity).to.eq(expectedCondition.severity);
 
-      // Test search with allergy filter
-      cy.request({
-        method: 'GET',
-        url: `${baseUrl}/search?patientId=${patientId}&allergyName=Peanuts`,
-        headers: { Authorization: `Bearer ${authToken}` }
-      }).then((searchResponse) => {
-        expect(searchResponse.status).to.eq(200);
-        expect(searchResponse.body.allergies).to.have.length(1);
-        expect(searchResponse.body.allergies[0].name).to.eq('Peanuts');
-      });
+      const receivedAllergy = response.body.allergies[0];
+      expect(receivedAllergy.name).to.eq(expectedAllergy.name);
+      expect(receivedAllergy.severity).to.eq(expectedAllergy.severity);
+    });
+  });
 
-      // Test search with both condition and allergy filters
-      cy.request({
-        method: 'GET',
-        url: `${baseUrl}/search?patientId=${patientId}&conditionName=Asthma&allergyName=Peanuts`,
-        headers: { Authorization: `Bearer ${authToken}` }
-      }).then((searchResponse) => {
-        expect(searchResponse.status).to.eq(200);
-        expect(searchResponse.body.conditions).to.have.length(1);
-        expect(searchResponse.body.allergies).to.have.length(1);
-        expect(searchResponse.body.conditions[0].name).to.eq('Asthma');
-        expect(searchResponse.body.allergies[0].name).to.eq('Peanuts');
-      });
+  it('should search medical records with various filters', () => {
+    // Test search with patient ID only
+    cy.request({
+      method: 'GET',
+      url: `${baseUrl}/search?patientId=${testPatientId}`,
+      headers: { Authorization: `Bearer ${authToken}` }
+    }).then((searchResponse) => {
+      expect(searchResponse.status).to.eq(200);
+      expect(searchResponse.body.conditions).to.have.length(1);
+      expect(searchResponse.body.allergies).to.have.length(1);
+    });
+
+    // Test search with condition filter
+    cy.request({
+      method: 'GET',
+      url: `${baseUrl}/search?patientId=${testPatientId}&conditionName=Asthma`,
+      headers: { Authorization: `Bearer ${authToken}` }
+    }).then((searchResponse) => {
+      expect(searchResponse.status).to.eq(200);
+      expect(searchResponse.body.conditions).to.have.length(1);
+      expect(searchResponse.body.conditions[0].name).to.eq('Asthma');
+      expect(searchResponse.body.conditions[0].severity).to.eq('High');
+    });
+
+    // Test search with allergy filter
+    cy.request({
+      method: 'GET',
+      url: `${baseUrl}/search?patientId=${testPatientId}&allergyName=Dust`,
+      headers: { Authorization: `Bearer ${authToken}` }
+    }).then((searchResponse) => {
+      expect(searchResponse.status).to.eq(200);
+      expect(searchResponse.body.allergies).to.have.length(1);
+      expect(searchResponse.body.allergies[0].name).to.eq('Dust');
+      expect(searchResponse.body.allergies[0].severity).to.eq('Medium');
+    });
+
+    // Test search with both condition and allergy filters
+    cy.request({
+      method: 'GET',
+      url: `${baseUrl}/search?patientId=${testPatientId}&conditionName=Asthma&allergyName=Dust`,
+      headers: { Authorization: `Bearer ${authToken}` }
+    }).then((searchResponse) => {
+      expect(searchResponse.status).to.eq(200);
+      expect(searchResponse.body.conditions).to.have.length(1);
+      expect(searchResponse.body.allergies).to.have.length(1);
+      expect(searchResponse.body.conditions[0].name).to.eq('Asthma');
+      expect(searchResponse.body.conditions[0].severity).to.eq('High');
+      expect(searchResponse.body.allergies[0].name).to.eq('Dust');
+      expect(searchResponse.body.allergies[0].severity).to.eq('Medium');
     });
   });
 

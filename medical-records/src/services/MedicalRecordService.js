@@ -19,38 +19,26 @@ class MedicalRecordService {
      * @returns {Promise<Object>} The updated medical record
      */
     async updatePatientConditionsAndAllergies(patientId, updateDto) {
-        try {
-            let medicalRecord = await MedicalRecordRepository.findByPatientId(patientId);
-            
-            if (!medicalRecord) {
-                // Create new medical record if it doesn't exist
-                const newRecordData = {
-                    patientId,
-                    conditions: [],
-                    allergies: []
-                };
-                medicalRecord = await MedicalRecordRepository.create(newRecordData);
-            }
-
-            // Transform conditions and allergies data for update
-            const updateData = {
-                conditions: updateDto.conditions.map(condition => ({
-                    name: condition.name,
-                    severity: condition.severity
-                })),
-                allergies: updateDto.allergies.map(allergy => ({
-                    name: allergy.name,
-                    severity: allergy.severity
-                })),
-                lastUpdated: new Date()
-            };
-
-            // Persist the updated record using repository
-            const updatedRecord = await MedicalRecordRepository.update(patientId, updateData);
-            return updatedRecord;
-        } catch (error) {
-            throw error;
+        // Get existing record
+        const medicalRecord = await MedicalRecordRepository.findByPatientId(patientId);
+        if (!medicalRecord) {
+            throw new Error('Medical record not found');
         }
+
+        // Update the record
+        const updateData = {
+            conditions: updateDto.conditions.map(condition => ({
+                name: condition.name,
+                severity: condition.severity
+            })),
+            allergies: updateDto.allergies.map(allergy => ({
+                name: allergy.name,
+                severity: allergy.severity
+            })),
+            lastUpdated: new Date()
+        };
+
+        return await MedicalRecordRepository.update(patientId, updateData);
     }
 
     /**
@@ -67,31 +55,36 @@ class MedicalRecordService {
                 return null;
             }
 
-            let filteredRecord = {
+            const result = {
                 _id: record._id,
                 patientId: record.patientId,
+                conditions: [],
+                allergies: [],
                 lastUpdated: record.lastUpdated,
                 createdAt: record.createdAt,
                 updatedAt: record.updatedAt
             };
 
-            // Only include conditions if searching for conditions or no specific filter
-            if (searchDto.conditionName || (!searchDto.conditionName && !searchDto.allergyName)) {
-                filteredRecord.conditions = record.conditions.filter(condition =>
-                    !searchDto.conditionName || 
+            // Only include conditions if searching by condition name
+            if (searchDto.conditionName) {
+                result.conditions = record.conditions.filter(condition => 
                     condition.name.toLowerCase().includes(searchDto.conditionName.toLowerCase())
                 );
+            } else {
+                result.conditions = record.conditions;
             }
 
-            // Only include allergies if searching for allergies or no specific filter
-            if (searchDto.allergyName || (!searchDto.conditionName && !searchDto.allergyName)) {
-                filteredRecord.allergies = record.allergies.filter(allergy =>
-                    !searchDto.allergyName || 
+            // Only include allergies if searching by allergy name
+            if (searchDto.allergyName) {
+                result.allergies = record.allergies.filter(allergy => 
                     allergy.name.toLowerCase().includes(searchDto.allergyName.toLowerCase())
                 );
+            } else if (!searchDto.conditionName) {
+                // Include all allergies only if not searching by condition
+                result.allergies = record.allergies;
             }
 
-            return filteredRecord;
+            return result;
         } catch (error) {
             throw new Error(`Error searching medical record: ${error.message}`);
         }

@@ -26,10 +26,12 @@ namespace DDDSample1.Infrastructure
                 var context = scope.ServiceProvider.GetRequiredService<DDDSample1DbContext>();
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                var medicalRecordService = scope.ServiceProvider.GetRequiredService<IMedicalRecordService>();
+
 
                 await SeedUsers(userManager, roleManager);
                 await SeedStaff(context, userManager);
-                await SeedPatients(context, userManager);
+                await SeedPatients(context, userManager, medicalRecordService);
                 await SeedOperationTypes(context);
                 await SeedOperationRequests(context, userManager);
                 await SeedSurgeryRooms(context);
@@ -119,12 +121,12 @@ namespace DDDSample1.Infrastructure
         }
 
 
-        private static async Task SeedPatients(DDDSample1DbContext context, UserManager<ApplicationUser> userManager)
+        private static async Task SeedPatients(DDDSample1DbContext context, UserManager<ApplicationUser> userManager, IMedicalRecordService medicalRecordService)
         {
             var patientUsers = new[]
             {
-                new { Email = "patient@patient.com", FirstName = "Patient", LastName = "Main", DateOfBirth = "1990-01-01", Gender = "Female", ContactInfo = "123 Main St", EmergencyContact = "Emergency Contact 1", PhoneNumber = "1231231234", MedicalNr = "MED-00147246" },
-                new { Email = "patient2@patient.com", FirstName = "Patient", LastName = "Second", DateOfBirth = "1985-05-15", Gender = "Male", ContactInfo = "456 Elm St", EmergencyContact = "Emergency Contact 2", PhoneNumber = "4564564567", MedicalNr = "MED-00242784" },
+                new { Email = "patient@patient.com", FirstName = "Patient", LastName = "Main", DateOfBirth = "1990-01-01", Gender = "Female", ContactInfo = "123 Main St", EmergencyContact = "Emergency Contact 1", PhoneNumber = "1231231234", MedicalNr = "202412000001" },
+                new { Email = "patient2@patient.com", FirstName = "Patient", LastName = "Second", DateOfBirth = "1985-05-15", Gender = "Male", ContactInfo = "456 Elm St", EmergencyContact = "Emergency Contact 2", PhoneNumber = "4564564567", MedicalNr = "202412000002" },
             };
 
             foreach (var patientUserInfo in patientUsers)
@@ -136,6 +138,9 @@ namespace DDDSample1.Infrastructure
                     // Create Patient using the constructor you defined
                     var patient = new Patient(patientUserInfo.MedicalNr, user.Id, patientUserInfo.FirstName, patientUserInfo.LastName, patientUserInfo.Email, patientUserInfo.DateOfBirth, patientUserInfo.Gender, patientUserInfo.ContactInfo, patientUserInfo.EmergencyContact, patientUserInfo.PhoneNumber);
                     await context.Patients.AddAsync(patient);
+
+                    // Create blank medical record for the seeded patient
+                    await medicalRecordService.CreateBlankMedicalRecord(patient.MedicalNr);
                 }
             }
         }

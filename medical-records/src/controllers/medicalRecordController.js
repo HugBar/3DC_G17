@@ -72,20 +72,32 @@ exports.updatePatientConditionsAndAllergies = async (req, res) => {
         
         const updateDto = new UpdateMedicalRecordDto(conditions, allergies);
         
+        // First check if the record exists
         const existingRecord = await MedicalRecordRepository.findByPatientId(patientId);
-        const isNewRecord = !existingRecord;
+        if (!existingRecord) {
+            return res.status(404).json({ 
+                message: 'Medical record not found. Please create a medical record first.' 
+            });
+        }
         
-        const updatedRecord = await MedicalRecordService.updatePatientConditionsAndAllergies(
-            patientId, 
-            updateDto
-        );
-
-        res.status(isNewRecord ? 201 : 200).json({
-            message: isNewRecord ? 
-                'Medical record created successfully' : 
-                'Medical record updated successfully',
-            record: updatedRecord
-        });
+        try {
+            const updatedRecord = await MedicalRecordService.updatePatientConditionsAndAllergies(
+                patientId, 
+                updateDto
+            );
+            
+            res.status(200).json({
+                message: 'Medical record updated successfully',
+                record: updatedRecord
+            });
+        } catch (error) {
+            if (error.message === 'Patient not found in the main system') {
+                return res.status(404).json({ 
+                    message: 'Patient not found in the main system. Please verify the medical number.' 
+                });
+            }
+            throw error;
+        }
     } catch (error) {
         console.error('Error updating medical record:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -113,5 +125,33 @@ exports.searchMedicalRecord = async (req, res) => {
     } catch (error) {
         console.error('Error searching medical record:', error);
         res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.createBlankMedicalRecord = async (req, res) => {
+    try {
+        const { patientId } = req.params;
+        
+        // Create a blank medical record structure
+        const blankRecord = {
+            patientId: patientId,
+            conditions: [],
+            allergies: [],
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        const medicalRecord = await MedicalRecordRepository.create(blankRecord);
+        
+        res.status(201).json({
+            message: 'Blank medical record created successfully',
+            record: medicalRecord
+        });
+    } catch (error) {
+        console.error('Error creating blank medical record:', error);
+        res.status(500).json({ 
+            message: 'Failed to create blank medical record',
+            error: error.message 
+        });
     }
 };

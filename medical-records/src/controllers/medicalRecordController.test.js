@@ -168,29 +168,19 @@ describe('MedicalRecordController', () => {
             });
         });
 
-        test('should create new medical record when none exists', async () => {
-            const mockNewRecord = { 
-                _id: '1', 
-                patientId: '123',
-                conditions: mockReq.body.conditions,
-                allergies: mockReq.body.allergies,
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
-            
+        test('should return 404 when medical record does not exist', async () => {
             MedicalRecordRepository.findByPatientId = jest.fn().mockResolvedValue(null);
-            MedicalRecordService.updatePatientConditionsAndAllergies = jest.fn().mockResolvedValue(mockNewRecord);
 
             await MedicalRecordController.updatePatientConditionsAndAllergies(mockReq, mockRes);
 
-            expect(mockRes.status).toHaveBeenCalledWith(201);
+            expect(mockRes.status).toHaveBeenCalledWith(404);
             expect(mockRes.json).toHaveBeenCalledWith({
-                message: 'Medical record created successfully',
-                record: mockNewRecord
+                message: 'Medical record not found. Please create a medical record first.'
             });
         });
 
         test('should handle service errors', async () => {
+            MedicalRecordRepository.findByPatientId = jest.fn().mockResolvedValue({ _id: '1', patientId: '123' });
             MedicalRecordService.updatePatientConditionsAndAllergies = jest.fn()
                 .mockRejectedValue(new Error('Service error'));
 

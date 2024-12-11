@@ -228,8 +228,10 @@ namespace DDDSample1
             services.AddScoped<IOperationTypeRepository, OperationTypeRepository>();
             services.AddScoped<OperationTypeService>();
 
+            services.AddHttpClient<IMedicalRecordService, MedicalRecordService>();
 
-
+            // Add configuration for medical records API
+            services.Configure<MedicalRecordsApiOptions>(Configuration.GetSection("MedicalRecordsApi"));
         }
 
     }

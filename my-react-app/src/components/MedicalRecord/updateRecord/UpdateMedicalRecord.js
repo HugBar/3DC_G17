@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import medicalRecordService from '../../../api/medicalRecordService';
 import './UpdateMedicalRecord.css';
 
 const UpdateMedicalRecord = () => {
-    const [patientId, setPatientId] = useState('');
+    const { patientId } = useParams();
     const [record, setRecord] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -16,58 +17,46 @@ const UpdateMedicalRecord = () => {
     useEffect(() => {
         const fetchAvailableOptions = async () => {
             try {
-                
-                // Fetch conditions
                 const conditions = await medicalRecordService.getAllMedicalConditions();
-                const transformedConditions = conditions.map(condition => ({
-                    _id: condition._id || String(Math.random()),
-                    name: condition.name || '',
-                    severity: condition.severity || ''
-                }));
-                setAvailableConditions(transformedConditions);
-    
-                // Fetch allergies
                 const allergies = await medicalRecordService.getAllAllergies();
-                const transformedAllergies = allergies.map(allergy => ({
-                    _id: allergy._id || String(Math.random()),
-                    name: allergy.name || '',
-                    severity: allergy.severity || ''
-                }));
-                setAvailableAllergies(transformedAllergies);
+                setAvailableConditions(conditions);
+                setAvailableAllergies(allergies);
             } catch (error) {
-                console.error('Error details:', error.response || error);
-                setAvailableConditions([]);
-                setAvailableAllergies([]);
+                console.error('Error fetching options:', error);
             }
         };
         fetchAvailableOptions();
     }, []);
 
+    useEffect(() => {
+        const fetchRecord = async () => {
+            if (!patientId) return;
+            
+            try {
+                setLoading(true);
+                setError('');
+                const response = await medicalRecordService.getMedicalRecord(patientId);
+                setRecord(response);
+                setSelectedConditions(response?.conditions || []);
+                setSelectedAllergies(response?.allergies || []);
+                setSuccessMessage('Medical record loaded successfully');
+            } catch (error) {
+                setError('Failed to fetch medical record');
+                setRecord(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRecord();
+    }, [patientId]);
 
     const handleRemoveCondition = (conditionName) => {
         setSelectedConditions(selectedConditions.filter(c => c.name !== conditionName));
     };
 
-
     const handleRemoveAllergy = (allergyName) => {
         setSelectedAllergies(selectedAllergies.filter(a => a.name !== allergyName));
-    };
-
-    const handleSearch = async () => {
-        try {
-            setLoading(true);
-            setError('');
-            const response = await medicalRecordService.getMedicalRecord(patientId);
-            setRecord(response);
-            setSelectedConditions(response?.conditions || []);
-            setSelectedAllergies(response?.allergies || []);
-        } catch (error) {
-            setError('Medical record not found. A new one will be created upon update.');
-            setSelectedConditions([]);
-            setSelectedAllergies([]);
-        } finally {
-            setLoading(false);
-        }
     };
 
     const handleUpdate = async () => {
@@ -79,9 +68,9 @@ const UpdateMedicalRecord = () => {
                 allergies: selectedAllergies
             };
             
-            await medicalRecordService.updateMedicalRecord(patientId, updateData);
+            const response = await medicalRecordService.updateMedicalRecord(patientId, updateData);
             setError('');
-            setSuccessMessage('Medical record updated successfully');
+            setSuccessMessage(response.message || 'Medical record updated successfully');
         } catch (error) {
             setError('Failed to update medical record');
             setSuccessMessage('');
@@ -90,28 +79,14 @@ const UpdateMedicalRecord = () => {
         }
     };
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <div className="update-medical-record-container">
             <h2>Update Medical Record</h2>
-
-            <div className="search-section">
-                <div className="form-group">
-                    <label htmlFor="patientId">Patient Medical Number:</label>
-                    <input
-                        id="patientId"
-                        type="text"
-                        value={patientId}
-                        onChange={(e) => setPatientId(e.target.value)}
-                    />
-                </div>
-                <button 
-                    className="search-button"
-                    onClick={handleSearch}
-                    disabled={loading || !patientId}
-                >
-                    Search Patient
-                </button>
-            </div>
+            <h3>Patient ID: {patientId}</h3>
 
             {error && (
                 <div role="alert" className="error-message">
@@ -119,7 +94,7 @@ const UpdateMedicalRecord = () => {
                 </div>
             )}
 
-            {successMessage && (
+            {successMessage && !error && (
                 <div role="alert" className="success-message">
                     {successMessage}
                 </div>
@@ -240,7 +215,6 @@ const UpdateMedicalRecord = () => {
 
                     <button
                         className="update-button"
-                        aria-label="Update Medical Record"
                         onClick={handleUpdate}
                         disabled={loading}
                     >

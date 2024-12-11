@@ -28,40 +28,38 @@ namespace DDDSample1.Domain.PatientData
 
         private readonly ILoggingService _loggingService;
 
-        public PatientService(IPatientRepository repository, UserManager<ApplicationUser> userManager, IUnitOfWork unitOfWork, IEmailService emailService, ILoggingService loggingService)
+        private readonly IMedicalRecordService _medicalRecordService;
+
+        public PatientService(IPatientRepository repository, UserManager<ApplicationUser> userManager, IUnitOfWork unitOfWork, IEmailService emailService, ILoggingService loggingService, IMedicalRecordService medicalRecordService)
         {
             _repository = repository;
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _emailService = emailService;
             _loggingService = loggingService;
+            _medicalRecordService = medicalRecordService;
 
         }
 
         public async Task<PatientDto> AddAsync(RegisterPatientDto dto)
         {
-            // Find the user by email in AspNetUsers
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
                 throw new BusinessRuleValidationException("User not found.");
             }
 
-            // Check if a mpatient profile already exists for this user
             var existingpatient = await _repository.GetByUserIdAsync(user.Id);
             if (existingpatient != null)
             {
-                throw new BusinessRuleValidationException("A staff profile for this user already exists.");
+                throw new BusinessRuleValidationException("A patient profile for this user already exists.");
             }
 
-            // Generate a unique Medical number for the staff
             var MedicalNr = MedicalRecordNumber.Generate();
 
-
-            // Create the patient profile with the UserId from AspNetUsers and the list of availability slots
             var newPatient = new Patient(
                 MedicalNr,
-                user.Id,  // Automatically link to AspNetUsers by UserId (also used as Id)
+                user.Id,
                 dto.FirstName,
                 dto.LastName,
                 dto.Email,
@@ -72,15 +70,14 @@ namespace DDDSample1.Domain.PatientData
                 dto.PhoneNumber,
                 dto.AppointmentHistory,
                 dto.MedicalHistory
-
-
-
             );
 
             await _repository.AddAsync(newPatient);
             await _unitOfWork.CommitAsync();
 
-            // Construct PatientDto using individual properties from newStaff
+            // Create blank medical record
+            await _medicalRecordService.CreateBlankMedicalRecord(newPatient.MedicalNr);
+
             return new PatientDto(
                 newPatient.MedicalNr,
                 newPatient.UserId,
@@ -94,13 +91,12 @@ namespace DDDSample1.Domain.PatientData
                 newPatient.PhoneNumber,
                 newPatient.AppointmentHistory,
                 newPatient.MedicalHistory);
-
         }
 
         public async Task<PagedResult<PatientDto>> GetFilteredPatient(PatientFilterDTO filter, int pageNumber, int pageSize)
         {
             var (patients, totalCount) = await _repository.GetFilteredPatientAsync(filter, pageNumber, pageSize);
-            
+
             var dtos = patients.Select(p => new PatientDto
             {
                 Id = p.UserId,
@@ -265,7 +261,7 @@ namespace DDDSample1.Domain.PatientData
             if (patient == null)
                 throw new NotFoundException("Patient not found.");
 
-                Console.WriteLine(dto.Email);
+            Console.WriteLine(dto.Email);
 
             if (!await _repository.IsEmailUniqueAsync(dto.Email) && dto.Email != patient.Email)
             {
@@ -479,6 +475,12 @@ namespace DDDSample1.Domain.PatientData
                 _loggingService.LogError($"Error during account deletion and anonymization: {ex.Message}");
                 throw;
             }
+        }
+
+        public async Task<bool> ExistsByMedicalNumberAsync(string medicalNumber)
+        {
+            var patient = await _repository.GetByMedicalRecordNumberAsync(medicalNumber);
+            return patient != null;
         }
 
 

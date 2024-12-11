@@ -1,11 +1,21 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { MemoryRouter } from 'react-router-dom';
 import SearchMedicalRecord from './SearchMedicalRecord';
 import medicalRecordService from '../../../api/medicalRecordService';
 
 // Mock the medicalRecordService
 jest.mock('../../../api/medicalRecordService');
+
+// Create a wrapper component that provides Router context
+const renderWithRouter = (component) => {
+    return render(
+        <MemoryRouter>
+            {component}
+        </MemoryRouter>
+    );
+};
 
 describe('SearchMedicalRecord', () => {
     const mockRecord = {
@@ -24,7 +34,7 @@ describe('SearchMedicalRecord', () => {
     });
 
     test('renders search form with all inputs', () => {
-        render(<SearchMedicalRecord />);
+        renderWithRouter(<SearchMedicalRecord />);
         
         expect(screen.getByLabelText(/Patient Medical Number/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/Condition Name/i)).toBeInTheDocument();
@@ -33,14 +43,14 @@ describe('SearchMedicalRecord', () => {
     });
 
     test('search button should be disabled without patient ID', () => {
-        render(<SearchMedicalRecord />);
+        renderWithRouter(<SearchMedicalRecord />);
         
         const searchButton = screen.getByRole('button', { name: /search/i });
         expect(searchButton).toBeDisabled();
     });
 
     test('should enable search button when patient ID is entered', () => {
-        render(<SearchMedicalRecord />);
+        renderWithRouter(<SearchMedicalRecord />);
         
         const patientIdInput = screen.getByLabelText(/Patient Medical Number/i);
         fireEvent.change(patientIdInput, { target: { value: 'TEST123' } });
@@ -52,7 +62,7 @@ describe('SearchMedicalRecord', () => {
     test('should display medical record when search is successful', async () => {
         medicalRecordService.searchMedicalRecord.mockResolvedValueOnce(mockRecord);
         
-        render(<SearchMedicalRecord />);
+        renderWithRouter(<SearchMedicalRecord />);
         
         const patientIdInput = screen.getByLabelText(/Patient Medical Number/i);
         fireEvent.change(patientIdInput, { target: { value: 'TEST123' } });
@@ -69,7 +79,7 @@ describe('SearchMedicalRecord', () => {
     test('should display error message when record not found', async () => {
         medicalRecordService.searchMedicalRecord.mockRejectedValueOnce(new Error('Not found'));
         
-        render(<SearchMedicalRecord />);
+        renderWithRouter(<SearchMedicalRecord />);
         
         const patientIdInput = screen.getByLabelText(/Patient Medical Number/i);
         fireEvent.change(patientIdInput, { target: { value: 'INVALID123' } });
@@ -85,12 +95,12 @@ describe('SearchMedicalRecord', () => {
     test('should handle search with only condition name', async () => {
         const conditionOnlyRecord = {
             ...mockRecord,
-            allergies: undefined
+            allergies: []
         };
         
         medicalRecordService.searchMedicalRecord.mockResolvedValueOnce(conditionOnlyRecord);
         
-        render(<SearchMedicalRecord />);
+        renderWithRouter(<SearchMedicalRecord />);
         
         fireEvent.change(screen.getByLabelText(/Patient Medical Number/i), { target: { value: 'TEST123' } });
         fireEvent.change(screen.getByLabelText(/Condition Name/i), { target: { value: 'Asthma' } });

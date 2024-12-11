@@ -43,19 +43,23 @@ deactivate Database
 Repository --> Service: medicalRecord
 deactivate Repository
 
-Service -> Service: Filter conditions and allergies
-Service --> Controller: filteredRecord
+alt Record Not Found
+    Service --> Controller: null
+    Controller --> FrontendService: 404 Not Found
+    FrontendService --> Frontend: Error Message
+    Frontend --> Doctor: Display "Record not found"
+else Record Found
+    Service -> Service: Filter conditions and allergies based on search criteria
+    Service --> Controller: filteredRecord
+    Controller --> FrontendService: 200 OK with filtered record
+    FrontendService --> Frontend: Search results
+    Frontend -> Frontend: Update UI with results
+    Frontend --> Doctor: Display filtered medical record
+end
+
 deactivate Service
-
-Controller --> FrontendService: Response
 deactivate Controller
-
-FrontendService --> Frontend: Result
 deactivate FrontendService
-
-Frontend -> Frontend: Update UI
-Frontend --> Doctor: Display results
-
 deactivate Frontend
 
 @enduml
