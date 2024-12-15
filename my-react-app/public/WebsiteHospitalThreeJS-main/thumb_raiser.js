@@ -221,10 +221,11 @@ export default class ThumbRaiser {
          });    
         // Create the medical equipment
         this.medicalEquipment = [];
+      
         medicalEquipmentData.forEach(medicalEquipmentParams => {
-            const medicalEquipment = new MedicalEquipment(medicalEquipmentParams);
-            this.medicalEquipment.push(medicalEquipment);
-            this.scene3D.add(medicalEquipment.object);
+        const medicalEquipment = new MedicalEquipment(medicalEquipmentParams);
+        this.medicalEquipment.push(medicalEquipment);
+        this.scene3D.add(medicalEquipment.object);
         });
 
         // Create the patient
@@ -275,37 +276,7 @@ export default class ThumbRaiser {
         });
         
 
-        this.ceilingLights = [];
-        const ceilingLightPositions = [
-            new THREE.Vector3(0, 1.5, 2.5),
-            new THREE.Vector3(3, 1.5, 2.5),
-            new THREE.Vector3(-3, 1.5, 2.5),
-            new THREE.Vector3(6, 1.5, 2.5),
-            new THREE.Vector3(6, 1.5, -2.5),   
-        ];
-
-        ceilingLightPositions.forEach(position => {
-            // Create point light with increased intensity and distance
-            const light = new THREE.PointLight(0xFFFFFF, 2.5, 15); // Increased intensity to 2.5 and distance to 15
-            light.position.copy(position);
-            light.castShadow = true;
-            
-            // Configure shadow properties
-            light.shadow.mapSize.width = 512;  // Increased shadow map size
-            light.shadow.mapSize.height = 512;
-            light.shadow.camera.near = 0.1;
-            light.shadow.camera.far = 15;
-            
-            // Optional: Add light bulb representation
-            const lightBulb = new THREE.Mesh(
-                new THREE.SphereGeometry(0.1, 16, 16),
-                new THREE.MeshBasicMaterial({ color: 0xFFFFFF })
-            );
-            lightBulb.position.copy(position);
-            
-            this.ceilingLights.push({ light });
-            this.scene3D.add(light);
-        });
+        
 
         // Create the lights
         this.lights = new Lights(this.lightsParameters);
@@ -425,6 +396,70 @@ export default class ThumbRaiser {
         this.resetAll.addEventListener("click", event => this.buttonClick(event));
 
         this.activeElement = document.activeElement;
+        
+
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+    
+        window.addEventListener('click', (event) => {
+            // Only process clicks if game is running
+            //if (!this.gameRunning) return;
+    
+            this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    
+            this.raycaster.setFromCamera(this.mouse, this.activeViewCamera.object);
+               // Get all medical equipment objects and their children
+            const equipmentObjects = this.medicalEquipment.map(e => e.object).flatMap(obj => {
+                const children = [];
+                obj.traverse(child => {
+                    if (child.isMesh) children.push(child);
+                });
+                return children;
+            });
+            const intersects = this.raycaster.intersectObjects(equipmentObjects, false);
+    
+            if (intersects.length > 0) {
+                const clicked = intersects[0].object;
+                console.log('Clicked object:', clicked);
+                
+                // Find parent medical equipment
+                let parent = clicked;
+                while (parent && !parent.userData.parent) {
+                    parent = parent.parent;
+                }
+                
+                if (parent && parent.userData.parent) {
+                    const equipment = parent.userData.parent;
+                    console.log('Found equipment:', equipment);
+                    
+                    // Move camera to equipment's predefined position
+                    if (equipment.camera) {
+                        console.log('Setting camera position');
+                        this.activeViewCamera.object.position.set(
+                            equipment.camera.x,
+                            equipment.camera.y,
+                            equipment.camera.z
+                        );
+                        
+                        // Make camera look at room center
+                        console.log('Position',equipment.roomPosition.x, equipment.roomPosition.z);
+                        const roomCenter = {
+                            x: equipment.roomPosition.x,
+                            y: 0,
+                            z: equipment.roomPosition.z 
+                        };
+                        
+                        this.activeViewCamera.object.lookAt(
+                            roomCenter.x,
+                            roomCenter.y,
+                            roomCenter.z
+                        );
+                    }
+                }
+            }
+        });
+
 
     }
 
