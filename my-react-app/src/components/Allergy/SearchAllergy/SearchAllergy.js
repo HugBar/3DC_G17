@@ -163,7 +163,7 @@ const SearchAllergy = () => {
             )}
     
             {selectedAllergy && (
-                <div className="modal">
+                <div className="condition-details-modal">
                     <div className="modal-content">
                         <h3>Allergy Details</h3>
                         <div className="details-grid">
@@ -171,7 +171,11 @@ const SearchAllergy = () => {
                             <p><strong>Severity:</strong> {selectedAllergy.severity}</p>
                             <p><strong>Description:</strong> {selectedAllergy.description}</p>
                         </div>
-                        <button onClick={() => setSelectedAllergy(null)}>Close</button>
+                        <div className="modal-actions">
+                            <button onClick={() => setSelectedAllergy(null)} className="close-button">
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -180,6 +184,3 @@ const SearchAllergy = () => {
 }
 
 export default SearchAllergy;
-
-
-

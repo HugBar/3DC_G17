@@ -113,7 +113,13 @@ export const medicalEquipmentData = [
         credits: "Hospital medical equipment model",
         scale: new THREE.Vector3(0.005, 0.005, 0.005),
         position: new THREE.Vector3(0.5, 0, 3.15),  // First room
-        rotation: new THREE.Vector3(0, Math.PI / -1, 0) // rotate 180 degrees around Y axis
+        rotation: new THREE.Vector3(0, Math.PI / -1, 0), // rotate 180 degrees around Y axis
+        camera: {
+            x: 0.5,
+            y: 4, // Height above room
+            z: 3.15
+        },
+        roomDimensions: { width: 2, height: 2 }
     },
 
     {
@@ -121,7 +127,13 @@ export const medicalEquipmentData = [
         credits: "Hospital medical equipment model",
         scale: new THREE.Vector3(0.005, 0.005, 0.005),
         position: new THREE.Vector3(-2.50, 0, 3.15),  // First room
-        rotation: new THREE.Vector3(0, Math.PI / -1, 0) // rotate 180 degrees around Y axis
+        rotation: new THREE.Vector3(0, Math.PI / -1, 0), // rotate 180 degrees around Y axis
+        camera: {
+            x: -2.50,
+            y: 4,
+            z: 3.15
+        },
+        roomDimensions: { width: 2, height: 2 }
     },
 
     {
@@ -129,21 +141,38 @@ export const medicalEquipmentData = [
         credits: "Hospital medical equipment model",
         scale: new THREE.Vector3(0.005, 0.005, 0.005),
         position: new THREE.Vector3(3.50, 0, 3.15),  // First room
-        rotation: new THREE.Vector3(0, Math.PI / -1, 0) // rotate 180 degrees around Y axis
+        rotation: new THREE.Vector3(0, Math.PI / -1, 0), // rotate 180 degrees around Y axis
+        camera: {
+            x: 3.50,
+            y: 4,
+            z: 3.15
+        },
+  
     },
     {
         url: "./models/gltf/MedicalEquipment/MedicalEquipment.glb",
         credits: "Hospital medical equipment model",
         scale: new THREE.Vector3(0.005, 0.005, 0.005),
         position: new THREE.Vector3(6.50, 0, 3.15),  // First room
-        rotation: new THREE.Vector3(0, Math.PI / -1, 0) // rotate 180 degrees around Y axis
+        rotation: new THREE.Vector3(0, Math.PI / -1, 0), // rotate 180 degrees around Y axis
+        camera: {
+            x: 6.50,
+            y: 4,
+            z: 3.15
+        },
     },
     {
         url: "./models/gltf/MedicalEquipment/MedicalEquipment.glb",
         credits: "Hospital medical equipment model",
         scale: new THREE.Vector3(0.005, 0.005, 0.005),
         position: new THREE.Vector3(5.50, 0, -3.15),  // First room
-        rotation: new THREE.Vector3(0, 0, 0) // rotate 180 degrees around Y axis
+        rotation: new THREE.Vector3(0, 0, 0), // rotate 180 degrees around Y axis
+        camera: {
+            x: 5.50,
+            y: 4,
+            z: -3.15
+        },
+      
     },
 
 ]
