@@ -31,6 +31,11 @@ import Doctor from './doctor.js';
 import Desk from "./desk.js";
 import VendingMachine from "./vending_machine.js";
 import RoomInfo from "./room_info.js";
+import { Tween, Group, Easing } from '@tweenjs/tween.js';
+
+
+
+
 
 
 /*
@@ -178,6 +183,7 @@ export default class ThumbRaiser {
         this.doctorParameters = merge({}, doctorData, doctorParameters);
         this.deskParameters = merge({}, deskData, deskParameters);
         this.vendingMachineParameters = merge({}, vendingMachineData, vendingMachineParameters);
+        this.tweenGroup = new Group();
         
         this.roomInfo = new RoomInfo();
         this.initialize().catch(console.error);
@@ -436,25 +442,41 @@ export default class ThumbRaiser {
                     // Move camera to equipment's predefined position
                     if (equipment.camera) {
                         console.log('Setting camera position');
-                        this.activeViewCamera.object.position.set(
-                            equipment.camera.x,
-                            equipment.camera.y,
-                            equipment.camera.z
-                        );
                         
-                        // Make camera look at room center
-                        console.log('Position',equipment.roomPosition.x, equipment.roomPosition.z);
+                        const startPosition = {
+                            x: this.activeViewCamera.object.position.x,
+                            y: this.activeViewCamera.object.position.y,
+                            z: this.activeViewCamera.object.position.z
+                        };
+                        
+                        const endPosition = {
+                            x: equipment.camera.x,
+                            y: equipment.camera.y,
+                            z: equipment.camera.z
+                        };
+                    
                         const roomCenter = {
                             x: equipment.roomPosition.x,
                             y: 0,
                             z: equipment.roomPosition.z 
                         };
-                        
-                        this.activeViewCamera.object.lookAt(
-                            roomCenter.x,
-                            roomCenter.y,
-                            roomCenter.z
-                        );
+                    
+                        new Tween(startPosition, this.tweenGroup)
+                        .to(endPosition, 2000)
+                        .easing(Easing.Cubic.InOut)
+                        .onUpdate(() => {
+                            this.activeViewCamera.object.position.set(
+                                startPosition.x,
+                                startPosition.y,
+                                startPosition.z
+                            );
+                            this.activeViewCamera.object.lookAt(
+                                roomCenter.x,
+                                roomCenter.y,
+                                roomCenter.z
+                            );
+                        })
+                        .start();
                     }
                 }
             }
@@ -917,6 +939,10 @@ export default class ThumbRaiser {
     }
 
     update() {
+
+        this.tweenGroup.update();
+
+
         if (!this.gameRunning) {
             if (this.maze.loaded && this.player.loaded) { // If all resources have been loaded
                 // Add the maze, the player and the lights to the scene
