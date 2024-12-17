@@ -9,7 +9,7 @@ const PatientListDoctor = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const pageSize = 2;
+  const pageSize = 1;
 
   const [filters, setFilters] = useState({
     firstName: '',
@@ -28,12 +28,20 @@ const PatientListDoctor = () => {
 
   // Update URL with filters
   const updateURL = (currentFilters, page) => {
+    setCurrentPage(page);
     const params = new URLSearchParams();
     Object.entries(currentFilters).forEach(([key, value]) => {
       if (value) params.append(key, value);
     });
     params.append('page', page.toString());
     navigate(`?${params.toString()}`);
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      updateURL(filters, newPage);
+    }
   };
 
   // Clear filters
@@ -68,8 +76,13 @@ const PatientListDoctor = () => {
           setTotalPages(response.totalPages);
         }
       } catch (error) {
+        if (error.response && error.response.status === 404) {
+          setPatientList([]);
+          setErrorMessage('No patients found.');
+        } else {
         setErrorMessage('Error fetching patient list.');
         console.error(error);
+        }
       }
     };
 
@@ -109,6 +122,10 @@ const PatientListDoctor = () => {
 
       {errorMessage && <div className="error-message">{errorMessage}</div>}
 
+      {!errorMessage && patientList && patientList.length === 0 && (
+        <p className="no-results">No patients found.</p>
+      )}
+
       <div className="patient-grid">
         {patientList.map((patient) => (
           <div
@@ -126,20 +143,22 @@ const PatientListDoctor = () => {
 
       <div className="pagination-controls">
         <button
-          onClick={() => updateURL(filters, currentPage - 1)}
+          onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage <= 1}
           className="pagination-button"
         >
           Previous
-        </button>
-        <span className="page-info">Page {currentPage} of {totalPages}</span>
-        <button
-          onClick={() => updateURL(filters, currentPage + 1)}
-          disabled={currentPage >= totalPages}
-          className="pagination-button"
-        >
-          Next
-        </button>
+          </button>
+      <span className="page-info">
+        Page {currentPage} of {totalPages}
+      </span>
+      <button
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage >= totalPages}
+        className="pagination-button"
+      >
+        Next
+      </button>
       </div>
     </div>
   );
