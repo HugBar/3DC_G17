@@ -1,51 +1,54 @@
-@startuml
-actor Doctor
-participant "CreateOperationRequest\nComponent" as UI
-participant "OperationRequest\nService" as ORS
+@startuml PatientProfile Flow
+
+actor User
+participant "PatientProfile\nComponent" as PC
+participant "patientService" as PS
+participant "medicalRecordService" as MS
 participant "Backend API" as API
 
-activate Doctor
-Doctor -> UI: Navigate to Create Operation Request page
-activate UI
+User -> PC: Views Patient Profile
+activate PC
 
-Doctor -> UI: Fill operation request information
-note right
-  - Patient ID
-  - Doctor ID
-  - Operation Type ID
-  - Deadline
-  - Priority
-end note
+PC -> PC: useEffect() triggers
 
-Doctor -> UI: Submit form
+alt No Patient ID
+    PC -> PC: Display Error
 
-UI -> UI: handleSubmit()
+    PC --> User: Display Error
 
-UI -> ORS: createOperationRequest(operationData)
-activate ORS
+else Has Patient ID
+    PC -> PS: getPatientById(patientId)
+    activate PS
+    
+    PS -> API: GET /api/patient/get-patient-profile/{id}
+    activate API
 
-ORS -> ORS: getAuthToken()
-ORS -> ORS: checkDoctorRole(token)
+    API --> PS: Return Response
+    deactivate API
+    PS --> PC: Return Patient Data
+    deactivate PS
+    PC -> MS: getMedicalRecord(patientData.medicalNr)
+    activate MS
+    
+    MS -> API: GET /medical-records/{id}
+    activate API
+    API --> MS: Return Response
+    deactivate API
+    MS --> PC: Return Medical Record
+    deactivate MS
 
-ORS -> API: POST /api/OperationRequest/create-operation-request
-activate API
+    PC -> PC: setPatient(patientData)
+    PC -> PC: setMedicalRecord(medicalRecordData)
 
-
-API --> ORS: Return OperationRequestDto
-deactivate API
-ORS --> UI: Return success
-deactivate ORS
-
-UI -> UI: setSuccessMessage()
-UI -> UI: Clear form
-UI --> Doctor: Show success message
-
-alt error occurs
-    ORS --> UI: Throw error
-    UI -> UI: setErrorMessage()
-    UI --> Doctor: Show error message
+    alt Success
+        PC -> PC: Update State\n(patient & medicalRecord)
+        PC -> PC: Render Profile Data
+    else Error
+        PC -> PC: Display Error Message
+    end
+    PC --> User: Display Profile/Error
 end
 
-deactivate UI
-deactivate Doctor
+deactivate PC
+
 @enduml
