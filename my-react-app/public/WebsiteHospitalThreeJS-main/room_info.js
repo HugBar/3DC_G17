@@ -125,12 +125,16 @@ class RoomInfo {
     }
 
     toggleVisibility(roomNumber) {
-        if (this.visible) {
+        if (this.visible && this.currentRoom === roomNumber) {
+            // Se já estiver mostrando info desta sala, esconde
             this.overlay.style.display = 'none';
             this.visible = false;
+            this.currentRoom = null;
         } else {
+            // Se estiver escondido ou mostrando outra sala, mostra esta
             this.overlay.style.display = 'block';
             this.visible = true;
+            this.currentRoom = roomNumber;
             this.displayRoomInfo(roomNumber);
         }
     }
@@ -148,6 +152,27 @@ class RoomInfo {
         for (const [roomNumber, bounds] of Object.entries(rooms)) {
             if (position.x >= bounds.minX && position.x <= bounds.maxX &&
                 position.z >= bounds.minZ && position.z <= bounds.maxZ) {
+                return roomNumber;
+            }
+        }
+        return null;
+    }
+
+    getRoomFromPosition(position) {
+        // Define camera positions that correspond to each room view
+        const roomViews = {
+            'OR-101': { x: 6.50, y: 4, z: 3.15 },
+            'OR-102': { x: 3.50, y: 4, z: 3.15 },
+            'OR-103': { x: 0.50, y: 4, z: 3.15 },
+            'OR-104': { x: -2.50, y: 4, z: 3.15 },
+            'OR-105': { x: 5.50, y: 4, z: -3.15 }
+        };
+
+        // Find which room view matches the camera position
+        for (const [roomNumber, view] of Object.entries(roomViews)) {
+            if (Math.abs(position.x - view.x) < 0.1 && 
+                Math.abs(position.y - view.y) < 0.1 && 
+                Math.abs(position.z - view.z) < 0.1) {
                 return roomNumber;
             }
         }

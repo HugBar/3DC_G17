@@ -119,7 +119,9 @@ export const medicalEquipmentData = [
             y: 4, // Height above room
             z: 3.15
         },
-        roomDimensions: { width: 2, height: 2 }
+        roomDimensions: { width: 2, height: 2 },
+        roomPosition: { x: 0.5, y: 0, z: 3.15 }, // Added this
+        roomId: 'OR-103' // Optional: pode ser útil para identificação direta
     },
 
     {
@@ -133,7 +135,9 @@ export const medicalEquipmentData = [
             y: 4,
             z: 3.15
         },
-        roomDimensions: { width: 2, height: 2 }
+        roomDimensions: { width: 2, height: 2 },
+        roomPosition: { x: -2.50, y: 0, z: 3.15 }, // Added this
+        roomId: 'OR-104' // Optional: pode ser útil para identificação direta
     },
 
     {
@@ -147,6 +151,9 @@ export const medicalEquipmentData = [
             y: 4,
             z: 3.15
         },
+        roomDimensions: { width: 2, height: 2 },
+        roomPosition: { x: 3.50, y: 0, z: 3.15 }, // Added this
+        roomId: 'OR-102' // Optional: pode ser útil para identificação direta
   
     },
     {
@@ -160,6 +167,9 @@ export const medicalEquipmentData = [
             y: 4,
             z: 3.15
         },
+        roomDimensions: { width: 2, height: 2 },
+        roomPosition: { x: 6.50, y: 0, z: 3.15 }, // Added this
+        roomId: 'OR-101' // Optional: pode ser útil para identificação direta
     },
     {
         url: "./models/gltf/MedicalEquipment/MedicalEquipment.glb",
@@ -172,6 +182,10 @@ export const medicalEquipmentData = [
             y: 4,
             z: -3.15
         },
+        roomDimensions: { width: 2, height: 2 },
+        roomPosition: { x: 5.50, y: 0, z: -3.15 }, // Added this
+        roomId: 'OR-105' // Optional: pode ser útil para identificação direta
+
       
     },
 
