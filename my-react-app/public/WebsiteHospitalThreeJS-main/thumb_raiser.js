@@ -407,80 +407,70 @@ export default class ThumbRaiser {
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
     
-        window.addEventListener('click', (event) => {
-            // Only process clicks if game is running
-            //if (!this.gameRunning) return;
-    
-            this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    
-            this.raycaster.setFromCamera(this.mouse, this.activeViewCamera.object);
-               // Get all medical equipment objects and their children
-            const equipmentObjects = this.medicalEquipment.map(e => e.object).flatMap(obj => {
-                const children = [];
-                obj.traverse(child => {
-                    if (child.isMesh) children.push(child);
-                });
-                return children;
-            });
-            const intersects = this.raycaster.intersectObjects(equipmentObjects, false);
-    
-            if (intersects.length > 0) {
-                const clicked = intersects[0].object;
-                console.log('Clicked object:', clicked);
-                
-                // Find parent medical equipment
-                let parent = clicked;
-                while (parent && !parent.userData.parent) {
-                    parent = parent.parent;
-                }
-                
-                if (parent && parent.userData.parent) {
-                    const equipment = parent.userData.parent;
-                    console.log('Found equipment:', equipment);
-                    
-                    // Move camera to equipment's predefined position
-                    if (equipment.camera) {
-                        console.log('Setting camera position');
-                        
-                        const startPosition = {
-                            x: this.activeViewCamera.object.position.x,
-                            y: this.activeViewCamera.object.position.y,
-                            z: this.activeViewCamera.object.position.z
-                        };
-                        
-                        const endPosition = {
-                            x: equipment.camera.x,
-                            y: equipment.camera.y,
-                            z: equipment.camera.z
-                        };
-                    
-                        const roomCenter = {
-                            x: equipment.roomPosition.x,
-                            y: 0,
-                            z: equipment.roomPosition.z 
-                        };
-                    
-                        new Tween(startPosition, this.tweenGroup)
-                        .to(endPosition, 2000)
-                        .easing(Easing.Cubic.InOut)
-                        .onUpdate(() => {
-                            this.activeViewCamera.object.position.set(
-                                startPosition.x,
-                                startPosition.y,
-                                startPosition.z
-                            );
-                            this.activeViewCamera.object.lookAt(
-                                roomCenter.x,
-                                roomCenter.y,
-                                roomCenter.z
-                            );
-                        })
-                        .start();
-                    }
-                }
-            }
+        // Modificar o event listener de click (remover a parte que mostra room info):
+window.addEventListener('click', (event) => {
+    this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    this.raycaster.setFromCamera(this.mouse, this.activeViewCamera.object);
+    const equipmentObjects = this.medicalEquipment.map(e => e.object).flatMap(obj => {
+        const children = [];
+        obj.traverse(child => {
+            if (child.isMesh) children.push(child);
         });
+        return children;
+    });
+    const intersects = this.raycaster.intersectObjects(equipmentObjects, false);
+
+    if (intersects.length > 0) {
+        const clicked = intersects[0].object;
+        let parent = clicked;
+        while (parent && !parent.userData.parent) {
+            parent = parent.parent;
+        }
+        
+        if (parent && parent.userData.parent) {
+            const equipment = parent.userData.parent;
+            
+            if (equipment.camera) {
+                const startPosition = {
+                    x: this.activeViewCamera.object.position.x,
+                    y: this.activeViewCamera.object.position.y,
+                    z: this.activeViewCamera.object.position.z
+                };
+                
+                const endPosition = {
+                    x: equipment.camera.x,
+                    y: equipment.camera.y,
+                    z: equipment.camera.z
+                };
+            
+                const roomCenter = {
+                    x: equipment.roomPosition.x,
+                    y: 0,
+                    z: equipment.roomPosition.z 
+                };
+            
+                new Tween(startPosition, this.tweenGroup)
+                    .to(endPosition, 2000)
+                    .easing(Easing.Cubic.InOut)
+                    .onUpdate(() => {
+                        this.activeViewCamera.object.position.set(
+                            startPosition.x,
+                            startPosition.y,
+                            startPosition.z
+                        );
+                        this.activeViewCamera.object.lookAt(
+                            roomCenter.x,
+                            roomCenter.y,
+                            roomCenter.z
+                        );
+                    })
+                    .start();
+            }
+        }
+    }
+});
 
 
     }
@@ -742,7 +732,14 @@ export default class ThumbRaiser {
                 this.player.keyStates.thumbsUp = state;
             }
             else if (event.code === "KeyI" && state) {
-                const roomNumber = this.roomInfo.isInRoom(this.player.position);
+                // Primeiro tenta obter o número da sala baseado na posição do jogador
+                let roomNumber = this.roomInfo.isInRoom(this.player.position);
+                
+                // Se não encontrou sala pela posição do jogador, tenta pela posição da câmera
+                if (!roomNumber) {
+                    roomNumber = this.roomInfo.getRoomFromPosition(this.activeViewCamera.object.position);
+                }
+                
                 if (roomNumber) {
                     this.roomInfo.toggleVisibility(roomNumber);
                 }
