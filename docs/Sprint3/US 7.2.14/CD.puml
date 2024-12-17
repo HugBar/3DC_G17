@@ -1,51 +1,67 @@
-@startuml Create Operation Request UI Frontend Class Diagram
+@startuml Patient Profile Class Diagram
 
-' React Components
-class CreateOperationRequest {
-  - operationData: OperationData
-  - successMessage: string
-  - errorMessage: string
-  + handleChange(e: Event): void
-  + handleSubmit(e: Event): void
-  + clearForm(): void
-  + render(): JSX.Element
+class PatientProfile {
+  -navigate: function
+  -patientId: string
+  -patient: Patient
+  -medicalRecord: MedicalRecord
+  -loading: boolean
+  -error: string
+  +useEffect(): void
+  +handleUpdateMedicalRecord(): void
+  +handleGoBack(): void
+  +render(): JSX
 }
 
-class OperationRequestService {
-  + createOperationRequest(operationData: OperationData): Promise<any>
-  + getAllOperationRequests(filters: any): Promise<any>
-  + deleteOperationRequest(id: string): Promise<void>
-  + getOperationRequestById(id: string): Promise<any>
-  - getAuthToken(): string
-  - checkDoctorRole(token: string): void
+class PatientService {
+  -API_URL: string
+  +getPatientById(patientId: string): Promise<Patient>
+  +getAllPatients(filters: object, page: number, pageSize: number): Promise<PatientList>
+  +updatePatientProfile(email: string, data: object): Promise<Patient>
+  +deletePatient(patientId: string): Promise<void>
 }
 
-class FormValidation {
-  + errors: ValidationErrors
-  + validate(data: any): boolean
+class MedicalRecordService {
+  -API_URL: string
+  +getMedicalRecord(patientId: string): Promise<MedicalRecord>
+  +getAllMedicalConditions(): Promise<Condition[]>
+  +getAllAllergies(): Promise<Allergy[]>
+  +updateMedicalRecord(patientId: string, data: object): Promise<MedicalRecord>
 }
 
-' Data Types
-class OperationData {
-  + patientId: string
-  + doctorId: string
-  + operationTypeId: string
-  + deadline: string
-  + priority: string
+class Patient {
+  +id: string
+  +firstName: string
+  +lastName: string
+  +email: string
+  +phoneNumber: string
+  +dateOfBirth: Date
+  +gender: string
+  +medicalNr: string
 }
 
-class ValidationErrors {
-  + patientId?: string
-  + doctorId?: string
-  + operationTypeId?: string
-  + deadline?: string
-  + priority?: string
+class MedicalRecord {
+  +patientId: string
+  +conditions: Condition[]
+  +allergies: Allergy[]
 }
 
-' Relationships
-CreateOperationRequest --> OperationRequestService: uses
-CreateOperationRequest --> FormValidation: uses
-CreateOperationRequest --> OperationData: manages
-FormValidation --> ValidationErrors: produces
+class Condition {
+  +name: string
+  +severity: string
+}
+
+class Allergy {
+  +name: string
+  +severity: string
+}
+
+PatientProfile --> PatientService: uses
+PatientProfile --> MedicalRecordService: uses
+PatientProfile --> Patient: displays
+PatientProfile --> MedicalRecord: displays
+MedicalRecord "1" *-- "*" Condition: contains
+MedicalRecord "1" *-- "*" Allergy: contains
+Patient "1" -- "1" MedicalRecord: has
 
 @enduml
