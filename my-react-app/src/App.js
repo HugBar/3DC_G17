@@ -36,6 +36,8 @@ import SearchSpecialization from './components/Specialization/SearchSpecializati
 import RemoveSpecialization from './components/Specialization/RemoveSpecialization/RemoveSpecialization';
 import CreateSurgeryAppointment from './components/SurgeryAppointment/createSurgeryAppointment';
 import UpdateSpecialization from './components/Specialization/updateSpecialization/UpdateSpecialization';
+import PatientProfile from './components/Patient/patientProfile/PatientProfile';
+import PatientListDoctor from './components/Patient/patientListDoctor/PatientListDoctor';
 
 const App = () => {
   const navigate = useNavigate();
@@ -183,6 +185,14 @@ const App = () => {
                   Staff
                 </button>
               )}
+              {isDoctor && (
+                <button
+                  onClick={() => navigate('/patient/list-doctor')}
+                  className="nav-button"
+                  >
+                    Patient
+                  </button>
+              )}
               {isAdmin && (
                 <button 
                   onClick={() => navigate('/appointments')}
@@ -318,6 +328,7 @@ const App = () => {
               >
                 Search Allergies
               </button>
+              
             </>
           )}
           
@@ -631,6 +642,17 @@ const App = () => {
     </ProtectedRoute>
   } />
   <Route path="/specialization/update/:id" element={<UpdateSpecialization />} />
+  <Route path="/patient/:patientId" element={
+    <ProtectedRoute requiredRole="doctor">
+      <PatientProfile />
+    </ProtectedRoute >
+  } />
+  <Route path="/patient/list-doctor" element={
+    <ProtectedRoute requiredRole="doctor">
+      <PatientListDoctor />
+    </ProtectedRoute>
+  } />
+
 </Routes>
 
     </div>
