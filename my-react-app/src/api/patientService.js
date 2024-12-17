@@ -17,7 +17,19 @@ const checkAdminRole = (token) => {
 
   // Access the role using the full claim key
   const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+  console.log(role);
   if (role !== 'Admin') {
+    console.error('User does not have the Admin role');
+    throw new Error('User does not have the Admin role');
+  }
+};
+
+const checkAdminDoctorRole = (token) => {
+  const decodedToken = jwtDecode(token);
+
+  // Access the role using the full claim key
+  const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+  if (role !== 'Doctor' && role !== 'Admin') {
     console.error('User does not have the Admin role');
     throw new Error('User does not have the Admin role');
   }
@@ -113,7 +125,7 @@ const patientService = {
 
   getAllPatients: async (filters = {}, page = 1, pageSize = 1) => {
     const token = getAuthToken();
-    checkAdminRole(token);
+    checkAdminDoctorRole(token);
 
     try {
       const params = new URLSearchParams();

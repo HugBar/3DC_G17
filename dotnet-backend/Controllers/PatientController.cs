@@ -40,7 +40,7 @@ namespace DDDSample1.Controllers
         }
 
         [HttpGet("filter")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Doctor,Admin")]
         public async Task<ActionResult<PagedResult<PatientDto>>> GetPatients(
             [FromQuery] PatientFilterDTO filter,
             [FromQuery] int pageNumber = 1,
