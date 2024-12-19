@@ -19,10 +19,10 @@ import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import AddMedicalCondition from './AddMedicalCondition';
-import medicalConditionService from '../../../api/medicalConditionService';
+import medicalConditionService from '../../../api/MedicalCondition/medicalConditionService';
 
 // Mock do serviço
-jest.mock('../../../api/medicalConditionService');
+jest.mock('../../../api/MedicalCondition/medicalConditionService');
 
 describe('AddMedicalCondition Component', () => {
     beforeEach(() => {

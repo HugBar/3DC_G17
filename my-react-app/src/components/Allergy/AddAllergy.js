@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import allergyService from '../../api/allergyService';
+import allergyService from '../../api/Allergy/allergyService';
 import './Allergy.css';
 import { AllergyDTO } from '../../dtos/AllergyDTO';
 

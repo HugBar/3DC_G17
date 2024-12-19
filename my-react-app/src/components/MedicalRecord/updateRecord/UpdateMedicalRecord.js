@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import medicalRecordService from '../../../api/medicalRecordService';
+import medicalRecordService from '../../../api/MedicalRecord/medicalRecordService';
 import './UpdateMedicalRecord.css';
 
 const UpdateMedicalRecord = () => {
