@@ -433,38 +433,47 @@ window.addEventListener('click', (event) => {
             const equipment = parent.userData.parent;
             
             if (equipment.camera) {
-                const startPosition = {
-                    x: this.activeViewCamera.object.position.x,
-                    y: this.activeViewCamera.object.position.y,
-                    z: this.activeViewCamera.object.position.z
-                };
-                
-                const endPosition = {
-                    x: equipment.camera.x,
-                    y: equipment.camera.y,
-                    z: equipment.camera.z
-                };
+                // Define a posição inicial da câmera
+                const startPosition = new THREE.Vector3(
+                    this.activeViewCamera.object.position.x,
+                    this.activeViewCamera.object.position.y,
+                    this.activeViewCamera.object.position.z
+                );
             
-                const roomCenter = {
-                    x: equipment.roomPosition.x,
-                    y: 0,
-                    z: equipment.roomPosition.z 
-                };
+                // Define a posição final da câmera
+                const endPosition = new THREE.Vector3(
+                    equipment.camera.x,
+                    equipment.camera.y,
+                    equipment.camera.z
+                );
             
-                new Tween(startPosition, this.tweenGroup)
-                    .to(endPosition, 2000)
+                // Define o ponto inicial para onde a câmera está olhando
+                const startLookAt = new THREE.Vector3();
+                this.activeViewCamera.object.getWorldDirection(startLookAt);
+                startLookAt.add(this.activeViewCamera.object.position);
+            
+                // Define o ponto final para onde queremos que a câmera olhe
+                const endLookAt = new THREE.Vector3(
+                    equipment.roomPosition.x,
+                    0,
+                    equipment.roomPosition.z
+                );
+            
+                // Cria o tween para mover a posição da câmera
+                new Tween({ x: startPosition.x, y: startPosition.y, z: startPosition.z }, this.tweenGroup)
+                    .to({ x: endPosition.x, y: endPosition.y, z: endPosition.z }, 2000)
                     .easing(Easing.Cubic.InOut)
-                    .onUpdate(() => {
-                        this.activeViewCamera.object.position.set(
-                            startPosition.x,
-                            startPosition.y,
-                            startPosition.z
-                        );
-                        this.activeViewCamera.object.lookAt(
-                            roomCenter.x,
-                            roomCenter.y,
-                            roomCenter.z
-                        );
+                    .onUpdate((current) => {
+                        this.activeViewCamera.object.position.set(current.x, current.y, current.z);
+                    })
+                    .start();
+            
+                // Cria o tween para atualizar o ponto de lookAt da câmera
+                new Tween({ x: startLookAt.x, y: startLookAt.y, z: startLookAt.z }, this.tweenGroup)
+                    .to({ x: endLookAt.x, y: endLookAt.y, z: endLookAt.z }, 2000)
+                    .easing(Easing.Cubic.InOut)
+                    .onUpdate((current) => {
+                        this.activeViewCamera.object.lookAt(new THREE.Vector3(current.x, current.y, current.z));
                     })
                     .start();
             }

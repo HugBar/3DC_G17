@@ -230,8 +230,8 @@ describe('SpecializationController', () => {
             mockReq.query = mockFilter;
             
             const mockSpecializations = [
-                { id: 1, name: 'Cardiology', description: 'Heart specialist' },
-                { id: 2, name: 'Cardio Surgery', description: 'Heart surgery' }
+                { _id: "1", name: 'Cardiology', description: 'Heart specialist' },
+                { _id: "2", name: 'Cardio Surgery', description: 'Heart surgery' }
             ];
             
             SpecializationService.searchSpecializations.mockResolvedValue(mockSpecializations);
@@ -246,14 +246,19 @@ describe('SpecializationController', () => {
         });
     
         test('should return all specializations without filters', async () => {
+            // Setup mock data
             const mockSpecializations = [
-                { id: 1, name: 'Cardiology', description: 'Heart specialist' }
+                { _id: "1", name: 'Cardiology', description: 'Heart specialist' },
+                { _id: "2", name: 'Neurology', description: 'Brain specialist' }
             ];
-            
-            SpecializationService.searchSpecializations.mockResolvedValue(mockSpecializations);
     
+            // Setup service mock with proper resolution
+            SpecializationService.searchSpecializations = jest.fn().mockResolvedValue(mockSpecializations);
+    
+            // Call controller
             await SpecializationController.searchSpecialization(mockReq, mockRes);
     
+            // Verify response
             expect(mockRes.status).toHaveBeenCalledWith(200);
             expect(mockRes.json).toHaveBeenCalledWith(mockSpecializations);
             expect(SpecializationService.searchSpecializations).toHaveBeenCalledWith(
