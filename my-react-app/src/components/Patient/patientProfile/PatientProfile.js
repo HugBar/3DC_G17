@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import patientService from '../../../api/patientService';
-import medicalRecordService from '../../../api/medicalRecordService';
+import medicalRecordService from '../../../api/MedicalRecord/medicalRecordService';
 import './PatientProfile.css';
 
 const PatientProfile = () => {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import appointmentService from '../../api/appointmentService';
+import appointmentService from '../../api/Appointment/appointmentService';
 import './CreateSurgeryAppointment.css';
 
 const CreateSurgeryAppointment = () => {
