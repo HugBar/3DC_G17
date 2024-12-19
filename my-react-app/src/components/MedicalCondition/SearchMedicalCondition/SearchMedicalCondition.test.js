@@ -18,7 +18,7 @@ import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
 import SearchMedicalCondition from './SearchMedicalCondition';
-import medicalConditionService from '../../../api/medicalConditionService';
+import medicalConditionService from '../../../api/MedicalCondition/medicalConditionService';
 
 // Mock dos módulos necessários
 jest.mock('react-router-dom', () => ({
@@ -27,7 +27,7 @@ jest.mock('react-router-dom', () => ({
     useLocation: jest.fn()
 }));
 
-jest.mock('../../../api/medicalConditionService');
+jest.mock('../../../api/MedicalCondition/medicalConditionService');
 
 describe('SearchMedicalCondition Component', () => {
     const mockNavigate = jest.fn();

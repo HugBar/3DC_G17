@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import allergyService from '../../../api/allergyService';
+import allergyService from '../../../api/Allergy/allergyService';
 import { AllergyDTO } from '../../../dtos/AllergyDTO';
 import './SearchAllergy.css';
 

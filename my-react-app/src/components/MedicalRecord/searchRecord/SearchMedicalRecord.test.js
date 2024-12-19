@@ -3,10 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
 import SearchMedicalRecord from './SearchMedicalRecord';
-import medicalRecordService from '../../../api/medicalRecordService';
+import medicalRecordService from '../../../api/MedicalRecord/medicalRecordService';
 
 // Mock the medicalRecordService
-jest.mock('../../../api/medicalRecordService');
+jest.mock('../../../api/MedicalRecord/medicalRecordService');
 
 // Create a wrapper component that provides Router context
 const renderWithRouter = (component) => {

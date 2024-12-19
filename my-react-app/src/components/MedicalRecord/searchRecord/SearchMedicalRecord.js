@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import medicalRecordService from '../../../api/medicalRecordService';
+import medicalRecordService from '../../../api/MedicalRecord/medicalRecordService';
 import './SearchMedicalRecord.css';
 
 const SearchMedicalRecord = () => {

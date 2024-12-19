@@ -3,10 +3,10 @@ import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
 import SearchAllergy from './SearchAllergy';
-import allergyService from '../../../api/allergyService';
+import allergyService from '../../../api/Allergy/allergyService';
 
 // Mock the dependencies
-jest.mock('../../../api/allergyService');
+jest.mock('../../../api/Allergy/allergyService');
 jest.mock('react-router-dom', () => ({
     ...jest.requireActual('react-router-dom'),
     useNavigate: jest.fn(),

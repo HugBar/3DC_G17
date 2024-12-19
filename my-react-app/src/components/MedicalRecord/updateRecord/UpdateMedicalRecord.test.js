@@ -3,10 +3,10 @@ import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import UpdateMedicalRecord from './UpdateMedicalRecord';
-import medicalRecordService from '../../../api/medicalRecordService';
+import medicalRecordService from '../../../api/MedicalRecord/medicalRecordService';
 
 // Mock the service module
-jest.mock('../../../api/medicalRecordService', () => ({
+jest.mock('../../../api/MedicalRecord/medicalRecordService', () => ({
     getAllMedicalConditions: jest.fn(),
     getAllAllergies: jest.fn(),
     getMedicalRecord: jest.fn(),

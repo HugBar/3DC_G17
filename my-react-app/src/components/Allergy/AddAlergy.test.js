@@ -1,10 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import AddAllergy from './AddAllergy';
-import allergyService from '../../api/allergyService';
+import allergyService from '../../api/Allergy/allergyService';
 
 // Mock the allergyService
-jest.mock('../../api/allergyService');
+jest.mock('../../api/Allergy/allergyService');
 
 describe('AddAllergy Component', () => {
     beforeEach(() => {

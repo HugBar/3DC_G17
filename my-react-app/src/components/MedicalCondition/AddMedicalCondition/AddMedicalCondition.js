@@ -12,7 +12,7 @@
  */
 
 import React, { useState } from 'react';
-import medicalConditionService from '../../../api/medicalConditionService';
+import medicalConditionService from '../../../api/MedicalCondition/medicalConditionService';
 import { MedicalConditionDTO } from '../../../dtos/MedicalConditionDTO';
 import './AddMedicalCondition.css';
 

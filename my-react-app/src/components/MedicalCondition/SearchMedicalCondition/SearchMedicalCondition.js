@@ -13,7 +13,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import medicalConditionService from '../../../api/medicalConditionService';
+import medicalConditionService from '../../../api/MedicalCondition/medicalConditionService';
 import { MedicalConditionDTO } from '../../../dtos/MedicalConditionDTO';
 import './SearchMedicalCondition.css';
 
