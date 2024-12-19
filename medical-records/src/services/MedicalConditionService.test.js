@@ -19,6 +19,7 @@ jest.mock('../repositories/MedicalConditionRepository');
 describe('MedicalConditionService', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     describe('addMedicalConditionModel', () => {
