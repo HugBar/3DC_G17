@@ -5,20 +5,22 @@
 :-dynamic agenda_operation_room1/3.
 :-dynamic better_sol/5.
 
-agenda_staff(d001,20241028,[(720,790,m01)]).
-agenda_staff(d002,20241028,[(850,900,m02)]).
-agenda_staff(d003,20241028,[(720,790,m01)]).
-agenda_staff(d004,20241028,[(720,790,m01)]).
-agenda_staff(n004,20241028,[(720,790,m01)]).
-agenda_staff(m001,20241028,[(720,790,d001)]).
-agenda_staff(a001,20241028,[(850,900,d002)]).
-agenda_staff(n001,20241028,[(850,900,d002)]).
-agenda_staff(n002,20241028,[(850,900,d002)]).
-agenda_staff(n003,20241028,[(850,900,d002)]).
+agenda_staff(d001,20241028,[]).
+agenda_staff(d002,20241028,[]).
+agenda_staff(d003,20241028,[]).
+agenda_staff(d005,20241028,[]).
+agenda_staff(d004,20241028,[]).
+agenda_staff(n004,20241028,[(510,600,m01)]).
+agenda_staff(m001,20241028,[]).
+agenda_staff(a001,20241028,[(480,1100,m01)]).
+agenda_staff(n001,20241028,[]).
+agenda_staff(n002,20241028,[]).
+agenda_staff(n003,20241028,[(820,910,m01)]).
 
 timetable(d001,20241028,(480,1200)).
 timetable(d002,20241028,(500,1440)).
 timetable(d003,20241028,(520,1320)).
+timetable(d005,20241028,(520,1320)).
 timetable(d004,20241028,(510,1310)).
 timetable(n004,20241028,(510,1310)).
 timetable(m001,20241028,(480,1200)).
@@ -44,7 +46,7 @@ surgery_requirements(so3, [
     % Phase 1 - Anesthesia/preparation
     [doctor-anaesthetist-1, nurse-anaesthetist-1],
     % Phase 2 - Surgery
-    [doctor-orthopaedist-3, doctor-anaesthetist-1, nurse-anaesthetist-1, nurse-circulating-1],
+    [doctor-orthopaedist-3, doctor-anaesthetist-1, nurse-anaesthetist-1, nurse-circulating-1, nurse-instrumentation-1],
     % Phase 3 - Cleaning
     [medical-assistant-1]
 ]).
@@ -53,7 +55,7 @@ surgery_requirements(so4, [
     % Phase 1 - Anesthesia/preparation
     [doctor-anaesthetist-1, nurse-anaesthetist-1],
     % Phase 2 - Surgery
-    [doctor-orthopaedist-3, doctor-anaesthetist-1, nurse-anaesthetist-1, nurse-circulating-1],
+    [doctor-orthopaedist-3, doctor-anaesthetist-1, nurse-anaesthetist-1, nurse-circulating-1, nurse-instrumentation-1],
     % Phase 3 - Cleaning
     [medical-assistant-1]
 ]).
@@ -64,6 +66,7 @@ surgery_requirements(so4, [
 staff(d001, doctor, orthopaedist, [so2,so3,so4]).
 staff(d002, doctor, orthopaedist, [so2,so3,so4]).
 staff(d003, doctor, orthopaedist, [so2,so3,so4]).
+staff(d005, doctor, orthopaedist, [so2,so3,so4]).
 staff(d004, doctor, anaesthetist, [so2,so3,so4]).
 staff(a001, nurse, anaesthetist, [so2,so3,so4]).
 staff(n001, nurse, instrumentation, [so2,so3,so4]).
@@ -85,7 +88,7 @@ surgery_id(so100003,so4).
 surgery_id(so100004,so2).
 surgery_id(so100005,so4).
 
-agenda_operation_room(or1,20241028,[(580,629, so100099), (1290, 1350, so100097)]).
+agenda_operation_room(or1,20241028,[(520,579,so100000), (1000,1059,so099999)]).
 
 free_agenda0([],[(0,1440)]).
 free_agenda0([(0,Tfin,_)|LT],LT1):-!,free_agenda1([(0,Tfin,_)|LT],LT1).
@@ -99,11 +102,15 @@ free_agenda1([(_,T,_),(T1,Tfin2,_)|LT],LT1):-Tx is T+1,T1==Tx,!,
 free_agenda1([(_,Tfin1,_),(Tin2,Tfin2,_)|LT],[(T1,T2)|LT1]):-T1 is Tfin1+1,T2 is Tin2-1,
     free_agenda1([(Tin2,Tfin2,_)|LT],LT1).
 
-get_required_staff(OpCode, Phase, RequiredStaff) :-
-    surgery_id(OpCode, SurgeryType),
-    surgery_requirements(SurgeryType, AllPhases),
-    nth1(Phase, AllPhases, PhaseRequirements),
-    get_staff_for_requirements(PhaseRequirements, RequiredStaff, []).
+get_required_staff([], _, []).
+get_required_staff([Role-Speciality-Number|Rest], Day, RequiredStaff) :-
+    findall(StaffID, (
+        staff(StaffID, Role, Speciality, _),
+        availability(StaffID, Day, _)
+    ), AvailableStaff),
+    take_n(Number, AvailableStaff, Selected),
+    get_required_staff(Rest, Day, RestStaff),
+    append(Selected, RestStaff, RequiredStaff).
 
 get_staff_for_requirements([], [], _).
 get_staff_for_requirements([Role-Speciality-Number|Rest], StaffList, AlreadySelected) :-
@@ -116,12 +123,55 @@ get_staff_for_requirements([Role-Speciality-Number|Rest], StaffList, AlreadySele
     get_staff_for_requirements(Rest, RestStaff, UpdatedSelected),  % Processa o restante
     append(Selected, RestStaff, StaffList).  % Concatena os resultados
 
-take_n(0, _, []).
-take_n(N, List, [Elem|RestSelected]) :-
-    N > 0,
-    select(Elem, List, Remaining),
-    N1 is N - 1,
-    take_n(N1, Remaining, RestSelected).
+take_n([], _, _, []).
+take_n([Role-Specialty-Number|RestReqs], AllStaff, Day, SelectedStaff) :-
+    % Filter available staff for the specific role and specialty
+    % write('Selecting staff for role '), write(Role), write(' and specialty '), write(Specialty), nl,
+    findall(Staff-AvailableTime, (
+        member(Staff, AllStaff),
+        staff(Staff, Role, Specialty, _),
+        availability(Staff, Day, StaffAgenda),
+        \+ StaffAgenda = [], % Ensure the staff has available agenda
+        % Calculate total available time
+        calculate_total_available_time(StaffAgenda, AvailableTime)
+    ), StaffWithTime),
+    
+    % Sort staff by available time (descending order)
+    sort_staff_by_time(StaffWithTime, SortedStaffWithTime),
+    
+    % Extract just the staff IDs from sorted pairs
+    extract_staff_ids(SortedStaffWithTime, RoleStaff),
+    
+    % Limit the number of staff based on the requirement
+    length(RoleStaff, L),
+    (L >= Number ->
+        length(LimitedRoleStaff, Number),
+        append(LimitedRoleStaff, _, RoleStaff)
+    ;
+        LimitedRoleStaff = RoleStaff
+    ),
+    
+    % Continue with the rest of the requirements
+    take_n(RestReqs, AllStaff, Day, RestSelectedStaff),
+    
+    % Combine the selected staff
+    append(LimitedRoleStaff, RestSelectedStaff, SelectedStaff).
+
+% Calculate total available time from agenda slots
+calculate_total_available_time([], 0).
+calculate_total_available_time([(Start, End)|Rest], TotalTime) :-
+    calculate_total_available_time(Rest, RestTime),
+    Time is End - Start,
+    TotalTime is Time + RestTime.
+
+% Sort staff by available time (descending)
+sort_staff_by_time(StaffWithTime, SortedStaffWithTime) :-
+    sort(2, @>=, StaffWithTime, SortedStaffWithTime).
+
+% Extract staff IDs from Staff-Time pairs
+extract_staff_ids([], []).
+extract_staff_ids([Staff-_|Rest], [Staff|StaffIds]) :-
+    extract_staff_ids(Rest, StaffIds).
 
 availability_operation(OpCode, Room, Day, LPossibilities, StaffByPhase) :-
     surgery_id(OpCode, SurgeryType),
@@ -131,27 +181,39 @@ availability_operation(OpCode, Room, Day, LPossibilities, StaffByPhase) :-
     % Get available staff for each phase
     findall(Staff1, (
         member(Role-Specialty-Number, Phase1Reqs),
-        staff(Staff1, Role, Specialty, _),
-        availability(Staff1, Day, _)
-    ), Phase1Staff),
+        staff(Staff1, Role, Specialty, _)
+        % availability(Staff1, Day, _)
+    ), AllPhase1Staff),
+     take_n(Phase1Reqs, AllPhase1Staff, Day, Phase1Staff),
+     % write('Phase1Staff: '), write(Phase1Staff), nl,
+
     
     findall(Staff2, (
         member(Role-Specialty-Number, Phase2Reqs),
         staff(Staff2, Role, Specialty, _),
-        availability(Staff2, Day, _)
-    ), Phase2Staff),
+        Specialty \= anaesthetist % Excluir staff com especialidade "anaesthetist"
+        % availability(Staff2, Day, _)
+    ), AllPhase2Staff),
+    write('surgery_id'), write(OpCode), nl,
+    append(Phase1Staff, AllPhase2Staff, AllPhase1And2Staff),
+    write('AllPhase2Staff: '), write(AllPhase2Staff), nl,
+    take_n(Phase2Reqs, AllPhase1And2Staff, Day, Phase2Staff),
+    % write('Phase2Staff: '), write(Phase2Staff), nl,
+
     
     findall(Staff3, (
         member(Role-Specialty-Number, Phase3Reqs),
-        staff(Staff3, Role, Specialty, _),
-        availability(Staff3, Day, _)
-    ), Phase3Staff),
+        staff(Staff3, Role, Specialty, _)
+        % availability(Staff3, Day, _)
+    ), AllPhase3Staff),
+    take_n(Phase3Reqs, AllPhase3Staff, Day, Phase3Staff),
+
     
     % Get intersected availabilities for each phase
     intersect_all_agendas(Phase1Staff, Day, Phase1Avail),
     intersect_all_agendas(Phase2Staff, Day, Phase2Avail),
     intersect_all_agendas(Phase3Staff, Day, Phase3Avail),
-    
+
     % Get room availability
     agenda_operation_room1(Room, Day, RoomAgenda),
     free_agenda0(RoomAgenda, RoomAvail),
@@ -378,9 +440,9 @@ update_better_sol(Day,Room,Agenda,LOpCode):-
     write('Analyzing sequence: '),write(LOpCode),nl,
     write('Current end time: '),write(FinTime1),
     write(' Agenda: '),write(Agenda),nl,
-    
+
+    FinTime1 < FinTime ,
     % Se encontrou uma solução melhor
-    FinTime1 < FinTime,
     write('Better solution found!'),nl,
     
     % Atualizar melhor solução

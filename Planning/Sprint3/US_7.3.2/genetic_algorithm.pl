@@ -122,17 +122,26 @@ generate_crossover_points1(P1,P2):-
 	generate_crossover_points1(P1,P2).
 
 
-crossover([ ],[ ]).
-crossover([Ind*_],[Ind]).
-crossover([Ind1*_,Ind2*_|Rest],[NInd1,NInd2|Rest1]):-
-	generate_crossover_points(P1,P2),
-	prob_crossover(Pcruz),random(0.0,1.0,Pc),
-	((Pc =< Pcruz,!,
-        cross(Ind1,Ind2,P1,P2,NInd1),
-	  cross(Ind2,Ind1,P1,P2,NInd2))
-	;
-	(NInd1=Ind1,NInd2=Ind2)),
-	crossover(Rest,Rest1).
+
+
+crossover([], []).
+crossover([Ind*_], [Ind]). % If only one individual, it remains unchanged.
+crossover(Population, Result) :-
+    random_permutation(Population, ShuffledPopulation), % Shuffle the population to randomize pairings.
+    crossover_pairs(ShuffledPopulation, Result).
+
+crossover_pairs([], []).
+crossover_pairs([Ind*_], [Ind]). % Handle odd number of individuals.
+crossover_pairs([Ind1*_,Ind2*_|Rest], [NInd1, NInd2 | Rest1]) :-
+    generate_crossover_points(P1, P2),
+    prob_crossover(Pcruz),
+    random(0.0, 1.0, Pc),
+    (   (Pc =< Pcruz,!,
+        cross(Ind1, Ind2, P1, P2, NInd1),
+        cross(Ind2, Ind1, P1, P2, NInd2))
+    ;   (NInd1=Ind1,NInd2=Ind2)
+    ),
+    crossover_pairs(Rest, Rest1).
 
 fillh([ ],[ ]).
 
