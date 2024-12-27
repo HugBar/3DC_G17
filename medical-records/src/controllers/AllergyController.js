@@ -2,33 +2,6 @@ const AllergyService = require('../services/AllergyService');
 const AllergyDto = require('../dtos/AllergyDto');
 const AllergySearchDto = require('../dtos/AllergySearchDto');
 
-exports.addAllergy = async (req, res) => {
-    try {
-        const { patientId } = req.params;
-        const { allergen, severity, desription } = req.body;
-
-        console.log('Adding allergy to patient', patientId);
-        
-        // Create DTO
-        const allergyDto = new AllergyDto(allergen, severity, desription);
-        
-        // Add allergy using service
-        const result = await AllergyService.addAllergy(allergyDto);
-        
-        res.status(201).json({
-            message: 'Allergy added successfully',
-            allergy: result
-        });
-    } catch (error) {
-        console.error(error);
-        if (error.message === 'Medical record not found') {
-            res.status(404).json({ message: error.message });
-        } else {
-            res.status(500).json({ message: 'Internal server error' });
-        }
-    }
-};
-
 // Add allergy to allergy model
 
 exports.addAllergyModel = async (req, res) => {
@@ -88,6 +61,20 @@ exports.getAllergyDetails = async (req, res) => {
         res.status(200).json(allergies);
     } catch (error) {
         console.error('Error fetching allergies:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.deleteAllergy = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        console.log("----------------------------------");
+        console.log("allergen: ", id);
+        const result = await AllergyService.deleteAllergy(id);
+        res.status(200).json({ message: result });
+    } catch (error) {
+        console.error('Error deleting allergy:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };

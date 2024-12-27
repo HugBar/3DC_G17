@@ -9,14 +9,18 @@ POST http://localhost:3001/allergies/add-allergy
 Content-Type: application/json
 
     {
-        "allergen": "chocolate",
-        "severity": "Low",
+        "allergen": "Peanuts",
+        "severity": "High",
         "description": "Allergy to chocolate"
     }
 
 ###
 
 GET http://localhost:3001/allergies/search
+
+###
+
+DELETE http://localhost:3001/allergies/delete-allergy/TestAllergen_1735331991707
 
 ###
 

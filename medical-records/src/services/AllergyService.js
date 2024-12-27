@@ -78,6 +78,15 @@ class AllergyService {
             throw error;
         }
     }
+
+    async deleteAllergy(allergyId) {
+        try {
+            const allergy = await AlergyRepository.deleteAllergy(allergyId);
+            return allergy;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 module.exports = new AllergyService();
