@@ -64,3 +64,9 @@ exports.getAllAllergiesWithDetails = async () => {
     const allergies = await Allergy.find();
     return allergies ? allergies.map(allergy => sanitizeAllergy(allergy)) : [];
 };
+
+exports.deleteAllergy = async (allergen) => {
+    console.log(allergen);
+    const result = await Allergy.deleteOne({ allergen });
+    return result.deletedCount ? 'Allergy deleted successfully' : 'Allergy not found';
+};

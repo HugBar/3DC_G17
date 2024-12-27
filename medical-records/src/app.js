@@ -28,6 +28,7 @@ app.use('/medical-records', medicalRecordsRoutes);
 app.use('/api/specializations', specializationRoutes);
 app.use('/api/surgery-appointments', surgeryAppointmentRoutes);
 
+
 // Basic health check route
 app.get('/api/health', (req, res) => {
     res.json({ status: 'Medical Records Service is running' });

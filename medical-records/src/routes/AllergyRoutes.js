@@ -8,5 +8,6 @@ router.post('/add-allergy', AllergyController.addAllergyModel);
 
 router.get('/search', AllergyController.searchAllergies);
 router.get('/getAllergyDetails', AllergyController.getAllergyDetails);
+router.delete('/delete-allergy/:id', AllergyController.deleteAllergy);
 
 module.exports = router;
