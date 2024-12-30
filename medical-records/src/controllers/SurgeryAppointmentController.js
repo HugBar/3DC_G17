@@ -1,4 +1,4 @@
-// Author: [Your Name]
+// Author: [Pedro Azevedo]
 
 /**
  * This module provides API endpoints for managing surgery appointments.
@@ -12,27 +12,25 @@ const SurgeryAppointmentDto = require('../dtos/SurgeryAppointmentDto');
 class SurgeryAppointmentController {
     static async createSurgeryAppointment(req, res) {
         try {
-            const appointmentDto = new SurgeryAppointmentDto(req.body);
+            const appointmentData = req.body;
             
-            const result = await SurgeryAppointmentService.createSurgeryAppointment(appointmentDto);
-            
-            res.status(201).json({
-                message: 'Surgery appointment created successfully',
-                appointment: result
-            });
-        } catch (error) {
-            console.error('Error creating surgery appointment:', error);
-            if (error.message.startsWith('Missing required field:') || 
-                error.message.startsWith('Invalid role:') ||
-                error.message === 'Staff assignments must be a non-empty array' ||
-                error.message === 'Each staff assignment must have staffId and role' ||
-                error.message === 'Invalid scheduledDateTime') {
-                res.status(400).json({ message: error.message });
-            } else if (error.message === 'Room not available') {
-                res.status(409).json({ message: error.message });
-            } else {
-                res.status(500).json({ message: 'Internal server error' });
+            // Validar staff assignments
+            if (!appointmentData.staffAssignments || !Array.isArray(appointmentData.staffAssignments)) {
+                return res.status(400).json({ message: "Staff assignments are required" });
             }
+
+            for (const staff of appointmentData.staffAssignments) {
+                if (!staff.licenseNumber || !staff.role) {
+                    return res.status(400).json({ 
+                        message: "Each staff assignment must have licenseNumber and role" 
+                    });
+                }
+            }
+
+            const newAppointment = await SurgeryAppointmentService.createSurgeryAppointment(appointmentData);
+            res.status(201).json(newAppointment);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
         }
     }
 
@@ -85,6 +83,28 @@ class SurgeryAppointmentController {
         } catch (error) {
             console.error('Error searching appointments:', error);
             res.status(500).json({ message: 'Internal server error' });
+        }
+    }
+
+    static async updateSurgeryAppointment(req, res) {
+        try {
+            const { operationRequestId } = req.params;
+            const updateData = req.body;
+
+            const updatedAppointment = await SurgeryAppointmentService.updateSurgeryAppointment(
+                operationRequestId, 
+                updateData
+            );
+            
+            res.status(200).json(updatedAppointment);
+        } catch (error) {
+            if (error.message === 'Appointment not found') {
+                return res.status(404).json({ message: error.message });
+            }
+            if (error.message === 'Room not available') {
+                return res.status(409).json({ message: error.message });
+            }
+            res.status(500).json({ message: error.message });
         }
     }
 }

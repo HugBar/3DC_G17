@@ -38,6 +38,7 @@ import CreateSurgeryAppointment from './components/SurgeryAppointment/createSurg
 import UpdateSpecialization from './components/Specialization/updateSpecialization/UpdateSpecialization';
 import PatientProfile from './components/Patient/patientProfile/PatientProfile';
 import PatientListDoctor from './components/Patient/patientListDoctor/PatientListDoctor';
+import UpdateSurgeryAppointment from './components/SurgeryAppointment/UpdateSurgeryAppointment';
 
 const App = () => {
   const navigate = useNavigate();
@@ -309,6 +310,15 @@ const App = () => {
                 className={`action-button ${selectedSurgeryAction === 'Create Surgery Appointment' ? 'active' : ''}`}
               >
                 Create Surgery Appointment
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedSurgeryAction('Update Surgery Appointment');
+                  navigate('/surgery-appointments/update');
+                }}
+                className={`action-button ${selectedSurgeryAction === 'Update Surgery Appointment' ? 'active' : ''}`}
+              >
+                Update Surgery Appointment
               </button>
               <button
                 onClick={() => {
@@ -652,6 +662,14 @@ const App = () => {
       <PatientListDoctor />
     </ProtectedRoute>
   } />
+  <Route 
+    path="/surgery-appointments/update" 
+    element={
+        <ProtectedRoute requiredRole="doctor">
+            <UpdateSurgeryAppointment />
+        </ProtectedRoute>
+    } 
+/>
 
 </Routes>
 

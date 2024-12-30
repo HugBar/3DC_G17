@@ -1,48 +1,44 @@
 class SurgeryAppointmentDto {
     constructor(data) {
-        // Validate required fields
-        const requiredFields = [
-            'operationRequestId',
-            'surgeryRoomId',
-            'scheduledDateTime',
-            'estimatedDuration',
-            'staffAssignments'
-        ];
+        this.operationRequestId = data.operationRequestId;
+        this.surgeryRoomId = data.surgeryRoomId;
+        this.scheduledDateTime = data.scheduledDateTime;
+        this.estimatedDuration = data.estimatedDuration;
+        this.staffAssignments = data.staffAssignments.map(staff => ({
+            licenseNumber: staff.licenseNumber,
+            role: staff.role
+        }));
+        this.description = data.description;
+    }
 
-        for (const field of requiredFields) {
-            if (!data[field]) {
-                throw new Error(`Missing required field: ${field}`);
-            }
-        }
-
-        // Parse and validate scheduledDateTime first
-        const scheduledDate = new Date(data.scheduledDateTime);
-        if (isNaN(scheduledDate.getTime())) {
-            throw new Error('Invalid scheduledDateTime format. Please use ISO 8601 format (e.g., "2024-01-20T10:00:00.000Z")');
-        }
-
-        // Validate staffAssignments
-        if (!Array.isArray(data.staffAssignments) || data.staffAssignments.length === 0) {
+    validate() {
+        if (!this.operationRequestId) throw new Error('Missing operationRequestId');
+        if (!this.surgeryRoomId) throw new Error('Missing surgeryRoomId');
+        if (!this.scheduledDateTime) throw new Error('Missing scheduledDateTime');
+        if (!this.estimatedDuration) throw new Error('Missing estimatedDuration');
+        
+        if (!Array.isArray(this.staffAssignments) || this.staffAssignments.length === 0) {
             throw new Error('Staff assignments must be a non-empty array');
         }
 
-        const validRoles = ['SURGEON', 'NURSE', 'ANESTHESIOLOGIST'];
-        for (const staff of data.staffAssignments) {
-            if (!staff.staffId || !staff.role) {
-                throw new Error('Each staff assignment must have staffId and role');
+        this.staffAssignments.forEach(staff => {
+            if (!staff.licenseNumber) throw new Error('Missing staff license number');
+            if (!staff.role) throw new Error('Missing staff role');
+            if (!staff.licenseNumber.match(/^LIC-\d{5}$/)) {
+                throw new Error('Invalid license number format. Must be LIC-XXXXX');
             }
-            if (!validRoles.includes(staff.role)) {
-                throw new Error(`Invalid role: ${staff.role}. Must be one of: ${validRoles.join(', ')}`);
-            }
-        }
+        });
+    }
 
-        // Assign values after all validations pass
-        this.operationRequestId = data.operationRequestId;
-        this.surgeryRoomId = data.surgeryRoomId;
-        this.scheduledDateTime = scheduledDate; // Use the already parsed date
-        this.estimatedDuration = Number(data.estimatedDuration);
-        this.staffAssignments = data.staffAssignments;
-        this.description = data.description || '';
+    toResponse() {
+        return {
+            operationRequestId: this.operationRequestId,
+            surgeryRoomId: this.surgeryRoomId,
+            scheduledDateTime: this.scheduledDateTime,
+            estimatedDuration: this.estimatedDuration,
+            staffAssignments: this.staffAssignments,
+            description: this.description
+        };
     }
 }
 

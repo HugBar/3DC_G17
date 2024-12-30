@@ -4,14 +4,14 @@ import './CreateSurgeryAppointment.css';
 
 const CreateSurgeryAppointment = () => {
     const [appointmentData, setAppointmentData] = useState({
-        operationRequestId: '',
-        surgeryRoomId: '',
+        operationRequest: '',
+        surgeryRoom: '',
         scheduledDateTime: '',
         estimatedDuration: '',
         staffAssignments: [
-            { staffId: '', role: 'SURGEON' },
-            { staffId: '', role: 'NURSE' },
-            { staffId: '', role: 'ANESTHESIOLOGIST' }
+            { licenseNumber: '', role: 'DOCTOR' },
+            { licenseNumber: '', role: 'NURSE' },
+            { licenseNumber: '', role: 'TECHNICIAN' }
         ],
         description: ''
     });
@@ -26,18 +26,16 @@ const CreateSurgeryAppointment = () => {
         }));
     };
 
-    const handleStaffAssignmentChange = (index, field, value) => {
-        setAppointmentData(prevData => {
-            const newStaffAssignments = [...prevData.staffAssignments];
-            newStaffAssignments[index] = {
-                ...newStaffAssignments[index],
-                [field]: value
-            };
-            return {
-                ...prevData,
-                staffAssignments: newStaffAssignments
-            };
-        });
+    const handleStaffAssignmentChange = (index, value) => {
+        const newStaffAssignments = [...appointmentData.staffAssignments];
+        newStaffAssignments[index] = {
+            ...newStaffAssignments[index],
+            licenseNumber: value
+        };
+        setAppointmentData(prev => ({
+            ...prev,
+            staffAssignments: newStaffAssignments
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -53,14 +51,14 @@ const CreateSurgeryAppointment = () => {
             setErrorMessage('');
             // Clear form
             setAppointmentData({
-                operationRequestId: '',
-                surgeryRoomId: '',
+                operationRequest: '',
+                surgeryRoom: '',
                 scheduledDateTime: '',
                 estimatedDuration: '',
                 staffAssignments: [
-                    { staffId: '', role: 'SURGEON' },
-                    { staffId: '', role: 'NURSE' },
-                    { staffId: '', role: 'ANESTHESIOLOGIST' }
+                    { licenseNumber: '', role: 'DOCTOR' },
+                    { licenseNumber: '', role: 'NURSE' },
+                    { licenseNumber: '', role: 'TECHNICIAN' }
                 ],
                 description: ''
             });
@@ -83,24 +81,24 @@ const CreateSurgeryAppointment = () => {
             
             <form onSubmit={handleSubmit} className="surgery-appointment-form">
                 <div className="form-group">
-                    <label htmlFor="operationRequestId">Operation Request ID:</label>
+                    <label htmlFor="operationRequest">Operation Request ID:</label>
                     <input
-                        id="operationRequestId"
-                        name="operationRequestId"
+                        id="operationRequest"
+                        name="operationRequest"
                         type="text"
-                        value={appointmentData.operationRequestId}
+                        value={appointmentData.operationRequest}
                         onChange={handleChange}
                         required
                     />
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="surgeryRoomId">Surgery Room:</label>
+                    <label htmlFor="surgeryRoom">Surgery Room:</label>
                     <input
-                        id="surgeryRoomId"
-                        name="surgeryRoomId"
+                        id="surgeryRoom"
+                        name="surgeryRoom"
                         type="text"
-                        value={appointmentData.surgeryRoomId}
+                        value={appointmentData.surgeryRoom}
                         onChange={handleChange}
                         required
                     />
@@ -131,19 +129,34 @@ const CreateSurgeryAppointment = () => {
                     />
                 </div>
 
-                <div className="form-group">
-                    <label>Staff Assignments:</label>
-                    {appointmentData.staffAssignments.map((staff, index) => (
-                        <div key={index} className="staff-assignment">
-                            <input
-                                type="text"
-                                value={staff.staffId}
-                                onChange={(e) => handleStaffAssignmentChange(index, 'staffId', e.target.value)}
-                                placeholder={`${staff.role} ID`}
-                                required
-                            />
-                        </div>
-                    ))}
+                <div className="form-section">
+                    <label>Staff Assignments: *</label>
+                    <div className="staff-assignments-container">
+                        <input
+                            type="text"
+                            placeholder="DOCTOR LICENSE NUMBER"
+                            value={appointmentData.staffAssignments[0].licenseNumber}
+                            onChange={(e) => handleStaffAssignmentChange(0, e.target.value)}
+                            pattern="LIC-\d{5}"
+                            required
+                        />
+                        <input
+                            type="text"
+                            placeholder="NURSE LICENSE NUMBER"
+                            value={appointmentData.staffAssignments[1].licenseNumber}
+                            onChange={(e) => handleStaffAssignmentChange(1, e.target.value)}
+                            pattern="LIC-\d{5}"
+                            required
+                        />
+                        <input
+                            type="text"
+                            placeholder="TECHNICIAN LICENSE NUMBER"
+                            value={appointmentData.staffAssignments[2].licenseNumber}
+                            onChange={(e) => handleStaffAssignmentChange(2, e.target.value)}
+                            pattern="LIC-\d{5}"
+                            required
+                        />
+                    </div>
                 </div>
 
                 <div className="form-group">

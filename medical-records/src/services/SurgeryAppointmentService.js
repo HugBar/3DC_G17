@@ -3,21 +3,9 @@ const surgeryAppointmentRepository = require('../repositories/SurgeryAppointment
 class SurgeryAppointmentService {
     static async createSurgeryAppointment(appointmentDto) {
         try {
-            const endDateTime = new Date(
-                appointmentDto.scheduledDateTime.getTime() + 
-                appointmentDto.estimatedDuration * 60000
-            );
 
-            const isRoomAvailable = await surgeryAppointmentRepository.checkRoomAvailability(
-                appointmentDto.surgeryRoomId,
-                appointmentDto.scheduledDateTime,
-                endDateTime
-            );
 
-            if (!isRoomAvailable) {
-                throw new Error('Room not available');
-            }
-
+        
             const appointmentData = {
                 operationRequestId: appointmentDto.operationRequestId,
                 surgeryRoomId: appointmentDto.surgeryRoomId,
@@ -25,8 +13,7 @@ class SurgeryAppointmentService {
                 estimatedDuration: appointmentDto.estimatedDuration,
                 staffAssignments: appointmentDto.staffAssignments,
                 description: appointmentDto.description,
-                status: 'SCHEDULED',
-                endDateTime
+                status: 'SCHEDULED'
             };
 
             return await surgeryAppointmentRepository.create(appointmentData);
@@ -64,6 +51,32 @@ class SurgeryAppointmentService {
     static async searchAppointments(searchDto) {
         try {
             return await surgeryAppointmentRepository.search(searchDto);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async validateOperationRequest(appointmentId, operationRequestId) {
+        try {
+            const appointment = await surgeryAppointmentRepository.findById(appointmentId);
+            
+            if (!appointment) {
+                throw new Error('Appointment not found');
+            }
+
+            if (appointment.operationRequestId !== operationRequestId) {
+                throw new Error('Invalid operation request ID');
+            }
+
+            return appointment;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async updateSurgeryAppointment(appointmentId, updateData) {
+        try {            
+            return await surgeryAppointmentRepository.update(appointmentId, updateData);
         } catch (error) {
             throw error;
         }

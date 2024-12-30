@@ -14,4 +14,6 @@ router.get('/search', SurgeryAppointmentController.searchAppointments);
 // Update appointment status
 router.patch('/:appointmentId/status', SurgeryAppointmentController.updateAppointmentStatus);
 
+router.patch('/:operationRequestId/update', SurgeryAppointmentController.updateSurgeryAppointment);
+
 module.exports = router;

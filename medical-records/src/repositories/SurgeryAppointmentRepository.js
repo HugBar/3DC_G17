@@ -33,9 +33,9 @@ class SurgeryAppointmentRepository {
         }
     }
 
-    async checkRoomAvailability(roomId, startTime, endTime) {
+    async checkRoomAvailability(roomId, startTime, endTime, excludeAppointmentId = null) {
         try {
-            const conflictingAppointments = await SurgeryAppointment.find({
+            const query = {
                 surgeryRoomId: roomId,
                 status: { $ne: 'CANCELLED' },
                 $or: [
@@ -44,7 +44,13 @@ class SurgeryAppointmentRepository {
                         endDateTime: { $gt: startTime }
                     }
                 ]
-            });
+            };
+
+            if (excludeAppointmentId) {
+                query._id = { $ne: excludeAppointmentId };
+            }
+
+            const conflictingAppointments = await SurgeryAppointment.find(query);
             return conflictingAppointments.length === 0;
         } catch (error) {
             throw error;
@@ -77,6 +83,18 @@ class SurgeryAppointmentRepository {
             }
 
             return await SurgeryAppointment.find(query);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async update(id, updateData) {
+        try {
+            return await SurgeryAppointment.findByIdAndUpdate(
+                id,
+                updateData,
+                { new: true, runValidators: true }
+            );
         } catch (error) {
             throw error;
         }

@@ -26,6 +26,45 @@ const appointmentService = {
             );
             return response.data;
         } catch (error) {
+            console.error('Error creating appointment:', error);
+            throw error;
+        }
+    },
+
+    getAppointmentById: async (appointmentId) => {
+        const token = getAuthToken();
+        try {
+            const response = await axios.get(
+                `${API_URL}/surgery-appointments/${appointmentId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching appointment:', error);
+            throw error;
+        }
+    },
+
+    updateSurgeryAppointment: async (appointmentId, updateData) => {
+        const token = getAuthToken();
+        try {
+            const updateResponse = await axios.patch(
+                `${API_URL}/surgery-appointments/${appointmentId}`,
+                updateData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+            return updateResponse.data;
+        } catch (error) {
+            console.error('Error updating appointment:', error);
             throw error;
         }
     },
@@ -83,6 +122,30 @@ const appointmentService = {
             return response.data;
         } catch (error) {
             console.error('Error updating appointment status:', error);
+            throw error;
+        }
+    },
+
+    checkRoomAvailability: async (roomId, startTime, endTime, excludeAppointmentId = null) => {
+        const token = getAuthToken();
+        try {
+            const response = await axios.get(
+                `${API_URL}/surgery-appointments/check-room`,
+                {
+                    params: {
+                        roomId,
+                        startTime,
+                        endTime,
+                        excludeAppointmentId
+                    },
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error checking room availability:', error);
             throw error;
         }
     }
