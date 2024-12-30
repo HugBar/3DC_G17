@@ -2,288 +2,342 @@
 :- dynamic population/1.
 :- dynamic prob_crossover/1.
 :- dynamic prob_mutation/1.
-:- dynamic population_size/1.
-:- dynamic fitness_history/1.
-:- dynamic no_improvement_count/1.
 
-room(r1,8,[xray,ventilator]).
-room(r2,6,[ventilator]).
-room(r3,10,[xray,ventilator,cardiac_monitor]).
-room(r4,12,[ventilator,cardiac_monitor]).
-room(r5,10,[ventilator,xray]).
+% Keep the original room and surgery definitions
+:- consult('Final.pl').
 
-surgery(s1,3,general,[ventilator]).
-surgery(s2,5,orthopedic,[xray]).
-surgery(s3,2,pediatric,[ventilator]).
-surgery(s4,4,general,[ventilator,cardiac_monitor]).
-surgery(s5,6,orthopedic,[xray,ventilator]).
-surgery(s6,4,cardiac,[cardiac_monitor]).
-surgery(s7,3,robotic,[ventilator]).
-surgery(s8,6,orthopedic,[xray,ventilator]).
-surgery(s9,4,cardiac,[cardiac_monitor]).
-surgery(s10,3,robotic,[ventilator]).
+% Initialize parameters with check for existing values
+initialize:-
+    (generations(NG) -> true ; (write('Number of generations: '), read(NG))),
+    (retract(generations(_)); true), asserta(generations(NG)),
+    
+    (population(PS) -> true ; (write('Population size: '), read(PS))),
+    (retract(population(_)); true), asserta(population(PS)),
+    
+    (prob_crossover(PC) -> true ; 
+        (write('Probability of crossover (%): '), read(P1), PC is P1/100)),
+    (retract(prob_crossover(_)); true), asserta(prob_crossover(PC)),
+    
+    (prob_mutation(PM) -> true ; 
+        (write('Probability of mutation (%): '), read(P2), PM is P2/100)),
+    (retract(prob_mutation(_)); true), asserta(prob_mutation(PM)).
 
-initialize :-
-    retractall(generations(_)), retractall(population(_)),
-    retractall(prob_crossover(_)), retractall(prob_mutation(_)),
-    retractall(fitness_history(_)), retractall(no_improvement_count(_)),
-
-    % Just hardcode for testing multiple gens without user input:
-    asserta(generations(10)),
-    asserta(population(20)),
-    asserta(prob_crossover(0.9)),
-    asserta(prob_mutation(0.3)),
-
-    asserta(no_improvement_count(0)).
-
+% Main generation predicate
 generate :-
     initialize,
     generate_initial_population(Pop),
     write('Initial population: '), write(Pop), nl,
     evaluate_population(Pop, PopValue),
     write('Population values: '), write(PopValue), nl,
-    order_population_desc(PopValue, PopOrd),
-    extract_best_fitness(PopOrd, _BestF),
+    order_population(PopValue, PopOrd),
     generations(NG),
     generate_generation(0, NG, PopOrd).
 
+% Generate initial population
 generate_initial_population(Pop) :-
-    population(PS),
-    findall(S,surgery(S,_,_,_),Surgeries),
-    generate_population(PS,Surgeries,Pop).
+    population(PopSize),
+    findall(S, surgery(S, _, _, _), Surgeries),
+    length(Surgeries, NumSurgeries),
+    generate_population(PopSize, Surgeries, NumSurgeries, Pop).
 
-generate_population(0,_,[]):-!.
-generate_population(N,Surgeries,[Ind|Rest]):-
-    N>0,
-    N1 is N-1,
-    generate_population(N1,Surgeries,Rest),
-    generate_individual(Surgeries,Ind),
-    \+ member(Ind,Rest).
+generate_population(0, _, _, []) :- !.
+generate_population(PopSize, Surgeries, NumSurgeries, [Ind|Rest]) :-
+    PopSize1 is PopSize - 1,
+    generate_population(PopSize1, Surgeries, NumSurgeries, Rest),
+    generate_individual(Surgeries, NumSurgeries, Ind),
+    \+ member(Ind, Rest).
 
-generate_individual(Surgeries, Assignment) :-
-    random_permutation(Surgeries,Rand),
-    findall(R,room(R,_,_),Rooms),
-    assign_surgeries_relaxed(Rand,Rooms,[],Assignment).
+% Generate a single individual (surgery assignment)
+generate_individual(Surgeries, NumSurgeries, Assignment) :-
+    random_permutation(Surgeries, RandomSurgeries),
+    findall(Room, room(Room, _, _), Rooms),
+    assign_surgeries(RandomSurgeries, Rooms, TempAssignment),
+    validate_solution(TempAssignment),
+    Assignment = TempAssignment.
 
-assign_surgeries_relaxed([],_,A,A).
-assign_surgeries_relaxed([S|Rest],Rooms,Cur,Fin):-
-    random_member(R,Rooms),
-    add_to_assignment(R,S,Cur,Next),
-    assign_surgeries_relaxed(Rest,Rooms,Next,Fin).
+% Assign surgeries to rooms
+assign_surgeries(Surgeries, Rooms, Assignment) :-
+    assign_surgeries(Surgeries, Rooms, [], Assignment).
 
-add_to_assignment(R,S,[],[R-[S]]) :- !.
-add_to_assignment(R,S,[R-L|Rest],[R-[S|L]|Rest]):-!.
-add_to_assignment(R,S,[O|Rest],[O|NewRest]):-
-    add_to_assignment(R,S,Rest,NewRest).
+assign_surgeries([], _, Acc, Acc).
+assign_surgeries([Surgery|Rest], Rooms, Acc, Final) :-
+    member(Room, Rooms),
+    room(Room, Capacity, Equipment),
+    surgery(Surgery, Duration, _, RequiredEquip),
+    has_required_equipment(RequiredEquip, Equipment),
+    can_fit_surgery(Room, Duration, Acc),
+    add_to_assignment(Room, Surgery, Acc, NewAcc),
+    assign_surgeries(Rest, Rooms, NewAcc, Final).
 
-evaluate_population([],[]).
-evaluate_population([I|R],[I*V|R1]):-
-    evaluate_assignment(I,V),
-    evaluate_population(R,R1).
+% Evaluate population fitness
+evaluate_population([], []).
+evaluate_population([Ind|Rest], [Ind*Value|Rest1]) :-
+    evaluate_assignment(Ind, Value),
+    evaluate_population(Rest, Rest1).
 
-evaluate_assignment(A,Val):-
-    calculate_capacity_usage(A,Cap),
-    calculate_equipment_usage(A,Equip),
-    calculate_constraint_penalties(A,Pen),
-    Val is 0.6*Cap+0.4*Equip - Pen.
+% Evaluate single assignment
+evaluate_assignment(Assignment, Value) :-
+    calculate_capacity_usage(Assignment, CapacityScore),
+    calculate_equipment_usage(Assignment, EquipmentScore),
+    Value is (0.6 * CapacityScore) + (0.4 * EquipmentScore).
 
-calculate_capacity_usage(A,Score):-
-    findall(RSc,(member(R-S,A),room(R,C,_),total_duration(S,U),(C>0->RSc is U/C;RSc=0)),L),
-    (L=[]->Score=0; sum_list(L,Sum), length(L,Len), Score is (Sum/Len)*100).
+% Calculate capacity usage score
+calculate_capacity_usage(Assignment, Score) :-
+    findall(RoomScore,
+            (member(Room-Surgeries, Assignment),
+             room(Room, Capacity, _),
+             total_duration(Surgeries, Used),
+             RoomScore is Used / Capacity),
+            Scores),
+    sum_list(Scores, Sum),
+    length(Scores, Len),
+    Score is Sum / Len * 100.
 
-calculate_equipment_usage(A,Score):-
-    findall(EqSc,(member(R-S,A),room(R,_,Eq),calc_room_eq_score(S,Eq,EqSc)),L),
-    (L=[]->Score=0; sum_list(L,Sum),length(L,Ln),Score is Sum/Ln).
+% Calculate equipment usage score
+calculate_equipment_usage(Assignment, Score) :-
+    findall(EquipScore,
+            (member(Room-Surgeries, Assignment),
+             room(Room, _, RoomEquip),
+             calculate_room_equipment_score(Surgeries, RoomEquip, EquipScore)),
+            Scores),
+    sum_list(Scores, TotalScore),
+    length(Scores, NumRooms),
+    Score is TotalScore / NumRooms.
 
-calc_room_eq_score(Surg,RoomEq,Score):-
-    findall(M,(member(Su,Surg),surgery(Su,_,_,Req),count_matching_equipment(Req,RoomEq,M)),Ms),
-    (Ms=[]->Score=0; sum_list(Ms,Sum), length(Ms,L), Score is Sum/L).
+% Calculate equipment score for a single room
+calculate_room_equipment_score(Surgeries, RoomEquip, Score) :-
+    findall(MatchScore,
+            (member(Surgery, Surgeries),
+             surgery(Surgery, _, _, RequiredEquip),
+             count_matching_equipment(RequiredEquip, RoomEquip, MatchScore)),
+            Scores),
+    sum_list(Scores, TotalScore),
+    length(Scores, NumSurgeries),
+    (NumSurgeries > 0 -> Score is TotalScore / NumSurgeries ; Score = 0).
 
-count_matching_equipment(Rq,Av,Sc):-
-    findall(1,(member(E,Rq),member(E,Av)),Mat),
-    length(Mat,M),
-    length(Rq,RR),
-    (RR>0->Sc is M/RR;Sc=0).
+% Count how many required equipment items are in the room
+count_matching_equipment(Required, Available, Score) :-
+    findall(1, (member(Equip, Required), member(Equip, Available)), Matches),
+    length(Matches, MatchCount),
+    length(Required, RequiredCount),
+    Score is MatchCount / RequiredCount.
 
-calculate_constraint_penalties(As,Tot):-
-    capacity_violation_penalty(As,CapP),
-    equipment_violation_penalty(As,EQP),
-    Tot is CapP+EQP.
-
-capacity_violation_penalty(As,P):-
-    findall(Ex,(member(R-S,As),room(R,C,_),total_duration(S,U),(U>C->Ex is (U-C)*2;Ex=0)),L),
-    sum_list(L,P).
-
-equipment_violation_penalty(As,P):-
-    findall(Miss,(member(R-Su,As),room(R,_,EQ),member(SX,Su),surgery(SX,_,_,RQ),
-    count_missing_equipment(RQ,EQ,C),C>0,Miss=C),L),
-    sum_list(L,P).
-
-count_missing_equipment(Rq,Av,C):-
-    findall(1,(member(X,Rq),\+ member(X,Av)),M),
-    length(M,C).
-
-total_duration(Surg,Tot):-
-    findall(D,(member(S,Surg),surgery(S,D,_,_)),Ds),
-    sum_list(Ds,Tot).
-
-assignment_to_list(Assign, List):-
-    findall(S,(member(_-Surgeries,Assign),member(S,Surgeries)),List).
-
-list_to_assignment(List,Assignment):-
-    findall(R-[],room(R,_,_),EmptyRooms),
-    distribute_surgeries(List,EmptyRooms,Assignment).
-
-distribute_surgeries([],A,A).
-distribute_surgeries([S|Rest],Current,Final):-
-    random_member(R-Old,Current),
-    select(R-Old,Current,R-[S|Old],Updated),
-    distribute_surgeries(Rest,Updated,Final).
-
-% no stagnation or improvement checks
-update_fitness_history(_).
-
-check_stagnation :- fail.
-
-tournament_size(3).
-
-select_parent(Pop,Parent):-
-    tournament_size(T),
-    length(Pop,Len),
-    findall(X,(between(1,T,_),random_between(1,Len,I),nth1(I,Pop,IndFit),X=IndFit),Tour),
-    max_fitness(Tour,Parent).
-
-max_fitness([X],X):-!.
-max_fitness([X*FX,Y*FY|R],B):- (FX>FY->max_fitness([X*FX|R],B);max_fitness([Y*FY|R],B)).
-
-cross_assignments(I1,I2,O1,O2):-
-    assignment_to_list(I1,L1),
-    assignment_to_list(I2,L2),
-    length(L1,L),
-    (L<2->O1=I1,O2=I2;(
-      random_between(1,L,CP),
-      split_at(L1,CP,A1,B1),
-      split_at(L2,CP,A2,B2),
-      append(A1,B2,New1),
-      append(A2,B1,New2),
-      repair_offspring(New1,O1,_I1),
-      repair_offspring(New2,O2,_I2)
-    )).
-
-split_at(L,N,Front,Back):-
-    length(Front,N),append(Front,Back,L).
-
-repair_offspring(List,Assignment,_):-
-    findall(S,surgery(S,_,_,_),AllS),
-    sort(List,Ls),
-    sort(AllS,All),
-    findall(S,(member(S,All),\+ member(S,List)),Missing),
-    remove_excess(List,All,Inter),
-    append(Inter,Missing,Final),
-    list_to_assignment(Final,Assignment).
-
-remove_excess([],_,[]).
-remove_excess([X|Xs],All,[X|Ys]):-
-    select(X,All,All2),!,
-    remove_excess(Xs,All2,Ys).
-remove_excess([_|Xs],All,Ys):-
-    remove_excess(Xs,All,Ys).
-
-mutate_assignment_relaxed(Assignment,MutatedAssignment):-
-    assignment_to_list(Assignment,SurgeryList),
-    length(SurgeryList,Len),
-    (Len<2->MutatedAssignment=Assignment;(
-        random_between(1,Len,I1),
-        random_between(1,Len,I2),
-        I1\=I2,
-        nth1(I1,SurgeryList,S1,T1),
-        nth1(I2,T1,S2,T2),
-        nth1(I1,Mut,S2,T2),
-        nth1(I2,Mut,S1,T2),
-        list_to_assignment(Mut,MutatedAssignment)
-    )).
-
-validate_solution(_):-true.
-
-calculate_generation_stats(Pop,Avg,Best,Div):-
-    findall(F,member(_*F,Pop),Fits),
-    average(Fits,Avg),
-    max_list(Fits,Best),
-    calculate_population_diversity(Pop,Div).
-
-calculate_population_diversity(Pop,Div):-
-    findall(D,(member(I1*_,Pop),member(I2*_,Pop),I1@<I2,calculate_solution_distance(I1,I2,D)),Dist),
-    (Dist=[]->Div=0;average(Dist,Div)).
-
-average(L,A):-sum_list(L,S),length(L,N),(N>0->A is S/N;A=0).
-
-extract_best_fitness([_*F|_],F).
-
-generate_generation(N,G,Pop):-
-    (N<G->
-       writeln('--------------------------------'),
-       format('Generation ~w:~n',[N]),
-       calculate_generation_stats(Pop, Avg, Best, Div),
-       format('  Average Fitness: ~2f~n',[Avg]),
-       format('  Best Fitness: ~2f~n',[Best]),
-       format('  Population Diversity: ~2f~n',[Div]),
-       population(PS),
-       evolve_population(Pop,PS,NewPop),
-       evaluate_population(NewPop,ValPop),
-       order_population_desc(ValPop,OrderedPop),
-       N1 is N+1,
-       generate_generation(N1,G,OrderedPop)
+% Crossover operation
+crossover([], []).
+crossover([Ind*_], [Ind]).
+crossover([Ind1*_, Ind2*_|Rest], [NInd1, NInd2|Rest1]) :-
+    prob_crossover(Pcruz),
+    random(0.0, 1.0, Pc),
+    (Pc =< Pcruz ->
+        cross_assignments(Ind1, Ind2, TempNInd1, TempNInd2),
+        (validate_solution(TempNInd1) -> NInd1 = TempNInd1 ; NInd1 = Ind1),
+        (validate_solution(TempNInd2) -> NInd2 = TempNInd2 ; NInd2 = Ind2)
     ;
-       format('Final Population:~n~w~n',[Pop]),
-       format('Genetic Algorithm Completed.~n',[])
+        NInd1 = Ind1, NInd2 = Ind2),
+    crossover(Rest, Rest1).
+
+% Mutation operation
+mutation([], []).
+mutation([Ind|Rest], [NInd|Rest1]) :-
+    prob_mutation(Pmut),
+    random(0.0, 1.0, Pm),
+    (Pm < Pmut ->
+        mutate_assignment(Ind, NInd)
+    ;
+        NInd = Ind),
+    mutation(Rest, Rest1).
+
+% Generate new generation with diversity check
+generate_generation(N, G, Pop) :-
+    N < G,  % Not final generation
+    write('Generation '), write(N), write(':'), nl,
+    write(Pop), nl,
+    % Perform genetic operations
+    crossover(Pop, NPop1),
+    mutation(NPop1, NPop),
+    evaluate_population(NPop, NPopValue),
+    % Sort and ensure diversity
+    sort(NPopValue, Sorted),  % Remove duplicates
+    ensure_population_diversity(Sorted, DiversePop),
+    order_population(DiversePop, NPopOrd),
+    % Continue only if not reached max generations
+    (N =:= G - 1 ->
+        % Last generation, just display final result
+        write('Final Generation:'), nl,
+        write(NPopOrd), nl
+    ;
+        % Continue if population changed or force continue
+        (Pop \= NPopOrd ->
+            N1 is N + 1,
+            generate_generation(N1, G, NPopOrd)
+        ;
+            % Force continue even if population hasn't changed
+            N1 is N + 1,
+            write('Population stabilized at generation '), write(N), nl,
+            generate_generation(N1, G, NPopOrd)
+        )
     ).
 
-evolve_population(Pop,Size,NewPop):-
-    findall(I,member(I,Pop),All),
-    evolve_loop(All,Size,[],NewPop).
+% Helper predicate to take N elements from list
+take(N, List, Taken) :-
+    length(Prefix, N),
+    append(Prefix, _, List),
+    Prefix = Taken.
 
-evolve_loop(_,0,Acc,Acc):-!.
-evolve_loop(All,N,Acc,Final):-
-    N>1,
-    N1 is N-2,
-    select_parent(All,P1*F1),
-    select_parent(All,P2*F2),
-    P1\=P2,
-    cross_assignments(P1,P2,O1,O2),
-    mutate_assignment_relaxed(O1,M1),
-    mutate_assignment_relaxed(O2,M2),
-    evaluate_assignment(M1,V1),
-    evaluate_assignment(M2,V2),
-    append(Acc,[M1*V1,M2*V2],NewAcc),
-    evolve_loop(All,N1,NewAcc,Final).
-evolve_loop(All,1,Acc,Final):-
-    select_parent(All,P1*_),
-    mutate_assignment_relaxed(P1,M1),
-    evaluate_assignment(M1,V1),
-    append(Acc,[M1*V1],Final).
+% Ensure population diversity by modifying similar solutions
+ensure_population_diversity(Pop, DiversePop) :-
+    population_size(Size),
+    length(Pop, CurrentSize),
+    (CurrentSize >= Size ->
+        % Take the best N solutions
+        sort(Pop, SortedPop),  % Sort by fitness
+        take(Size, SortedPop, DiversePop)
+    ;
+        % Generate additional solutions if needed
+        generate_diverse_solutions(Pop, Size, DiversePop)
+    ).
 
-order_population_desc(P,Desc):-
-    sort(2,@>=,P,Desc).
+% Generate additional diverse solutions if needed
+generate_diverse_solutions(Pop, TargetSize, DiversePop) :-
+    length(Pop, CurrentSize),
+    NumNeeded is TargetSize - CurrentSize,
+    % Generate new solutions through mutation
+    generate_new_solutions(Pop, NumNeeded, NewSolutions),
+    % Combine original and new solutions
+    append(Pop, NewSolutions, DiversePop).
 
-calculate_solution_distance(Sol1,Sol2,Distance):-
-    solution_to_pairs(Sol1,P1),
-    solution_to_pairs(Sol2,P2),
-    count_differences(P1,P2,Distance).
+% Generate N new solutions through mutation
+generate_new_solutions(_, 0, []) :- !.
+generate_new_solutions(Pop, N, [NewSol*Score|Rest]) :-
+    N > 0,
+    % Select random solution and mutate it
+    random_member(Sol*_, Pop),
+    mutate_assignment(Sol, NewSol),
+    % Evaluate new solution
+    evaluate_assignment(NewSol, Score),
+    % Continue generating rest
+    N1 is N - 1,
+    generate_new_solutions(Pop, N1, Rest).
 
-solution_to_pairs(Sol,Pairs):-
-    findall(S-R,(member(R-L,Sol),member(S,L)),Pairs).
+% Helper predicates
+can_fit_surgery(Room, Duration, Assignment) :-
+    (member(Room-Surgeries, Assignment) ->
+        total_duration(Surgeries, CurrentDuration),
+        room(Room, Capacity, _),
+        CurrentDuration + Duration =< Capacity
+    ;
+        true).
 
-count_differences(P1,P2,C):-
-    findall(1,(member(S-R1,P1),member(S-R2,P2),R1\=R2),Diff),
-    length(Diff,C).
+add_to_assignment(Room, Surgery, [], [Room-[Surgery]]) :- !.
+add_to_assignment(Room, Surgery, [Room-Surgeries|Rest], [Room-[Surgery|Surgeries]|Rest]) :- !.
+add_to_assignment(Room, Surgery, [Other|Rest], [Other|NewRest]) :-
+    add_to_assignment(Room, Surgery, Rest, NewRest).
 
-test_genetic_assignment:-
+% Test predicate
+test_genetic_assignment :-
     retractall(generations(_)),
-    retractall(population(_)),
+    retractall(population_size(_)),
     retractall(prob_crossover(_)),
     retractall(prob_mutation(_)),
-    asserta(generations(10)),
-    asserta(population(20)),
-    asserta(prob_crossover(0.9)),
-    asserta(prob_mutation(0.3)),
-    generate, !.
+    asserta(generations(50)),
+    asserta(population_size(20)),
+    asserta(prob_crossover(0.7)),
+    asserta(prob_mutation(0.1)),
+    generate.
+
+% Order population by fitness (ascending order)
+order_population(PopValue, PopValueOrd) :-
+    bsort(PopValue, PopValueOrd).
+
+% Bubble sort implementation
+bsort([X], [X]) :- !.
+bsort([X|Xs], Ys) :-
+    bsort(Xs, Zs),
+    bchange([X|Zs], Ys).
+
+bchange([X], [X]) :- !.
+bchange([X*VX, Y*VY|L1], [Y*VY|L2]) :-
+    VX > VY, !,
+    bchange([X*VX|L1], L2).
+bchange([X|L1], [X|L2]) :-
+    bchange(L1, L2).
+
+% Crossover operation for room assignments
+cross_assignments(Ind1, Ind2, NInd1, NInd2) :-
+    % Get all surgeries from both assignments
+    findall(S, (member(_-Surgeries, Ind1), member(S, Surgeries)), Surgeries1),
+    findall(S, (member(_-Surgeries, Ind2), member(S, Surgeries)), Surgeries2),
+    % Generate crossover points
+    length(Surgeries1, L),
+    P1 is L // 3,
+    P2 is 2 * L // 3,
+    % Perform crossover
+    perform_crossover(Surgeries1, Surgeries2, P1, P2, NewSurgeries1, NewSurgeries2),
+    % Create new assignments
+    findall(Room, room(Room, _, _), Rooms),
+    assign_surgeries(NewSurgeries1, Rooms, NInd1),
+    assign_surgeries(NewSurgeries2, Rooms, NInd2).
+
+% Perform crossover between two surgery lists
+perform_crossover(Surgeries1, Surgeries2, P1, P2, NewSurgeries1, NewSurgeries2) :-
+    % Split lists at crossover points
+    split_at(Surgeries1, P1, Start1, Mid1, End1),
+    split_at(Surgeries2, P1, Start2, Mid2, End2),
+    % Exchange middle segments
+    append(Start1, Mid2, Temp1),
+    append(Temp1, End1, NewSurgeries1),
+    append(Start2, Mid1, Temp2),
+    append(Temp2, End2, NewSurgeries2).
+
+% Helper predicate to split a list at given position
+split_at(List, N, Start, Mid, End) :-
+    length(Start, N),
+    append(Start, Rest, List),
+    length(Mid, N),
+    append(Mid, End, Rest).
+
+% Mutation operation
+mutate_assignment(Ind, NInd) :-
+    % Get all surgeries from assignment
+    findall(S, (member(_-Surgeries, Ind), member(S, Surgeries)), Surgeries),
+    % Randomly swap two surgeries
+    length(Surgeries, L),
+    random(0, L, P1),
+    random(0, L, P2),
+    P1 \= P2,
+    nth0(P1, Surgeries, S1),
+    nth0(P2, Surgeries, S2),
+    swap_elements(Surgeries, P1, P2, NewSurgeries),
+    % Create new assignment
+    findall(Room, room(Room, _, _), Rooms),
+    assign_surgeries(NewSurgeries, Rooms, NInd).
+
+% Helper predicate to swap elements in a list
+swap_elements(List, P1, P2, NewList) :-
+    nth0(P1, List, E1),
+    nth0(P2, List, E2),
+    replace_nth0(P1, List, E2, TempList),
+    replace_nth0(P2, TempList, E1, NewList).
+
+% Helper predicate to replace element at index
+replace_nth0(N, List, E, NewList) :-
+    length(Prefix, N),
+    append(Prefix, [_|Suffix], List),
+    append(Prefix, [E|Suffix], NewList).
+
+% Validate individual solution
+validate_solution(Assignment) :-
+    % Get all surgeries in the assignment
+    findall(Surgery, 
+            (member(Room-Surgeries, Assignment),
+             member(Surgery, Surgeries)),
+        AllScheduledSurgeries),
+    % Check for duplicates
+    sort(AllScheduledSurgeries, NoDuplicates),
+    length(AllScheduledSurgeries, L1),
+    length(NoDuplicates, L2),
+    L1 = L2,
+    % Check if all surgeries are scheduled
+    findall(S, surgery(S,_,_,_), AllPossibleSurgeries),
+    sort(AllPossibleSurgeries, SortedPossible),
+    NoDuplicates = SortedPossible.
