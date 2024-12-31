@@ -4,18 +4,27 @@
 :-dynamic prob_mutation/1.
 
 % task(Id,ProcessTime,DueTime,PenaltyWeight).
-task(t1,2,5,1).
-task(t2,4,7,6).
-task(t3,1,11,2).
-task(t4,3,9,3).
-task(t5,3,8,2).
+task(s1, 30, 120, 30, 3).
+task(s2, 45, 180, 45, 5).
+task(s3, 20, 60, 20, 1).
+task(s4, 35, 150, 35, 4).
+task(s5, 25, 90, 25, 2).
 
 % tasks(NTasks).
 tasks(5).
 
 % parameters initialization
-initialize:-write('Number of new generations: '),read(NG), 			
-    (retract(generations(_));true), asserta(generations(NG)),
+initialize:-
+     write('Select stopping condition (1-Generations, 2-Time): '), read(Option),
+    (Option = 1 -> 
+        write('Number of generations: '), read(NG),
+        (retract(generations(_));true), asserta(generations(NG)),
+        (retract(stop_condition(_));true), asserta(stop_condition(generations))
+    ;   
+        write('Time limit (seconds): '), read(TimeLimit),
+        (retract(time_limit(_));true), asserta(time_limit(TimeLimit)),
+        (retract(stop_condition(_));true), asserta(stop_condition(time))
+    ),
 	write('Population size: '),read(PS),
 	(retract(population(_));true), asserta(population(PS)),
 	write('Probability of crossover (%):'), read(P1),
@@ -28,17 +37,22 @@ initialize:-write('Number of new generations: '),read(NG),
 generate:-
     initialize,
     generate_population(Pop),
-    write('Pop='),write(Pop),nl,
     evaluate_population(Pop,PopValue),
-    write('PopValue='),write(PopValue),nl,
     order_population(PopValue,PopOrd),
-    generations(NG),
-    generate_generation(0,NG,PopOrd).
+    get_time(StartTime),
+    stop_condition(Condition),
+    (Condition = generations -> 
+        generations(G),
+        generate_generation(0, G, PopOrd)
+    ;   
+        time_limit(TimeLimit),
+        generate_generation_time(0, StartTime, TimeLimit, PopOrd)
+    ).
 
 generate_population(Pop):-
     population(PopSize),
     tasks(NumT),
-    findall(Task,task(Task,_,_,_),TasksList),
+    findall(Task,task(Task,_,_,_,_),TasksList),
     generate_population(PopSize,TasksList,NumT,Pop).
 
 generate_population(0,_,_,[]):-!.
@@ -74,12 +88,16 @@ evaluate_population([Ind|Rest],[Ind*V|Rest1]):-
 evaluate(Seq,V):- evaluate(Seq,0,V).
 
 evaluate([ ],_,0).
-evaluate([T|Rest],Inst,V):-
-    task(T,Dur,Due,Pen),
-    FinInst is Inst+Dur,
-    evaluate(Rest,FinInst,VRest),
-    ((FinInst =< Due,!, VT is 0) ; (VT is (FinInst-Due)*Pen)),
-    V is VT+VRest.
+evaluate([S|Rest],StartTime,V):-
+    task(S,Prep,Surg,Clean,Prio),
+    % Calculate total procedure time
+    ProcedureTime is Prep + Surg + Clean,
+    % Calculate finish time
+    FinishTime is StartTime + ProcedureTime,
+    % Recursive call with new start time
+    evaluate(Rest,FinishTime,VRest),
+    % Priority-weighted completion time
+    V is (FinishTime * Prio) + VRest.
 
 order_population(PopValue,PopValueOrd):-
     bsort(PopValue,PopValueOrd).
@@ -97,17 +115,135 @@ bchange([X*VX,Y*VY|L1],[Y*VY|L2]):-
     bchange([X*VX|L1],L2).
 
 bchange([X|L1],[X|L2]):-bchange(L1,L2).
+
+% Time-based generation
+generate_generation_time(_,StartTime,TimeLimit,Pop):-
+    get_time(CurrentTime),
+    ElapsedTime is CurrentTime - StartTime,
+    ElapsedTime >= TimeLimit,!,
+    write('Time limit reached. Best solution:'),nl,
+    Pop = [Best*Value|_],
+    write(Best), write(' with value '), write(Value),nl.
+
+generate_generation_time(N,StartTime,TimeLimit,Pop):-
+    get_time(CurrentTime),
+    ElapsedTime is CurrentTime - StartTime,
+    ElapsedTime < TimeLimit,
+    write('Generation '), write(N), write(':'), nl, write(Pop), nl,
+    % Get best individual from current population
+    crossover(Pop,NPop1),
+    mutation(NPop1,NPop),
+    evaluate_population(NPop,NPopValue),
+    append(Pop,NPopValue,AllPop),
+    
+    remove_duplicates(AllPop,AllPop1),
+
+    order_population(AllPop1,TempPopOrd),
+
+    select_top_p(TempPopOrd, TopP, Remaining),
+
+    add_random_weights(Remaining, Randomized),
+    sort_by_randomized(Randomized, Sorted),
+
+    length(TopP, P),
+    population(PopSize),
+    
+    NP is PopSize - P,
+
+    take_n(NP, Sorted, NewPop),
+    append(TopP, NewPop, NPopOrd),
+    
+    order_population(NPopOrd, NPopOrdSorted),
+
+    N1 is N+1,
+    generate_generation_time(N1,StartTime,TimeLimit,NPopOrdSorted).
     
 generate_generation(G,G,Pop):-!,
 	write('Generation '), write(G), write(':'), nl, write(Pop), nl.
 generate_generation(N,G,Pop):-
-	write('Generation '), write(N), write(':'), nl, write(Pop), nl,
-	crossover(Pop,NPop1),
-	mutation(NPop1,NPop),
-	evaluate_population(NPop,NPopValue),
-	order_population(NPopValue,NPopOrd),
-	N1 is N+1,
-	generate_generation(N1,G,NPopOrd).
+    write('Generation '), write(N), write(':'), nl, write(Pop), nl,
+    % Get best individual from current population
+    crossover(Pop,NPop1),
+    mutation(NPop1,NPop),
+    evaluate_population(NPop,NPopValue),
+    append(Pop,NPopValue,AllPop),
+    
+    remove_duplicates(AllPop,AllPop1),
+
+    order_population(AllPop1,TempPopOrd),
+
+    select_top_p(TempPopOrd, TopP, Remaining),
+
+    add_random_weights(Remaining, Randomized),
+    sort_by_randomized(Randomized, Sorted),
+
+    length(TopP, P),
+    population(PopSize),
+    
+    NP is PopSize - P,
+
+    take_n(NP, Sorted, NewPop),
+    append(TopP, NewPop, NPopOrd),
+    
+    order_population(NPopOrd, NPopOrdSorted),
+
+    N1 is N+1,
+    generate_generation(N1,G,NPopOrdSorted).
+
+select_top_p(SortedList, TopP, Remaining):-
+    SortedList = [BestCurrent*_|_],
+    population(PopSize),
+    TopCount is round(PopSize * 0.2),
+    take_p(TopCount, SortedList, TempTopP, TempRemaining),
+    (member(BestCurrent*_, TempTopP) ->
+        TopP = TempTopP,
+        Remaining = TempRemaining
+    ;
+        TopP = [BestCurrent|TempTopP],
+        delete(TempRemaining, BestCurrent, Remaining)
+    ).
+
+take_p(0, List, [], List). % Base case: if TopCount is 0, take nothing, remainder is the whole list.
+take_p(N, [H|T], [H|TopP], Remaining) :-
+    N > 0,
+    N1 is N - 1,
+    take_p(N1, T, TopP, Remaining).
+
+take_n(0, _, []). % Base case: if N is 0, take nothing.
+take_n(_, [], []). % Base case: if list is empty, take nothing.
+take_n(N, [H|T], [H|Rest]) :- % Take N elements from the list.
+    N > 0,
+    N1 is N - 1,
+    take_n(N1, T, Rest).
+
+remove_duplicates([], []).
+remove_duplicates([H|T], [H|Result]) :-
+    \+ member(H, T), % Check if H is not already in the tail
+    remove_duplicates(T, Result).
+remove_duplicates([H|T], Result) :-
+    member(H, T), % If H is in the tail, skip it
+    remove_duplicates(T, Result).
+
+
+randomize_evaluation(List, Randomized):- 
+    maplist(randomize_individual, List, Randomized).
+randomize_individual(Ind*Val, Ind*RandVal):- 
+    random(0.0, 1.0, Rand), 
+    RandVal is Val * Rand.
+
+add_random_weights([], []).
+add_random_weights([Ind*Val|Rest], [Ind*Val*RandVal|WeightedRest]) :-
+    random(0.0, 1.0, R),
+    RandVal is Val * R,
+    add_random_weights(Rest, WeightedRest).
+
+sort_by_randomized(List, Sorted) :-
+    sort(2, @=<, List, SortedByRandom),
+    strip_random_values(SortedByRandom, Sorted).
+
+strip_random_values([], []).
+strip_random_values([Ind*Val*_|Rest], [Ind*Val|StrippedRest]) :-
+    strip_random_values(Rest, StrippedRest).
 
 generate_crossover_points(P1,P2):- generate_crossover_points1(P1,P2).
 
