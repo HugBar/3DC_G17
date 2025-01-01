@@ -3,7 +3,7 @@
 :-dynamic prob_crossover/1.
 :-dynamic prob_mutation/1.
 
-% task(Id,ProcessTime,DueTime,PenaltyWeight).
+% task(Id,PreparationTime,SurgeryTime,CleaningTime,Priority).
 task(s1, 30, 120, 30, 3).
 task(s2, 45, 180, 45, 5).
 task(s3, 20, 60, 20, 1).
@@ -63,8 +63,6 @@ generate_population(PopSize,TasksList,NumT,[Ind|Rest]):-
     not(member(Ind,Rest)).
 generate_population(PopSize,TasksList,NumT,L):-
     generate_population(PopSize,TasksList,NumT,L).
-    
-
 
 generate_individual([G],1,[G]):-!.
 
@@ -88,16 +86,12 @@ evaluate_population([Ind|Rest],[Ind*V|Rest1]):-
 evaluate(Seq,V):- evaluate(Seq,0,V).
 
 evaluate([ ],_,0).
-evaluate([S|Rest],StartTime,V):-
-    task(S,Prep,Surg,Clean,Prio),
-    % Calculate total procedure time
+evaluate([S|Rest], StartTime, V):-
+    task(S, Prep, Surg, Clean, _),
     ProcedureTime is Prep + Surg + Clean,
-    % Calculate finish time
     FinishTime is StartTime + ProcedureTime,
-    % Recursive call with new start time
-    evaluate(Rest,FinishTime,VRest),
-    % Priority-weighted completion time
-    V is (FinishTime * Prio) + VRest.
+    evaluate(Rest, FinishTime, VRest),
+    V is max(FinishTime, VRest). % Only care about last operation finish time
 
 order_population(PopValue,PopValueOrd):-
     bsort(PopValue,PopValueOrd).

@@ -38,9 +38,11 @@ class AllergyService {
             const newAllergy = new Allergy({
                 allergen: allergyDto.allergen,
                 severity: allergyDto.severity,
-                diagnosedDate: allergyDto.diagnosedDate,
-                notes: allergyDto.notes
+                description: allergyDto.desription
+                
             });
+
+            console.log(newAllergy);
 
             const addedAllergy = await AlergyRepository.addAllergyModel(newAllergy);
 
@@ -83,6 +85,31 @@ class AllergyService {
         try {
             const allergy = await AlergyRepository.deleteAllergy(allergyId);
             return allergy;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updateAllergy(id, allergyDto) {
+        try {
+            const allergyIdExists = await AlergyRepository.findById(id);
+            console.log(allergyIdExists);
+            if (!allergyIdExists) {
+                throw new Error('Allergy not found');
+            }
+        
+            
+            const allergy = await AlergyRepository.updateAllergy(id, allergyDto);
+
+            console.log(allergy);
+
+            const updatedAllergy = new AllergyDto(
+                allergy.allergen,
+                allergy.severity,
+                allergy.description
+            );
+
+            return updatedAllergy;
         } catch (error) {
             throw error;
         }

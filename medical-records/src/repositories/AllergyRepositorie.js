@@ -70,3 +70,13 @@ exports.deleteAllergy = async (allergen) => {
     const result = await Allergy.deleteOne({ allergen });
     return result.deletedCount ? 'Allergy deleted successfully' : 'Allergy not found';
 };
+
+exports.updateAllergy = async (id, allergyDto) => {
+    console.log(allergyDto);
+
+    return await Allergy.findByIdAndUpdate(id, allergyDto, { new: true });
+}
+
+exports.findById = async (id) => {
+    return await Allergy.findById(id);
+}

@@ -1,15 +1,16 @@
 const AllergyService = require('../services/AllergyService');
 const AllergyDto = require('../dtos/AllergyDto');
 const AllergySearchDto = require('../dtos/AllergySearchDto');
+const UpdateAllergyDto = require('../dtos/UpdateAllergyDto');
 
 // Add allergy to allergy model
 
 exports.addAllergyModel = async (req, res) => {
     try {
-        const { allergen, severity, diagnosedDate, notes } = req.body;
+        const { allergen, severity, description } = req.body;
 
         // Create DTO
-        const allergyDto = new AllergyDto(allergen, severity, diagnosedDate, notes);
+        const allergyDto = new AllergyDto(allergen, severity, description);
         
         // Add allergy using service
         const result = await AllergyService.addAllergyModel(allergyDto);
@@ -64,6 +65,23 @@ exports.getAllergyDetails = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+exports.updateAllergy = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { allergen, severity, description } = req.body;
+
+
+        const allergyDto = new UpdateAllergyDto(allergen, severity, description);
+        console.log(allergyDto);
+
+        const result = await AllergyService.updateAllergy(id, allergyDto);
+        res.status(200).json({ message: result });
+    } catch (error) {
+        console.error('Error updating allergy:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
 
 exports.deleteAllergy = async (req, res) => {
     try {
