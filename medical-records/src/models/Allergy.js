@@ -12,12 +12,18 @@ const allergySchema = new mongoose.Schema({
         enum: ['Low', 'Medium', 'High']
     },
     description: {
-        type: String
+        type: String,
+        required: false // Description is optional
     },
     createdDate: {
         type: Date,
         default: Date.now
+    },
+    updatedDate: {
+        type: Date,
+        default: Date.now
     }
+
 });
 
 const Allergy = mongoose.model('Allergy', allergySchema);

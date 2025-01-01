@@ -24,6 +24,20 @@ DELETE http://localhost:3001/allergies/delete-allergy/TestAllergen_1735331991707
 
 ###
 
+PUT http://localhost:3001/allergies/update-allergy/6775c2f6d8778d3a4df30aca
+Content-Type: application/json
+
+    {
+        "allergen": "Chumbos",
+        "severity": "Low",
+        "description": "adadad"
+    }
+
+###
+
+
+###
+
 POST http://localhost:3001/medical-conditions/add-medical-condition
 Content-Type: application/json
 
