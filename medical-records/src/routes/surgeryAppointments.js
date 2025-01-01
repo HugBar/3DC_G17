@@ -16,4 +16,10 @@ router.patch('/:appointmentId/status', SurgeryAppointmentController.updateAppoin
 
 router.patch('/:operationRequestId/update', SurgeryAppointmentController.updateSurgeryAppointment);
 
+// Get appointment by operation request ID
+router.get('/operation/:operationRequestId', SurgeryAppointmentController.getByOperationRequestId);
+
+// Update appointment by operation request ID
+router.patch('/operation/:operationRequestId', SurgeryAppointmentController.updateSurgeryAppointment);
+
 module.exports = router;

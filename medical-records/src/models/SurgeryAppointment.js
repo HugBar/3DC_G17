@@ -21,7 +21,7 @@ const surgeryAppointmentSchema = new mongoose.Schema({
         licenseNumber: {
             type: String,
             required: true,
-            match: /^LIC-\d{5}$/
+            match: /^LIC-\d{8}$/
         },
         role: {
             type: String,

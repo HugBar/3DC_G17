@@ -107,6 +107,21 @@ class SurgeryAppointmentController {
             res.status(500).json({ message: error.message });
         }
     }
+
+    static async getByOperationRequestId(req, res) {
+        try {
+            const { operationRequestId } = req.params;
+            const appointment = await SurgeryAppointmentService.findByOperationRequestId(operationRequestId);
+            
+            if (!appointment) {
+                return res.status(404).json({ message: 'Appointment not found' });
+            }
+            
+            res.status(200).json(appointment);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
 }
 
 module.exports = SurgeryAppointmentController;

@@ -74,9 +74,17 @@ class SurgeryAppointmentService {
         }
     }
 
-    static async updateSurgeryAppointment(appointmentId, updateData) {
+    static async updateSurgeryAppointment(operationRequestId, updateData) {
         try {            
-            return await surgeryAppointmentRepository.update(appointmentId, updateData);
+            return await surgeryAppointmentRepository.update(operationRequestId, updateData);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async findByOperationRequestId(operationRequestId) {
+        try {
+            return await surgeryAppointmentRepository.findByOperationRequestId(operationRequestId);
         } catch (error) {
             throw error;
         }

@@ -4,8 +4,8 @@ import './CreateSurgeryAppointment.css';
 
 const CreateSurgeryAppointment = () => {
     const [appointmentData, setAppointmentData] = useState({
-        operationRequest: '',
-        surgeryRoom: '',
+        operationRequestId: '',
+        surgeryRoomId: '',
         scheduledDateTime: '',
         estimatedDuration: '',
         staffAssignments: [
@@ -22,7 +22,7 @@ const CreateSurgeryAppointment = () => {
         const { name, value } = e.target;
         setAppointmentData(prevData => ({
             ...prevData,
-            [name]: value
+            [name]: name === 'estimatedDuration' ? Number(value) : value
         }));
     };
 
@@ -51,8 +51,8 @@ const CreateSurgeryAppointment = () => {
             setErrorMessage('');
             // Clear form
             setAppointmentData({
-                operationRequest: '',
-                surgeryRoom: '',
+                operationRequestId: '',
+                surgeryRoomId: '',
                 scheduledDateTime: '',
                 estimatedDuration: '',
                 staffAssignments: [
@@ -84,9 +84,9 @@ const CreateSurgeryAppointment = () => {
                     <label htmlFor="operationRequest">Operation Request ID:</label>
                     <input
                         id="operationRequest"
-                        name="operationRequest"
+                        name="operationRequestId"
                         type="text"
-                        value={appointmentData.operationRequest}
+                        value={appointmentData.operationRequestId}
                         onChange={handleChange}
                         required
                     />
@@ -96,9 +96,9 @@ const CreateSurgeryAppointment = () => {
                     <label htmlFor="surgeryRoom">Surgery Room:</label>
                     <input
                         id="surgeryRoom"
-                        name="surgeryRoom"
+                        name="surgeryRoomId"
                         type="text"
-                        value={appointmentData.surgeryRoom}
+                        value={appointmentData.surgeryRoomId}
                         onChange={handleChange}
                         required
                     />
@@ -137,7 +137,7 @@ const CreateSurgeryAppointment = () => {
                             placeholder="DOCTOR LICENSE NUMBER"
                             value={appointmentData.staffAssignments[0].licenseNumber}
                             onChange={(e) => handleStaffAssignmentChange(0, e.target.value)}
-                            pattern="LIC-\d{5}"
+                            pattern="LIC-\d{8}"
                             required
                         />
                         <input
@@ -145,7 +145,7 @@ const CreateSurgeryAppointment = () => {
                             placeholder="NURSE LICENSE NUMBER"
                             value={appointmentData.staffAssignments[1].licenseNumber}
                             onChange={(e) => handleStaffAssignmentChange(1, e.target.value)}
-                            pattern="LIC-\d{5}"
+                            pattern="LIC-\d{8}"
                             required
                         />
                         <input
@@ -153,7 +153,7 @@ const CreateSurgeryAppointment = () => {
                             placeholder="TECHNICIAN LICENSE NUMBER"
                             value={appointmentData.staffAssignments[2].licenseNumber}
                             onChange={(e) => handleStaffAssignmentChange(2, e.target.value)}
-                            pattern="LIC-\d{5}"
+                            pattern="LIC-\d{8}"
                             required
                         />
                     </div>

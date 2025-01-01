@@ -49,11 +49,11 @@ const appointmentService = {
         }
     },
 
-    updateSurgeryAppointment: async (appointmentId, updateData) => {
+    updateSurgeryAppointment: async (operationRequestId, updateData) => {
         const token = getAuthToken();
         try {
-            const updateResponse = await axios.patch(
-                `${API_URL}/surgery-appointments/${appointmentId}`,
+            const response = await axios.patch(
+                `${API_URL}/surgery-appointments/operation/${operationRequestId}`,
                 updateData,
                 {
                     headers: {
@@ -62,7 +62,7 @@ const appointmentService = {
                     }
                 }
             );
-            return updateResponse.data;
+            return response.data;
         } catch (error) {
             console.error('Error updating appointment:', error);
             throw error;
@@ -146,6 +146,24 @@ const appointmentService = {
             return response.data;
         } catch (error) {
             console.error('Error checking room availability:', error);
+            throw error;
+        }
+    },
+
+    getAppointmentByOperationRequestId: async (operationRequestId) => {
+        const token = getAuthToken();
+        try {
+            const response = await axios.get(
+                `${API_URL}/surgery-appointments/operation/${operationRequestId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching appointment:', error);
             throw error;
         }
     }

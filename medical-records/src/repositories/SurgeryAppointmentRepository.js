@@ -99,6 +99,32 @@ class SurgeryAppointmentRepository {
             throw error;
         }
     }
+
+    async findByOperationRequestId(operationRequestId) {
+        try {
+            return await SurgeryAppointment.findOne({ operationRequestId });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async update(operationRequestId, updateData) {
+        try {
+            const appointment = await SurgeryAppointment.findOne({ operationRequestId });
+            
+            if (!appointment) {
+                throw new Error('Appointment not found');
+            }
+
+            // Update the appointment with the new data
+            Object.assign(appointment, updateData);
+            
+            // Save the updated appointment
+            return await appointment.save();
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 const surgeryAppointmentRepository = new SurgeryAppointmentRepository();

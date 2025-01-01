@@ -150,50 +150,25 @@ POST http://localhost:3001/api/surgery-appointments/
 Content-Type: application/json
 
 {
-    "operationRequestId": "OP-00000001",
-    "surgeryRoomId": "OR-101",
+    "operationRequestId": "OP-00000002",
+    "surgeryRoomId": "OR-102",
     "scheduledDateTime": "2024-01-20T10:00:00.000Z",
     "estimatedDuration": 120,
     "staffAssignments": [
         {
-            "licenseNumber": "LIC-12345",
+            "licenseNumber": "LIC-12345000",
             "role": "DOCTOR"
         },
         {
-            "licenseNumber": "LIC-67890",
+            "licenseNumber": "LIC-67890000",
             "role": "NURSE"
         },
         {
-            "licenseNumber": "LIC-11223",
+            "licenseNumber": "LIC-11223000",
             "role": "TECHNICIAN"
         }
     ],
     "description": "Appendectomy procedure"
-}
-### Update a surgery appointment (full update)
-PATCH http://localhost:3001/api/surgery-appointments/676eed6cbded8d0eb1b391cd/update
-Content-Type: application/json
-
-{
-    "operationRequestId": "OP-00000001",
-    "surgeryRoomId": "OR-102",
-    "scheduledDateTime": "2024-02-15T14:30:00.000Z",
-    "estimatedDuration": 90,
-    "staffAssignments": [
-        {
-            "licenseNumber": "LIC-12345",
-            "role": "DOCTOR"
-        },
-        {
-            "licenseNumber": "LIC-67890",
-            "role": "NURSE"
-        },
-        {
-            "licenseNumber": "LIC-11223",
-            "role": "TECHNICIAN"
-        }
-    ],
-    "description": "Updated appendectomy procedure with new schedule"
 }
 
 ### Create new room type
@@ -225,3 +200,32 @@ GET http://localhost:3001/medical-records/search?patientId=TestPatient1&conditio
 
 ### Search medical record with patient ID only (returns full record)
 GET http://localhost:3001/medical-records/search?patientId=TestPatient1
+
+
+### Get appointment by operation request ID
+GET http://localhost:3001/api/surgery-appointments/operation/OP-00000002
+
+### Update appointment using operation request ID
+PATCH http://localhost:3001/api/surgery-appointments/operation/OP-00000002
+Content-Type: application/json
+
+{
+    "surgeryRoomId": "OR-103",
+    "scheduledDateTime": "2024-02-15T14:30:00.000Z",
+    "estimatedDuration": 90,
+    "staffAssignments": [
+        {
+            "licenseNumber": "LIC-34567890",
+            "role": "DOCTOR"
+        },
+        {
+            "licenseNumber": "LIC-89012345",
+            "role": "NURSE"
+        },
+        {
+            "licenseNumber": "LIC-45678901",
+            "role": "TECHNICIAN"
+        }
+    ],
+    "description": "Updated appendectomy procedure with new schedule and staff"
+}
