@@ -2,6 +2,7 @@ const AllergyService = require('../services/AllergyService');
 const AllergyDto = require('../dtos/AllergyDto');
 const AllergySearchDto = require('../dtos/AllergySearchDto');
 const UpdateAllergyDto = require('../dtos/UpdateAllergyDto');
+const CreatAllergyDto = require('../dtos/CreatAllergyDto');
 
 // Add allergy to allergy model
 
@@ -10,7 +11,7 @@ exports.addAllergyModel = async (req, res) => {
         const { allergen, severity, description } = req.body;
 
         // Create DTO
-        const allergyDto = new AllergyDto(allergen, severity, description);
+        const allergyDto = new CreatAllergyDto(allergen, severity, description);
         
         // Add allergy using service
         const result = await AllergyService.addAllergyModel(allergyDto);

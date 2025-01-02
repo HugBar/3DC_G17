@@ -9,9 +9,9 @@ POST http://localhost:3001/allergies/add-allergy
 Content-Type: application/json
 
     {
-        "allergen": "Peanuts",
-        "severity": "High",
-        "description": "Allergy to chocolate"
+        "allergen": "Coffe",
+        "severity": "Medium",
+        "description": "Allergic to something"
     }
 
 ###
@@ -29,7 +29,7 @@ Content-Type: application/json
 
     {
         "allergen": "Chumbos",
-        "severity": "Low",
+        "severity": "Medium",
         "description": "adadad"
     }
 

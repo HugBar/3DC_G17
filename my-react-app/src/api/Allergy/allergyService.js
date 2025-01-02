@@ -31,8 +31,7 @@ class AllergyService {
     }
     async searchAllergies(searchParams) {
         try {
-            console.log('Enviando requisição com params:', searchParams); // Debug
-            
+                        
             const response = await axios.get(
                 `${this.baseUrl}/search`,
                 {
@@ -44,7 +43,6 @@ class AllergyService {
                 }
             );
             
-            console.log('Resposta recebida:', response.data); // Debug
             return response.data;
         } catch (error) {
             console.error('Erro detalhado:', {
@@ -55,6 +53,21 @@ class AllergyService {
             throw error;
         }
     }
+
+    async updateAllergy(allergyId, allergyData) {
+        try {
+            const response = await axios.put(
+                `${this.baseUrl}/update-allergy/${allergyId}`,
+                allergyData);
+
+            return response.data;
+        }
+        catch (error) {
+            console.error('Error details:', error.response || error);
+            throw error;
+        }
+    }
+
 }
 
 const allergyService = new AllergyService();

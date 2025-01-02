@@ -38,7 +38,7 @@ class AllergyService {
             const newAllergy = new Allergy({
                 allergen: allergyDto.allergen,
                 severity: allergyDto.severity,
-                description: allergyDto.desription
+                description: allergyDto.description
                 
             });
 
@@ -60,6 +60,7 @@ class AllergyService {
 
             const allergies = await AlergyRepository.findByFilters(allergySearchDto);
             return allergies.map(allergy => new AllergyDto(
+            allergy.id,
             allergy.allergen,
             allergy.severity,
             allergy.description
@@ -104,6 +105,7 @@ class AllergyService {
             console.log(allergy);
 
             const updatedAllergy = new AllergyDto(
+                allergy.id,
                 allergy.allergen,
                 allergy.severity,
                 allergy.description

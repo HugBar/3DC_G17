@@ -39,6 +39,7 @@ import UpdateSpecialization from './components/Specialization/updateSpecializati
 import PatientProfile from './components/Patient/patientProfile/PatientProfile';
 import PatientListDoctor from './components/Patient/patientListDoctor/PatientListDoctor';
 import UpdateSurgeryAppointment from './components/SurgeryAppointment/UpdateSurgeryAppointment';
+import UpdateAllergy from './components/Allergy/UpdateAllergy/UpdateAllergy';
 
 const App = () => {
   const navigate = useNavigate();
@@ -443,6 +444,15 @@ const App = () => {
                 >
                   Search Specializations
                 </button>
+                <button
+                onClick={() => {
+                  setSelectedStaffAction('Search Allergies');
+                  navigate('/allergies/search');
+                }}
+                className={`action-button ${selectedStaffAction === 'Search Allergies' ? 'active' : ''}`}
+              >
+                Search Allergies
+              </button>
                 </>
           )}
         </div>
@@ -626,7 +636,7 @@ const App = () => {
 />
   <Route path="/allergies/search" 
   element={
-    <ProtectedRoute requiredRole="doctor">
+    <ProtectedRoute requiredRole={["doctor", "admin"]}>
       <SearchAllergy />
     </ProtectedRoute>
   }
@@ -670,6 +680,11 @@ const App = () => {
         </ProtectedRoute>
     } 
 />
+  <Route path="/allergy/update-allergy/:id" element={
+    <ProtectedRoute requiredRole="admin">
+      <UpdateAllergy />
+    </ProtectedRoute>
+  } />
 
 </Routes>
 

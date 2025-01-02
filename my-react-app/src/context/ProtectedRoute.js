@@ -3,10 +3,9 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const { isAuthenticated, isAdmin, isDoctor, isPatient, isLoading } = useAuth();
+  const { isAuthenticated, isAdmin, isDoctor, isNurse, isLoading } = useAuth();
 
   if (isLoading) {
-    // You can replace this with a loading spinner component
     return <div>Loading...</div>;
   }
 
@@ -14,11 +13,15 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" />;
   }
 
-  const hasRequiredRole = {
+  const roleMap = {
     admin: isAdmin,
     doctor: isDoctor,
-    patient: isPatient
-  }[requiredRole];
+    nurse: isNurse,
+  };
+
+  const hasRequiredRole = Array.isArray(requiredRole)
+    ? requiredRole.some(role => roleMap[role])
+    : roleMap[requiredRole];
 
   if (!hasRequiredRole) {
     return <Navigate to="/" />;
