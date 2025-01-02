@@ -2,15 +2,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import allergyService from '../../../api/Allergy/allergyService';
 import { AllergyDTO } from '../../../dtos/AllergyDTO';
+import { useAuth } from '../../../context/AuthContext';
+
 import './SearchAllergy.css';
 
 const SearchAllergy = () => {
-
+     
     const navigate = useNavigate();
     const location = useLocation();
     const [allergies, setAllergies] = useState([]);
     const [errorMessage, setErrorMessage] = useState('');
     const [selectedAllergy, setSelectedAllergy] = useState(null);
+    const { isAdmin } = useAuth();
+
 
     const [filters, setFilters] = useState({
         allergen: '',
@@ -72,7 +76,6 @@ const SearchAllergy = () => {
             if (filters.allergen) activeFilters.allergen = filters.allergen;
             if (filters.severity) activeFilters.severity = filters.severity;
 
-            console.log('Enviando filtros para API:', activeFilters);
             const searchParams = {
                 allergen: filters.allergen, // Include even if empty
                 severity: filters.severity
@@ -80,9 +83,11 @@ const SearchAllergy = () => {
 
             const response = await allergyService.searchAllergies(searchParams);
 
+            console.log("response", response);
             const mappedConditions = response.map(condition => 
                 AllergyDTO.fromResponse(condition)
             );
+            console.log(mappedConditions);
             setAllergies(mappedConditions);
             setErrorMessage('');
         } catch (error) {
@@ -175,6 +180,11 @@ const SearchAllergy = () => {
                             <button onClick={() => setSelectedAllergy(null)} className="close-button">
                                 Close
                             </button>
+                            {isAdmin && (
+                                <button onClick={() => navigate(`/allergy/update-allergy/${selectedAllergy.id}`)} className="update-button">  
+                                    Update
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

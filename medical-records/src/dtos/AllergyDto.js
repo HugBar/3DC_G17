@@ -1,9 +1,11 @@
 class AllergyDto {
-    constructor(allergen, severity, desription) {
+    constructor(id, allergen, severity, description) {
+        this.id = id;
         this.allergen = allergen;
         this.severity = severity;
-        this.desription = desription;
+        this.description = description;
     }
+
 }
 
 module.exports = AllergyDto;
