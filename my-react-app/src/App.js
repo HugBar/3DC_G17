@@ -40,6 +40,7 @@ import PatientProfile from './components/Patient/patientProfile/PatientProfile';
 import PatientListDoctor from './components/Patient/patientListDoctor/PatientListDoctor';
 import UpdateSurgeryAppointment from './components/SurgeryAppointment/UpdateSurgeryAppointment';
 import UpdateAllergy from './components/Allergy/UpdateAllergy/UpdateAllergy';
+import PrivacyPolicy from './components/PrivacyPolicy/PrivacyPolicy';
 
 const App = () => {
   const navigate = useNavigate();
@@ -688,6 +689,9 @@ const App = () => {
 
 </Routes>
 
+      <div className="footer-privacy">
+        <PrivacyPolicy />
+      </div>
     </div>
   );
   
