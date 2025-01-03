@@ -85,13 +85,16 @@ evaluate_population([Ind|Rest],[Ind*V|Rest1]):-
 
 evaluate(Seq,V):- evaluate(Seq,0,V).
 
-evaluate([ ],_,0).
+evaluate([],_,0).
 evaluate([S|Rest], StartTime, V):-
-    task(S, Prep, Surg, Clean, _),
+    task(S, Prep, Surg, Clean, Priority),
     ProcedureTime is Prep + Surg + Clean,
     FinishTime is StartTime + ProcedureTime,
+    % Calculate waiting cost based on priority
+    WaitingCost is StartTime * Priority,
     evaluate(Rest, FinishTime, VRest),
-    V is max(FinishTime, VRest). % Only care about last operation finish time
+    % Combine makespan and priority-weighted waiting time
+    V is VRest + WaitingCost + ProcedureTime.
 
 order_population(PopValue,PopValueOrd):-
     bsort(PopValue,PopValueOrd).

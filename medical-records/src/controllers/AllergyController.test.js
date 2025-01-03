@@ -2,6 +2,7 @@ const AllergyController = require('./AllergyController');
 const AllergyService = require('../services/AllergyService');
 const AllergyDto = require('../dtos/AllergyDto');
 const AllergySearchDto = require('../dtos/AllergySearchDto');
+const CreateAllergyDto = require('../dtos/CreatAllergyDto');
 
 jest.mock('../services/AllergyService');
 
@@ -48,7 +49,7 @@ describe('AllergyController', () => {
                 allergy: mockAllergyModel
             });
             expect(AllergyService.addAllergyModel).toHaveBeenCalledWith(
-                expect.any(AllergyDto)
+                expect.any(CreateAllergyDto)
             );
         });
 
