@@ -69,7 +69,46 @@ class MedicalConditionService {
             throw error;
         }
     }
+    /**
+     * 
+     * This funtion is responsable for updating an medical condition in the system
+     */
+    async updateMedicalCondition(conditionId, conditionData) {
+        try {
+            const response = await axios.put(
+                `${this.baseUrl}/update/${conditionId}`,  // Mudou o endpoint
+                conditionData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.getAuthToken()}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error details:', error.response || error);
+            throw error;
+        }
+    }
 
+    async getMedicalCondition(id) {
+        try {
+            const response = await axios.get(
+                `${this.baseUrl}/${id}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.getAuthToken()}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error details:', error.response || error);
+            throw error;
+        }
+    }
 }
 
 const medicalConditionService = new MedicalConditionService();

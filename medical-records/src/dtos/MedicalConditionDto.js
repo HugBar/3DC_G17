@@ -7,11 +7,13 @@
 class MedicalConditionDto {
     /**
      * Creates a new MedicalConditionDto
+     * @param {string} id - The unique identifier of the medical condition
      * @param {string} name - The name of the medical condition
      * @param {string} severity - The severity level of the condition
      * @param {string} description - Detailed description of the condition
      */
-    constructor(name, severity, description) {
+    constructor(id, name, severity, description) {
+        this.id = id;
         this.name = name;
         this.severity = severity;
         this.description = description;
