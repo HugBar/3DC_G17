@@ -1,0 +1,60 @@
+@startuml SD
+title "Sequence Diagram - Create Surgery Appointment"
+
+actor Doctor
+participant "SurgeryAppointmentRoutes" as Routes
+participant "SurgeryAppointmentController" as Controller
+participant "SurgeryAppointmentDto" as DTO
+participant "SurgeryAppointmentService" as Service
+participant "SurgeryAppointmentRepository" as Repo
+database "MongoDB" as DB
+
+activate Doctor
+Doctor -> Routes: POST /api/surgery-appointments
+activate Routes
+
+Routes -> Controller: createSurgeryAppointment(req, res)
+activate Controller
+
+Controller -> Controller: Validate staff assignments
+
+alt Invalid Staff Assignments
+    Controller --> Doctor: status(400)\n"Staff assignments are required"
+end
+
+Controller -> DTO: new SurgeryAppointmentDto(appointmentData)
+activate DTO
+
+DTO -> DTO: validate()
+alt Validation Failed
+    DTO --> Controller: throw Error
+    Controller --> Doctor: status(400)\nValidation error message
+end
+
+DTO --> Controller: appointmentDto
+deactivate DTO
+
+Controller -> Service: createSurgeryAppointment(appointmentDto)
+activate Service
+
+Service -> Service: Prepare appointment data
+
+Service -> Repo: create(appointmentData)
+activate Repo
+
+Repo -> DB: save()
+activate DB
+DB --> Repo: saved appointment
+deactivate DB
+
+Repo --> Service: newAppointment
+deactivate Repo
+
+Service --> Controller: newAppointment
+deactivate Service
+
+Controller --> Doctor: status(201)\nnewAppointment
+deactivate Controller
+deactivate Routes
+
+@enduml

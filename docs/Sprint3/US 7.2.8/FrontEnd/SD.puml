@@ -1,0 +1,53 @@
+@startuml SD
+title "Sequence Diagram - Create Surgery Appointment (Frontend)"
+
+actor Doctor
+participant "App" as App
+participant "CreateSurgeryAppointment" as CreateSA
+participant "AppointmentService" as Service
+participant "API" as API
+
+activate Doctor
+
+Doctor -> App: Access "/surgery-appointment/create"
+activate App
+
+App -> CreateSA: Render component
+deactivate App
+activate CreateSA
+
+Doctor -> CreateSA: Fill form\n(operationRequestId, surgeryRoomId,\nscheduledDateTime, estimatedDuration,\nstaffAssignments, description)
+
+Doctor -> CreateSA: Click "Create Appointment"
+CreateSA -> CreateSA: handleSubmit() 
+
+CreateSA -> CreateSA: Validate form data
+
+alt Invalid Data
+    CreateSA --> Doctor: Display error message
+end
+
+CreateSA -> Service: createSurgeryAppointment(appointmentData)
+activate Service
+
+Service -> Service: getAuthToken()
+Service -> API: POST /api/surgery-appointments
+activate API
+
+alt Success
+    API --> Service: status: 201\n{appointment data}
+    Service --> CreateSA: response.data
+    CreateSA -> CreateSA: setSuccessMessage()\nClear form
+    CreateSA --> Doctor: Display success message
+else Error
+    API --> Service: error
+    Service --> CreateSA: throw error
+    CreateSA -> CreateSA: setErrorMessage()
+    CreateSA --> Doctor: Display error message
+end
+
+deactivate API
+deactivate Service
+deactivate CreateSA
+
+@enduml

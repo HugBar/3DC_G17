@@ -1,0 +1,75 @@
+@startuml CD
+title "Class Diagram - Surgery Appointment Management"
+
+class SurgeryAppointmentController {
+  +createSurgeryAppointment(req, res): Promise<void>
+  +getDoctorAppointments(req, res): Promise<void>
+  +updateAppointmentStatus(req, res): Promise<void>
+  +searchAppointments(req, res): Promise<void>
+  +updateSurgeryAppointment(req, res): Promise<void>
+  +getByOperationRequestId(req, res): Promise<void>
+}
+
+class SurgeryAppointmentService {
+  +createSurgeryAppointment(appointmentDto): Promise<SurgeryAppointment>
+  +getDoctorAppointments(doctorId): Promise<SurgeryAppointment[]>
+  +updateAppointmentStatus(appointmentId, status): Promise<SurgeryAppointment>
+  +searchAppointments(searchDto): Promise<SurgeryAppointment[]>
+  +validateOperationRequest(appointmentId, operationRequestId): Promise<SurgeryAppointment>
+  +updateSurgeryAppointment(operationRequestId, updateData): Promise<SurgeryAppointment>
+  +findByOperationRequestId(operationRequestId): Promise<SurgeryAppointment>
+}
+
+class SurgeryAppointmentDto {
+  -operationRequestId: string
+  -surgeryRoomId: string
+  -scheduledDateTime: Date
+  -estimatedDuration: number
+  -staffAssignments: StaffAssignment[]
+  -description: string
+  +constructor(data)
+  +validate(): void
+  +toResponse(): object
+}
+
+class SurgeryAppointment {
+  +operationRequestId: string
+  +surgeryRoomId: string
+  +scheduledDateTime: Date
+  +estimatedDuration: number
+  +staffAssignments: StaffAssignment[]
+  +description: string
+  +status: string
+}
+
+class SurgeryAppointmentRepository {
+  -instance: SurgeryAppointmentRepository
+  +create(appointmentData): Promise<SurgeryAppointment>
+  +findById(id): Promise<SurgeryAppointment>
+  +findByDoctorId(doctorId): Promise<SurgeryAppointment[]>
+  +checkRoomAvailability(roomId, startTime, endTime, excludeAppointmentId): Promise<boolean>
+  +updateStatus(id, status): Promise<SurgeryAppointment>
+  +search(filters): Promise<SurgeryAppointment[]>
+  +update(id, updateData): Promise<SurgeryAppointment>
+  +findByOperationRequestId(operationRequestId): Promise<SurgeryAppointment>
+}
+
+class StaffAssignment {
+  +licenseNumber: string
+  +role: string
+}
+
+enum StaffRole {
+  DOCTOR
+  NURSE
+  TECHNICIAN
+}
+
+SurgeryAppointmentController --> SurgeryAppointmentService: uses
+SurgeryAppointmentController --> SurgeryAppointmentDto: creates
+SurgeryAppointmentService --> SurgeryAppointmentRepository: uses
+SurgeryAppointmentRepository --> SurgeryAppointment: manages
+SurgeryAppointment --> StaffAssignment: contains
+StaffAssignment --> StaffRole: uses
+
+@enduml

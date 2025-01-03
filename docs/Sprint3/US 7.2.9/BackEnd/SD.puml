@@ -1,0 +1,66 @@
+@startuml SD
+title "Sequence Diagram - Update Surgery Appointment (Backend)"
+
+actor Doctor
+participant "SurgeryAppointmentRoutes" as Routes
+participant "SurgeryAppointmentController" as Controller
+participant "SurgeryAppointmentService" as Service
+participant "SurgeryAppointmentRepository" as Repo
+database "MongoDB" as DB
+
+activate Doctor
+Doctor -> Routes: PATCH /api/surgery-appointments/operation/{operationRequestId}
+activate Routes
+
+Routes -> Controller: updateSurgeryAppointment(req, res)
+activate Controller
+
+Controller -> Controller: Extract operationRequestId from params\nExtract updateData from body
+
+Controller -> Service: updateSurgeryAppointment(operationRequestId, updateData)
+activate Service
+
+Service -> Repo: findByOperationRequestId(operationRequestId)
+activate Repo
+
+Repo -> DB: findOne({operationRequestId})
+activate DB
+DB --> Repo: appointment
+deactivate DB
+
+alt Appointment Not Found
+    Repo --> Service: null
+    Service --> Controller: throw Error("Appointment not found")
+    Controller --> Doctor: status(404)\n{message: "Appointment not found"}
+    deactivate Controller
+end
+
+Service -> Repo: checkRoomAvailability(roomId, startTime, endTime)
+activate DB
+DB --> Repo: isAvailable
+deactivate DB
+
+alt Room Not Available
+    Repo --> Service: false
+    Service --> Controller: throw Error("Room not available")
+    Controller --> Doctor: status(409)\n{message: "Room not available"}
+    deactivate Controller
+end
+
+Service -> Repo: update(operationRequestId, updateData)
+Repo -> DB: updateOne()
+activate DB
+DB --> Repo: updatedAppointment
+deactivate DB
+
+Repo --> Service: updatedAppointment
+deactivate Repo
+
+Service --> Controller: updatedAppointment
+deactivate Service
+
+Controller --> Doctor: status(200)\nupdatedAppointment
+deactivate Controller
+deactivate Routes
+
+@enduml

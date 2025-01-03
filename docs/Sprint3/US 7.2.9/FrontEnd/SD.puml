@@ -1,0 +1,48 @@
+@startuml SD
+title "Sequence Diagram - Update Surgery Appointment (Frontend)"
+
+actor Doctor
+participant "UpdateSurgeryAppointment" as UpdateSA
+participant "AppointmentService" as Service
+participant "API" as API
+
+activate Doctor
+
+Doctor -> UpdateSA: Enter Operation Request ID
+Doctor -> UpdateSA: Submit Search Form
+
+UpdateSA -> Service: getAppointmentByOperationRequestId()
+activate Service
+Service -> API: GET /surgery-appointments/operation/{id}
+
+alt Success
+    API --> UpdateSA: appointment data
+    UpdateSA --> Doctor: Display Update Form
+else Error
+    API --> UpdateSA: error
+    UpdateSA --> Doctor: Display Error Message
+end
+
+Doctor -> UpdateSA: Modify Appointment Details
+Doctor -> UpdateSA: Submit Update Form
+
+UpdateSA -> UpdateSA: validateForm()
+alt Invalid Form
+    UpdateSA --> Doctor: Display Validation Errors
+end
+
+UpdateSA -> Service: updateSurgeryAppointment()
+Service -> API: PATCH /surgery-appointments/operation/{id}
+
+alt Success
+    API --> UpdateSA: updated appointment
+    UpdateSA --> Doctor: Display Success Message
+else Error
+    API --> UpdateSA: error
+    UpdateSA --> Doctor: Display Error Message
+end
+
+deactivate Service
+deactivate UpdateSA
+
+@enduml

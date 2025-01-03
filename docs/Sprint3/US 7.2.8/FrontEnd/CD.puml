@@ -1,0 +1,70 @@
+@startuml CD
+title "Class Diagram - Surgery Appointment Management (Frontend)"
+
+class App {
+  -isAdmin: boolean
+  -isDoctor: boolean
+  -isAuthenticated: boolean
+  +handleLogoutAndReset(): void
+  +render(): JSX.Element
+}
+
+class CreateSurgeryAppointment {
+  -appointmentData: AppointmentData
+  -successMessage: string
+  -errorMessage: string
+  +handleChange(e: Event): void
+  +handleStaffAssignmentChange(index: number, value: string): void
+  +handleSubmit(e: Event): void
+  +render(): JSX.Element
+}
+
+class UpdateSurgeryAppointment {
+  -loading: boolean
+  -error: string
+  -success: string
+  -fieldErrors: object
+  -operationRequestId: string
+  +handleInputChange(e: Event): void
+  +handleSubmit(e: Event): void
+  +render(): JSX.Element
+}
+
+class AppointmentService {
+  -API_URL: string
+  +getAuthToken(): string
+  +createSurgeryAppointment(appointmentData: AppointmentData): Promise<any>
+  +updateSurgeryAppointment(operationRequestId: string, updateData: any): Promise<any>
+  +getDoctorAppointments(doctorId: string): Promise<any>
+  +searchAppointments(searchParams: any): Promise<any>
+}
+
+class AppointmentData {
+  +operationRequestId: string
+  +surgeryRoomId: string
+  +scheduledDateTime: string
+  +estimatedDuration: number
+  +staffAssignments: StaffAssignment[]
+  +description: string
+}
+
+class StaffAssignment {
+  +licenseNumber: string
+  +role: string
+}
+
+enum StaffRole {
+  DOCTOR
+  NURSE
+  TECHNICIAN
+}
+
+App --> CreateSurgeryAppointment: routes to
+App --> UpdateSurgeryAppointment: routes to
+CreateSurgeryAppointment --> AppointmentService: uses
+UpdateSurgeryAppointment --> AppointmentService: uses
+AppointmentService --> AppointmentData: manages
+AppointmentData --> StaffAssignment: contains
+StaffAssignment --> StaffRole: uses
+
+@enduml

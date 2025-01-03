@@ -1,0 +1,60 @@
+@startuml CD
+title "Class Diagram - Update Surgery Appointment (Frontend)"
+
+class App {
+  -isAdmin: boolean
+  -isDoctor: boolean
+  -isAuthenticated: boolean
+  +handleLogoutAndReset(): void
+  +render(): JSX.Element
+}
+
+class UpdateSurgeryAppointment {
+  -loading: boolean
+  -error: string
+  -success: string
+  -fieldErrors: object
+  -operationRequestId: string
+  -showUpdateForm: boolean
+  -appointmentData: AppointmentData
+  +handleFetchAppointment(e: Event): Promise<void>
+  +handleInputChange(e: Event): void
+  +handleStaffChange(index: number, value: string): void
+  +validateForm(): boolean
+  +handleSubmit(e: Event): Promise<void>
+  +render(): JSX.Element
+}
+
+class AppointmentService {
+  -API_URL: string
+  +getAuthToken(): string
+  +getAppointmentByOperationRequestId(operationRequestId: string): Promise<any>
+  +updateSurgeryAppointment(operationRequestId: string, updateData: any): Promise<any>
+}
+
+class AppointmentData {
+  +surgeryRoomId: string
+  +scheduledDateTime: string
+  +estimatedDuration: number
+  +staffAssignments: StaffAssignment[]
+  +description: string
+}
+
+class StaffAssignment {
+  +licenseNumber: string
+  +role: StaffRole
+}
+
+enum StaffRole {
+  DOCTOR
+  NURSE
+  TECHNICIAN
+}
+
+App --> UpdateSurgeryAppointment: routes to
+UpdateSurgeryAppointment --> AppointmentService: uses
+UpdateSurgeryAppointment --> AppointmentData: manages
+AppointmentData --> StaffAssignment: contains
+StaffAssignment --> StaffRole: uses
+
+@enduml

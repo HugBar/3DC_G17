@@ -1,0 +1,50 @@
+@startuml CD
+title "Class Diagram - Update Surgery Appointment"
+
+class SurgeryAppointmentController {
+  +updateSurgeryAppointment(req, res): Promise<void>
+  +getByOperationRequestId(req, res): Promise<void>
+}
+
+class SurgeryAppointmentService {
+  +updateSurgeryAppointment(operationRequestId, updateData): Promise<SurgeryAppointment>
+  +findByOperationRequestId(operationRequestId): Promise<SurgeryAppointment>
+  -validateUpdateData(updateData): void
+  -checkRoomAvailability(roomId, startTime, endTime): Promise<boolean>
+}
+
+class SurgeryAppointmentRepository {
+  -instance: SurgeryAppointmentRepository
+  +findByOperationRequestId(operationRequestId): Promise<SurgeryAppointment>
+  +update(operationRequestId, updateData): Promise<SurgeryAppointment>
+  +checkRoomAvailability(roomId, startTime, endTime): Promise<boolean>
+}
+
+class SurgeryAppointment {
+  +operationRequestId: string
+  +surgeryRoomId: string
+  +scheduledDateTime: Date
+  +estimatedDuration: number
+  +staffAssignments: StaffAssignment[]
+  +description: string
+  +status: string
+}
+
+class StaffAssignment {
+  +licenseNumber: string
+  +role: StaffRole
+}
+
+enum StaffRole {
+  DOCTOR
+  NURSE
+  TECHNICIAN
+}
+
+SurgeryAppointmentController --> SurgeryAppointmentService: uses
+SurgeryAppointmentService --> SurgeryAppointmentRepository: uses
+SurgeryAppointmentRepository --> SurgeryAppointment: manages
+SurgeryAppointment --> StaffAssignment: contains
+StaffAssignment --> StaffRole: uses
+
+@enduml
