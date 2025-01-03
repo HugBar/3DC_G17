@@ -98,3 +98,13 @@ exports.getAllConditionsWithDetails = async () => {
     return conditions ? conditions.map(condition => sanitizeCondition(condition)) : [];
 
 };
+
+exports.updateMedicalCondition = async (conditionId, conditionDto) => {
+    console.log('Updating condition:', conditionId);
+    return await MedicalCondition.findByIdAndUpdate(conditionId, conditionDto, { new: true });
+}
+
+exports.findById = async (id) => {
+    return await MedicalCondition.findById(id);
+
+}

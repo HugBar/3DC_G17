@@ -96,6 +96,66 @@ class MedicalConditionService {
             throw error;
         }
     }
+
+    async updateMedicalCondition(conditionId, conditionDto) {
+        try {
+            const existingCondition = await MedicalCondition.findById(conditionId);
+            if (!existingCondition) {
+                throw new Error('Medical condition not found');
+            }
+    
+            // Create update object with only provided fields
+            const updateData = {};
+            if (conditionDto.name) {
+                // Check for duplicate name only if name is being changed
+                if (conditionDto.name !== existingCondition.name) {
+                    const duplicateCondition = await MedicalCondition.findOne({ 
+                        name: conditionDto.name,
+                        _id: { $ne: conditionId } // Exclude current document
+                    });
+                    if (duplicateCondition) {
+                        throw new Error('Medical condition name already exists');
+                    }
+                    updateData.name = conditionDto.name;
+                }
+            }
+            if (conditionDto.severity) updateData.severity = conditionDto.severity;
+            if (conditionDto.description) updateData.description = conditionDto.description;
+            
+            updateData.updateDate = new Date();
+    
+            const updatedCondition = await MedicalCondition.findByIdAndUpdate(
+                conditionId,
+                { $set: updateData },
+                { new: true } // Return updated document
+            );
+    
+            return new MedicalConditionDto(
+                updatedCondition._id,
+                updatedCondition.name,
+                updatedCondition.severity,
+                updatedCondition.description
+            );
+        } catch (error) {
+            throw error;
+        }
+    }
+    async getMedicalCondition(id) {
+        try {
+            const condition = await MedicalConditionRepository.findById(id);
+            if (!condition) {
+                throw new Error('Medical condition not found');
+            }
+            return new MedicalConditionDto(
+                condition._id,
+                condition.name,
+                condition.severity,
+                condition.description
+            );
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 module.exports = new MedicalConditionService();

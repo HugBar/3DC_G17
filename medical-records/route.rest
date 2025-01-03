@@ -36,6 +36,7 @@ Content-Type: application/json
 ###
 
 
+
 ###
 
 POST http://localhost:3001/medical-conditions/add-medical-condition
@@ -54,8 +55,36 @@ GET http://localhost:3001/medical-conditions/search?severity=High
 ###
 GET http://localhost:3001/medical-conditions/search
 
+###
+// Update only description
+PUT http://localhost:3001/medical-conditions/update/67571d2af3407a85221b9440
+Content-Type: application/json
 
+{
+    "description": "novo teste description"
+}
 
+###
+
+// Update only severity
+PUT http://localhost:3001/medical-conditions/update/67571d2af3407a85221b9440
+Content-Type: application/json
+
+{
+    "severity": "Low"
+}
+
+###
+
+// Update all fields
+PUT http://localhost:3001/medical-conditions/update/67571d2af3407a85221b9440
+Content-Type: application/json
+
+{
+    "name": "novo nome",
+    "severity": "High",
+    "description": "descrição completa"
+}
 
 ###
 

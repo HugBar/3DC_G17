@@ -10,7 +10,8 @@ class SearchMedicalConditionDto {
      * @param {string} name - The name to search for
      * @param {string} severity - The severity level to filter by
      */
-    constructor(name, severity) {
+    constructor(name, severity,_id) {
+        this._id = _id;
         this.name = name;
         this.severity = severity;
     }

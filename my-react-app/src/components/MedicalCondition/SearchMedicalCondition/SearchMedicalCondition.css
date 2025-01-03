@@ -142,3 +142,30 @@
 .search-button:hover {
     background-color: #0056b3;
 }
+
+.update-button {
+    padding: 8px 16px;
+    background-color: #28a745;  /* Green color for update */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: 10px;
+}
+
+.update-button:hover {
+    background-color: #218838;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Update existing modal-actions buttons to align properly */
+.modal-actions button {
+    min-width: 100px;
+}

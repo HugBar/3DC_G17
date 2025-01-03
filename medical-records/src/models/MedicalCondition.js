@@ -32,6 +32,10 @@ const medicalConditionSchema = new mongoose.Schema({
     createdDate: {
         type: Date,
         default: Date.now // Automatically sets creation timestamp
+    },
+    updateDate: {
+        type: Date,
+        default: Date.now // Automatically sets update timestamp
     }
 });
 

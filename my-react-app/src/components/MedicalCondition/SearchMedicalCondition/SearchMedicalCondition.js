@@ -14,7 +14,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import medicalConditionService from '../../../api/MedicalCondition/medicalConditionService';
-import { MedicalConditionDTO } from '../../../dtos/MedicalConditionDTO';
+import { useAuth } from '../../../context/AuthContext';
 import './SearchMedicalCondition.css';
 
 const SearchMedicalCondition = () => {
@@ -23,6 +23,7 @@ const SearchMedicalCondition = () => {
     const [conditions, setConditions] = useState([]);
     const [errorMessage, setErrorMessage] = useState('');
     const [selectedCondition, setSelectedCondition] = useState(null);
+    const { isAdmin } = useAuth();
     
     const [filters, setFilters] = useState({
         name: '',
@@ -73,9 +74,13 @@ const SearchMedicalCondition = () => {
             const response = await medicalConditionService.searchMedicalConditions(activeFilters);
             console.log('Resposta da API:', response);
 
-            const mappedConditions = response.map(condition => 
-                MedicalConditionDTO.fromResponse(condition)
-            );
+            const mappedConditions = response.map(condition => ({
+                _id: condition._id, // Preserve the _id
+                name: condition.name,
+                severity: condition.severity,
+                description: condition.description
+            }));
+
             setConditions(mappedConditions);
             setErrorMessage('');
         } catch (error) {
@@ -171,6 +176,20 @@ const SearchMedicalCondition = () => {
                             <button onClick={() => setSelectedCondition(null)} className="close-button">
                                 Close
                             </button>
+                            {isAdmin && (
+                                    <button 
+                                        onClick={() => {
+                                            if (selectedCondition && selectedCondition._id) { // Check for _id directly
+                                                navigate(`/medical-conditions/update/${selectedCondition._id}`);
+                                            } else {
+                                                console.error('No condition ID available');
+                                            }
+                                        }} 
+                                        className="update-button"
+                                    >
+                                        Update
+                                    </button>
+                                )}
                         </div>
                     </div>
                 </div>

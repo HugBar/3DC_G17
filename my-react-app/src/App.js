@@ -41,6 +41,7 @@ import PatientListDoctor from './components/Patient/patientListDoctor/PatientLis
 import UpdateSurgeryAppointment from './components/SurgeryAppointment/UpdateSurgeryAppointment';
 import UpdateAllergy from './components/Allergy/UpdateAllergy/UpdateAllergy';
 import PrivacyPolicy from './components/PrivacyPolicy/PrivacyPolicy';
+import UpdateMedicalCondition from './components/MedicalCondition/UpdateMedicalCondition/UpdateMedicalCondition';
 
 const App = () => {
   const navigate = useNavigate();
@@ -454,6 +455,15 @@ const App = () => {
               >
                 Search Allergies
               </button>
+              <button
+              onClick={() => {
+                setSelectedStaffAction('Search Medical Conditions');
+                navigate('/medical-conditions/search');
+              }}
+              className={`action-button ${selectedStaffAction === 'Search Medical Conditions' ? 'active' : ''}`}
+              >
+              Search Medical Conditions  
+                 </button>
                 </>
           )}
         </div>
@@ -615,10 +625,18 @@ const App = () => {
   } />
   <Route path="/medical-conditions/search" 
   element={
-    <ProtectedRoute requiredRole="doctor">
+    <ProtectedRoute requiredRole={["doctor", "admin"]}>
       <SearchMedicalCondition />
     </ProtectedRoute>
   } />
+  <Route 
+  path="/medical-conditions/update/:id"  // Mudou de update-medical-condition para update
+  element={
+    <ProtectedRoute requiredRole="admin">
+      <UpdateMedicalCondition />
+    </ProtectedRoute>
+  } 
+/>
     <Route 
     path="/medical-records/search" 
     element={
