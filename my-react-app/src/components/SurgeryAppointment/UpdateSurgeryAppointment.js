@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import appointmentService from '../../api/Appointment/appointmentService';
 import './UpdateSurgeryAppointment.css';
 
