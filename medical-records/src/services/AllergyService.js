@@ -94,15 +94,12 @@ class AllergyService {
     async updateAllergy(id, allergyDto) {
         try {
             const allergyIdExists = await AlergyRepository.findById(id);
-            console.log(allergyIdExists);
             if (!allergyIdExists) {
                 throw new Error('Allergy not found');
             }
         
             
             const allergy = await AlergyRepository.updateAllergy(id, allergyDto);
-
-            console.log(allergy);
 
             const updatedAllergy = new AllergyDto(
                 allergy.id,

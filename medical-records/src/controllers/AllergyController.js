@@ -72,8 +72,10 @@ exports.updateAllergy = async (req, res) => {
         const { id } = req.params;
         const { allergen, severity, description } = req.body;
 
+        const updateDate = new Date();
 
-        const allergyDto = new UpdateAllergyDto(allergen, severity, description);
+
+        const allergyDto = new UpdateAllergyDto(allergen, severity, description, updateDate);
         console.log(allergyDto);
 
         const result = await AllergyService.updateAllergy(id, allergyDto);
