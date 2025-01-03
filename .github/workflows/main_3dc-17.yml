@@ -70,10 +70,35 @@ jobs:
           name: react-build
           path: my-react-app/build
           retention-days: 5
+      
+  build-and-test-medical-records:
+        
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: my-medical-records-app/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: ./medical-records
+        run: npm install
+
+      - name: Run tests
+        working-directory: ./medical-records
+        run: npm test
+        
+
+       
 
   deploy:
     runs-on: windows-latest
-    needs: [build-and-test-backend, build-and-test-frontend]
+    needs: [build-and-test-backend, build-and-test-frontend, build-and-test-medical-records]
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
