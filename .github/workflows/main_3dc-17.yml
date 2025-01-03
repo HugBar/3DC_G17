@@ -83,7 +83,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: my-medical-records-app/package-lock.json
+          cache-dependency-path: medical-records/package-lock.json
 
       - name: Install Dependencies
         working-directory: ./medical-records
