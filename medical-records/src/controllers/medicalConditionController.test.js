@@ -191,12 +191,18 @@ describe('MedicalConditionController', () => {
         test('should return medical conditions with filters', async () => {
             const mockFilters = { name: 'Diabetes', severity: 'High' };
             mockReq = { query: mockFilters };
-            const mockConditions = [{ id: 1, ...mockFilters }];
-
+            // Update mock structure to match controller response
+            const mockConditions = [{
+                _id: '1',
+                name: 'Diabetes',
+                severity: 'High',
+                description: 'Test description'
+            }];
+        
             MedicalConditionService.searchMedicalConditions.mockResolvedValue(mockConditions);
-
+        
             await MedicalConditionController.searchMedicalConditions(mockReq, mockRes);
-
+        
             expect(mockRes.status).toHaveBeenCalledWith(200);
             expect(mockRes.json).toHaveBeenCalledWith(mockConditions);
             expect(MedicalConditionService.searchMedicalConditions).toHaveBeenCalledWith(
@@ -210,12 +216,18 @@ describe('MedicalConditionController', () => {
          */
         test('should return all medical conditions without filters', async () => {
             mockReq = { query: {} };
-            const mockConditions = [{ id: 1, name: 'Diabetes' }];
-
+            // Update mock structure to match controller response
+            const mockConditions = [{
+                _id: '1',
+                name: 'Diabetes',
+                severity: 'Medium',
+                description: 'Test description'
+            }];
+        
             MedicalConditionService.searchMedicalConditions.mockResolvedValue(mockConditions);
-
+        
             await MedicalConditionController.searchMedicalConditions(mockReq, mockRes);
-
+        
             expect(mockRes.status).toHaveBeenCalledWith(200);
             expect(mockRes.json).toHaveBeenCalledWith(mockConditions);
             expect(MedicalConditionService.searchMedicalConditions).toHaveBeenCalledWith(
