@@ -3,7 +3,9 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const { isAuthenticated, isAdmin, isDoctor, isNurse, isLoading } = useAuth();
+  console.log('ProtectedRoute rendered with role:', requiredRole);
+  const { isAuthenticated, isAdmin, isDoctor, isNurse, isPatient, isLoading } = useAuth();
+  console.log('Auth state in ProtectedRoute:', isAuthenticated, isAdmin, isDoctor, isNurse, isPatient);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -17,6 +19,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     admin: isAdmin,
     doctor: isDoctor,
     nurse: isNurse,
+    patient: isPatient
   };
 
   const hasRequiredRole = Array.isArray(requiredRole)
