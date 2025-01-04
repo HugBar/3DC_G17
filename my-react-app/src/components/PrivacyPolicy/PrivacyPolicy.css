@@ -22,6 +22,13 @@
 
 .privacy-content {
     font-family: 'Arial', sans-serif;
+    text-align: left;
+}
+
+.privacy-content h2,
+.privacy-content h3,
+.privacy-content p {
+    text-align: left;
 }
 
 .privacy-content h2 {
