@@ -37,7 +37,7 @@
     background-color: #c82333;
   }
   
-  .modal {
+  .delete-account-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -50,7 +50,7 @@
     z-index: 1000;
   }
   
-  .modal-content {
+  .delete-account-modal {
     background-color: white;
     padding: 30px;
     border-radius: 8px;

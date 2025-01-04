@@ -59,8 +59,8 @@ const DeleteAccount = () => {
 
       {/* Token Input Modal */}
       {showTokenModal && (
-        <div className="modal">
-          <div className="modal-content">
+        <div className="delete-account-modal-overlay">
+          <div className="delete-account-modal">
             {isDeleted ? (
               <div className="deletion-success">
                 <h3>Account Deleted</h3>
