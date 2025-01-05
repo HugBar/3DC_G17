@@ -10,6 +10,7 @@ const MedicalRecord = require('../models/MedicalRecord');
 const MedicalCondition = require('../models/MedicalCondition');
 const MedicalConditionDto = require('../dtos/MedicalConditionDto');
 const MedicalConditionRepository = require('../repositories/MedicalConditionRepository');
+const CreateMedicalConditionDto = require('../dtos/CreateMedicalConditionDto');
 
 class MedicalConditionService {
     /**
@@ -45,20 +46,27 @@ class MedicalConditionService {
      * @returns {Promise<Object>} The created medical condition
      * @throws {Error} If condition already exists
      */
-    async addMedicalConditionModel(medicalConditionDto) {
+    async addMedicalConditionModel(createMedicalConditionDto) {
         try {
-            const medicalCondition = await MedicalCondition.findOne({ name: medicalConditionDto.name });
+            const medicalCondition = await MedicalCondition.findOne({ name: createMedicalConditionDto.name });
             if (medicalCondition) {
                 throw new Error('Medical condition already exists');
             }
-
+    
             const newMedicalCondition = new MedicalCondition({
-                name: medicalConditionDto.name,
-                severity: medicalConditionDto.severity,
-                description: medicalConditionDto.description
+                name: createMedicalConditionDto.name,
+                severity: createMedicalConditionDto.severity,
+                description: createMedicalConditionDto.description
             });
-
-            return await MedicalConditionRepository.addMedicalConditionModel(newMedicalCondition);
+    
+            const savedCondition = await MedicalConditionRepository.addMedicalConditionModel(newMedicalCondition);
+            
+            return new MedicalConditionDto(
+                savedCondition._id,
+                savedCondition.name,
+                savedCondition.severity,
+                savedCondition.description
+            );
         } catch (error) {
             throw error;
         }

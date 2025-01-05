@@ -9,8 +9,8 @@
 const MedicalConditionService = require('../services/MedicalConditionService');
 const MedicalConditionDto = require('../dtos/MedicalConditionDto');
 const SearchMedicalConditionDto = require('../dtos/SearchMedicalConditionDto');
-const updateMedicalConditionDto = require('../dtos/UpdateMedicalConditionDto');
 const UpdateMedicalConditionDto = require('../dtos/UpdateMedicalConditionDto');
+const CreateMedicalConditionDto = require('../dtos/CreateMedicalConditionDto');
 
 /**
  * Adds a medical condition to a specific patient's record
@@ -52,8 +52,12 @@ exports.addMedicalCondition = async (req, res) => {
 exports.addMedicalConditionModel = async (req, res) => {
     try {
         const { name, severity, description } = req.body;
-        const medicalConditionDto = new MedicalConditionDto(name, severity, description);
-        const result = await MedicalConditionService.addMedicalConditionModel(medicalConditionDto);
+        
+        // Create DTO using CreateMedicalConditionDto
+        const createMedicalConditionDto = new CreateMedicalConditionDto(name, severity, description);
+        
+        // Add condition using service
+        const result = await MedicalConditionService.addMedicalConditionModel(createMedicalConditionDto);
         
         res.status(201).json({
             message: 'Medical condition added successfully',

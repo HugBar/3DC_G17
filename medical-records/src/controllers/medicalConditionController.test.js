@@ -13,6 +13,7 @@ const MedicalConditionController = require('./medicalConditionController');
 const MedicalConditionService = require('../services/MedicalConditionService');
 const MedicalConditionDto = require('../dtos/MedicalConditionDto');
 const SearchMedicalConditionDto = require('../dtos/SearchMedicalConditionDto');
+const CreateMedicalConditionDto = require('../dtos/CreateMedicalConditionDto');
 
 // Mock the service layer
 jest.mock('../services/MedicalConditionService');
@@ -135,16 +136,16 @@ describe('MedicalConditionController', () => {
         test('should create and return a new medical condition model', async () => {
             const mockMedicalConditionModel = { id: 1, ...mockReq.body };
             MedicalConditionService.addMedicalConditionModel.mockResolvedValue(mockMedicalConditionModel);
-
+    
             await MedicalConditionController.addMedicalConditionModel(mockReq, mockRes);
-
+    
             expect(mockRes.status).toHaveBeenCalledWith(201);
             expect(mockRes.json).toHaveBeenCalledWith({
                 message: 'Medical condition added successfully',
                 medicalCondition: mockMedicalConditionModel
             });
             expect(MedicalConditionService.addMedicalConditionModel).toHaveBeenCalledWith(
-                expect.any(MedicalConditionDto)
+                expect.any(CreateMedicalConditionDto)
             );
         });
 

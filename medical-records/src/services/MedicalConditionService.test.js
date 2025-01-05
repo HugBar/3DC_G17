@@ -10,6 +10,7 @@ const MedicalRecord = require('../models/MedicalRecord');
 const MedicalCondition = require('../models/MedicalCondition');
 const MedicalConditionDto = require('../dtos/MedicalConditionDto');
 const MedicalConditionRepository = require('../repositories/MedicalConditionRepository');
+const CreateMedicalConditionDto = require('../dtos/CreateMedicalConditionDto');
 
 // Mock dependencies
 jest.mock('../models/MedicalRecord');
@@ -34,10 +35,16 @@ describe('MedicalConditionService', () => {
          * Tests successful addition of new medical condition
          */
         test('should add new medical condition model when condition does not exist', async () => {
-            const mockAddedCondition = { id: '123', ...mockMedicalConditionDto };
+            // Mock saved condition from repository with MongoDB _id
+            const mockSavedCondition = {
+                _id: '123',
+                name: 'Hypertension',
+                severity: 'Moderate',
+                description: 'High blood pressure condition'
+            };
             
             MedicalCondition.findOne.mockResolvedValue(null);
-            MedicalConditionRepository.addMedicalConditionModel.mockResolvedValue(mockAddedCondition);
+            MedicalConditionRepository.addMedicalConditionModel.mockResolvedValue(mockSavedCondition);
 
             const result = await MedicalConditionService.addMedicalConditionModel(mockMedicalConditionDto);
 
@@ -45,7 +52,17 @@ describe('MedicalConditionService', () => {
             expect(MedicalConditionRepository.addMedicalConditionModel).toHaveBeenCalledWith(
                 expect.any(MedicalCondition)
             );
-            expect(result).toEqual(mockAddedCondition);
+            
+            // Verify DTO properties match saved condition
+            expect(result).toBeInstanceOf(MedicalConditionDto);
+            expect(result).toEqual(
+                new MedicalConditionDto(
+                    mockSavedCondition._id,
+                    mockSavedCondition.name,
+                    mockSavedCondition.severity,
+                    mockSavedCondition.description
+                )
+            );
         });
 
         /**
