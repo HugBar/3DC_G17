@@ -43,12 +43,19 @@ describe('DeleteAccount Component', () => {
     );
   };
 
-  test('renderiza o componente de exclusão de conta', () => {
+  test('renders delete account component', () => {
     renderDeleteAccount();
     
     expect(screen.getByText('Delete Account')).toBeInTheDocument();
-    expect(screen.getByText(/Warning: This action cannot be undone/)).toBeInTheDocument();
-    expect(screen.getByText('Delete My Account')).toBeInTheDocument();
+    expect(screen.getByText(/This action is irreversible/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Delete My Account/i })).toBeInTheDocument();
+    
+    // Check for data retention information
+    expect(screen.getByText(/Important Information About Data Retention/)).toBeInTheDocument();
+    expect(screen.getByText(/Medical History Records/)).toBeInTheDocument();
+    expect(screen.getByText(/Appointment History/)).toBeInTheDocument();
+    expect(screen.getByText(/Age Range/)).toBeInTheDocument();
+    expect(screen.getByText(/Gender/)).toBeInTheDocument();
   });
 
   test('solicita token de confirmação com sucesso', async () => {
@@ -60,7 +67,7 @@ describe('DeleteAccount Component', () => {
     });
 
     expect(patientService.requestAccountDeletion).toHaveBeenCalledWith(mockUserEmail);
-    expect(screen.getByText('Enter Confirmation Token')).toBeInTheDocument();
+    expect(screen.getByText('Enter Verification Code')).toBeInTheDocument();
   });
 
   test('confirma exclusão da conta com sucesso', async () => {
@@ -72,7 +79,7 @@ describe('DeleteAccount Component', () => {
       fireEvent.click(screen.getByText('Delete My Account'));
     });
 
-    const tokenInput = screen.getByPlaceholderText('Enter token');
+    const tokenInput = screen.getByPlaceholderText('000000');
     fireEvent.change(tokenInput, { target: { value: '123456' } });
 
     await act(async () => {
@@ -93,7 +100,7 @@ describe('DeleteAccount Component', () => {
       fireEvent.click(screen.getByText('Delete My Account'));
     });
 
-    const tokenInput = screen.getByPlaceholderText('Enter token');
+    const tokenInput = screen.getByPlaceholderText('000000');
     fireEvent.change(tokenInput, { target: { value: '123456' } });
 
     await act(async () => {
@@ -109,24 +116,28 @@ describe('DeleteAccount Component', () => {
     jest.useRealTimers();
   });
 
-  test('exibe erro quando token é inválido', async () => {
-    patientService.requestAccountDeletion.mockResolvedValue({});
-    patientService.confirmAccountDeletion.mockRejectedValue(new Error('Invalid token'));
-    renderDeleteAccount();
+ 
+test('exibe erro quando token é inválido', async () => {
+  patientService.requestAccountDeletion.mockResolvedValue({});
+  patientService.confirmAccountDeletion.mockRejectedValue(new Error('Invalid verification code'));
+  renderDeleteAccount();
 
-    await act(async () => {
-      fireEvent.click(screen.getByText('Delete My Account'));
-    });
-
-    const tokenInput = screen.getByPlaceholderText('Enter token');
-    fireEvent.change(tokenInput, { target: { value: 'invalid-token' } });
-
-    await act(async () => {
-      fireEvent.click(screen.getByText('Confirm Deletion'));
-    });
-
-    expect(screen.getByText('Invalid token or deletion failed. Please try again.')).toBeInTheDocument();
+  await act(async () => {
+    fireEvent.click(screen.getByText('Delete My Account'));
   });
+
+  const tokenInput = screen.getByPlaceholderText('000000');
+  fireEvent.change(tokenInput, { target: { value: '111111' } }); // Using invalid digits instead of text
+
+  await act(async () => {
+    fireEvent.click(screen.getByText('Confirm Deletion'));
+  });
+
+  await act(async () => {
+    const errorMessage = await screen.findByText('Invalid verification code or deletion failed. Please try again.');
+    expect(errorMessage).toBeInTheDocument();
+  });
+});
 
   test('exibe erro quando tenta confirmar sem token', async () => {
     patientService.requestAccountDeletion.mockResolvedValue({});
@@ -140,7 +151,7 @@ describe('DeleteAccount Component', () => {
       fireEvent.click(screen.getByText('Confirm Deletion'));
     });
 
-    expect(screen.getByText('Please enter the confirmation token from your email.')).toBeInTheDocument();
+    expect(screen.getByText('Please enter the 6-digit verification code from your email.')).toBeInTheDocument();
   });
 
   test('fecha modal ao clicar em Cancel', async () => {
@@ -152,6 +163,6 @@ describe('DeleteAccount Component', () => {
     });
 
     fireEvent.click(screen.getByText('Cancel'));
-    expect(screen.queryByText('Enter Confirmation Token')).not.toBeInTheDocument();
+    expect(screen.queryByText('Enter Verification Code')).not.toBeInTheDocument();
   });
 });

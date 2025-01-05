@@ -220,14 +220,14 @@ const patientService = {
     }
   },
 
-  confirmAccountDeletion: async (token) => {
+  confirmAccountDeletion: async (verificationCode) => {
     const authToken = getAuthToken();
     try {
       const response = await axios.delete(`${API_URL}/confirm-account-deletion`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
-        data: { token }
+        data: { code: verificationCode }
       });
       return response.data;
     } catch (error) {

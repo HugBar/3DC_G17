@@ -25,8 +25,8 @@ public class Patient
 
     public Patient()
     {
-
     }
+
 
     public Patient(string medicalNr, string userId, string firstName, string lastName, string email, string dateOfBirth, string gender, string contactInfo, string emergencyContact, string phoneNumber, string appointmentHistory = null, string medicalHistory = null)
     {
@@ -68,8 +68,7 @@ public class Patient
         // Keep non-identifiable information
         Gender = Gender;
         DateofBirth = GetAgeRange(DateofBirth);
-        MedicalHistory = HashMedicalHistory(MedicalHistory);
-        AppointmentHistory = HashAppointmentHistory(AppointmentHistory);
+        
 
         // Clear identifiable information
         FirstName = "ANONYMIZED";
@@ -113,5 +112,5 @@ public class Patient
         }
     }
 
-
+    
 }
