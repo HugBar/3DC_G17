@@ -303,26 +303,27 @@ namespace DDDSample1.Controllers
             }
         }
 
-       [HttpGet("medical-history/download-file/{email}")]
+ [HttpGet("medical-history/download-file/{email}")]
 [AllowAnonymous]
 public async Task<IActionResult> DownloadMedicalHistory(string email)
 {
     try
     {
+        
         var decodedEmail = Encoding.UTF8.GetString(Convert.FromBase64String(email));
 
-        var pdfBytes = await _service.GenerateMedicalHistoryPdfAsync(decodedEmail);
+        var htmlContent = await _service.GenerateMedicalHistoryHtmlAsync(decodedEmail);
         
-        if (pdfBytes == null || pdfBytes.Length == 0)
+        if (string.IsNullOrEmpty(htmlContent))
         {
-            return BadRequest("PDF generation failed");
+            return BadRequest("Failed to generate medical history");
         }
 
-        return File(pdfBytes, "application/pdf", $"medical_history_{DateTime.Now:yyyyMMdd}.pdf");
+        return Content(htmlContent, "text/html");
     }
     catch (Exception ex)
     {
-        return BadRequest($"Error generating PDF: {ex.Message}");
+        return BadRequest($"Error: {ex.Message}");
     }
 }
 

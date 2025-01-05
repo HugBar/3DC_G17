@@ -42,6 +42,7 @@ import UpdateSurgeryAppointment from './components/SurgeryAppointment/UpdateSurg
 import UpdateAllergy from './components/Allergy/UpdateAllergy/UpdateAllergy';
 import PrivacyPolicy from './components/PrivacyPolicy/PrivacyPolicy';
 import UpdateMedicalCondition from './components/MedicalCondition/UpdateMedicalCondition/UpdateMedicalCondition';
+import TransferRecord from './components/Patient/TransferRecord/TransferRecord';
 
 const App = () => {
   const navigate = useNavigate();
@@ -379,6 +380,15 @@ const App = () => {
               >
                 Delete Account
               </button>
+              <button
+                  onClick={() => {
+                      setSelectedPatientAction('Transfer Records');
+                      navigate('/patient/transfer-records');
+                  }}
+                  className={`action-button ${selectedPatientAction === 'Transfer Records' ? 'active' : ''}`}
+              >
+                  Transfer Medical Records
+              </button>
             </>
           )}
           {isAdmin && (
@@ -598,6 +608,14 @@ const App = () => {
   ) : <Navigate to="/" />
 } />
 }
+<Route 
+    path="/patient/transfer-records" 
+    element={
+        <ProtectedRoute requiredRole="patient">
+            <TransferRecord />
+        </ProtectedRoute>
+    } 
+/>
   <Route path="/hospital-3d" element={<Hospital3DView />} />
   <Route path="/auth/callback" element={
     <AuthCallback onLoginSuccess={showPatientActionsOnLogin} />

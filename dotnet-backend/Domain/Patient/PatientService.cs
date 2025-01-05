@@ -488,7 +488,7 @@ namespace DDDSample1.Domain.PatientData
             return patient != null;
         }
 
-       public async Task SendMedicalHistoryRequestEmailAsync(string email)
+      public async Task SendMedicalHistoryRequestEmailAsync(string email)
 {
     var patient = await _repository.GetByEmailAsync(email);
     if (patient == null)
@@ -514,8 +514,7 @@ namespace DDDSample1.Domain.PatientData
     await _emailService.SendEmailAsync(patient.Email, subject, body);
 }
 
-
-    public async Task<byte[]> GenerateMedicalHistoryPdfAsync(string email)
+    public async Task<string> GenerateMedicalHistoryHtmlAsync(string email)
 {
     var patient = await _repository.GetByEmailAsync(email);
     if (patient == null)
@@ -527,8 +526,10 @@ namespace DDDSample1.Domain.PatientData
     <!DOCTYPE html>
     <html>
     <head>
+        <meta charset='utf-8'>
+        <title>Medical History - {patient.FirstName} {patient.LastName}</title>
         <style>
-            body {{ font-family: Arial, sans-serif; padding: 20px; }}
+            body {{ font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }}
             .header {{ text-align: center; margin-bottom: 30px; }}
             .section {{ margin: 20px 0; border-bottom: 1px solid #ccc; padding-bottom: 10px; }}
             .label {{ font-weight: bold; }}
@@ -575,22 +576,8 @@ namespace DDDSample1.Domain.PatientData
     </body>
     </html>";
 
-    try
-    {
-        _loggingService.LogInformation($"Starting PDF generation for patient: {patient.UserId}");
-        
-        using (var memoryStream = new MemoryStream())
-        {
-            ConverterProperties converterProperties = new ConverterProperties();
-            HtmlConverter.ConvertToPdf(htmlContent, memoryStream, converterProperties);
-            return memoryStream.ToArray();
-        }
-    }
-    catch (Exception ex)
-    {
-        _loggingService.LogError($"PDF generation failed: {ex.Message}");
-        throw new BusinessRuleValidationException($"Failed to generate PDF: {ex.Message}");
-    }
+    return htmlContent;
 }
+
     }
     }
