@@ -10,6 +10,6 @@ namespace DDDSample1.Domain.OperationRequestData
                 Task<OperationRequest> UpdateAsync(OperationRequest operationRequest);
                 Task RemoveAsync(OperationRequest operationRequest);
                 Task<IEnumerable<OperationRequest>> GetFilteredOperationRequestsAsync(SearchOperationRequestDto filter);
-
+                Task<IEnumerable<OperationRequest>> GetAllAsync();
         }
 }

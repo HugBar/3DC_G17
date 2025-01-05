@@ -145,6 +145,7 @@ namespace DDDSample1
             services.AddScoped<StaffService>();
             services.AddScoped<ISurgeryRoomRepository, SurgeryRoomRepository>();
             services.AddScoped<IRoomApiService, RoomApiService>();
+            services.AddScoped<GeneticAlgorithmService>();
 
             // Add this logging configuration
             services.AddLogging(logging =>
