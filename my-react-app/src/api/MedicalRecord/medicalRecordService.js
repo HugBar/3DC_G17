@@ -1,7 +1,20 @@
+/**
+ * Author: Hugo Barros
+ * Frontend service for interacting with medical records API endpoints
+ * Handles API calls for medical record management including retrieving, updating,
+ * and searching patient medical records, conditions and allergies
+ */
+
 import axios from 'axios';
 
+// Set API base URL from environment variable or default to localhost
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
+/**
+ * Retrieves authentication token from local storage
+ * @returns {string} The JWT auth token
+ * @throws {Error} If no token is found
+ */
 const getAuthToken = () => {
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -12,6 +25,12 @@ const getAuthToken = () => {
 };
 
 const medicalRecordService = {
+    /**
+     * Retrieves a patient's medical record by their ID
+     * @param {string} patientId - ID of the patient
+     * @returns {Promise<Object>} The patient's medical record data
+     * @throws {Error} If the API call fails
+     */
     getMedicalRecord: async (patientId) => {
         const token = getAuthToken();
         try {
@@ -24,6 +43,11 @@ const medicalRecordService = {
         }
     },
 
+    /**
+     * Retrieves all medical conditions from the system
+     * @returns {Promise<Array>} Array of all medical conditions
+     * @throws {Error} If the API call fails
+     */
     getAllMedicalConditions: async () => {
         const token = getAuthToken();
         try {
@@ -36,6 +60,11 @@ const medicalRecordService = {
         }
     },
 
+    /**
+     * Retrieves all allergies from the system
+     * @returns {Promise<Array>} Array of all allergies
+     * @throws {Error} If the API call fails
+     */
     getAllAllergies: async () => {
         const token = getAuthToken();
         try {
@@ -49,6 +78,13 @@ const medicalRecordService = {
         }
     },
 
+    /**
+     * Updates a patient's medical record
+     * @param {string} patientId - ID of the patient
+     * @param {Object} updateData - New medical record data
+     * @returns {Promise<Object>} The updated medical record
+     * @throws {Error} If the API call fails
+     */
     updateMedicalRecord: async (patientId, updateData) => {
         const token = getAuthToken();
         try {
@@ -68,6 +104,14 @@ const medicalRecordService = {
         }
     },
 
+    /**
+     * Searches for medical records based on patient ID and optional filters
+     * @param {string} patientId - ID of the patient
+     * @param {string} [conditionName] - Optional medical condition to filter by
+     * @param {string} [allergyName] - Optional allergy to filter by
+     * @returns {Promise<Array>} Array of matching medical records
+     * @throws {Error} If the API call fails
+     */
     searchMedicalRecord: async (patientId, conditionName, allergyName) => {
         try {
             let url = `${API_URL}/medical-records/search?patientId=${patientId}`;
@@ -83,6 +127,11 @@ const medicalRecordService = {
         }
     },
 
+    /**
+     * Verifies if a patient exists in the system
+     * @param {string} patientId - ID of the patient to verify
+     * @returns {Promise<boolean>} True if patient exists, false otherwise
+     */
     verifyPatient: async (patientId) => {
         try {
             const response = await axios.get(`https://localhost:5001/api/patient/verify/${patientId}`, {

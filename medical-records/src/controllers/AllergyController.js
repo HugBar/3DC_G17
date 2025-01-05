@@ -1,11 +1,23 @@
+// Author: Hugo Barros
+/**
+ * This module provides API endpoints for managing allergies in the medical records system.
+ * It handles the creation, search, update and deletion of allergies.
+ * Only administrators can add/update/delete allergies, while doctors can search them.
+ */
+
 const AllergyService = require('../services/AllergyService');
 const AllergyDto = require('../dtos/AllergyDto');
 const AllergySearchDto = require('../dtos/AllergySearchDto');
 const UpdateAllergyDto = require('../dtos/UpdateAllergyDto');
 const CreatAllergyDto = require('../dtos/CreatAllergyDto');
 
-// Add allergy to allergy model
-
+/**
+ * Adds a new allergy to the system catalog
+ * Restricted to admin users only
+ * @param {Object} req - Request object containing allergy details
+ * @param {Object} res - Response object
+ * @returns {Object} JSON response with created allergy or error message
+ */
 exports.addAllergyModel = async (req, res) => {
     try {
         const { allergen, severity, description } = req.body;
@@ -30,15 +42,20 @@ exports.addAllergyModel = async (req, res) => {
     }
 };
 
-// Search for allergies in the allergy model
-
+/**
+ * Searches for allergies based on provided filters
+ * Accessible by doctors and admins
+ * @param {Object} req - Request object containing search parameters
+ * @param {Object} res - Response object
+ * @returns {Object} JSON response with matching allergies or error message
+ */
 exports.searchAllergies = async (req, res) => {
     try {
         const { allergen, severity } = req.query;
 
         console.log("----------------------------------")
 
-        // Cria um objeto de filtros apenas com os parâmetros fornecidos
+        // Create filters object with only provided parameters
         const filters = {};
         if (allergen) {
             filters.allergen = allergen;
@@ -47,7 +64,7 @@ exports.searchAllergies = async (req, res) => {
             filters.severity = severity;
         }
 
-        // Cria um DTO de busca com os filtros
+        // Create search DTO with filters
         const allergySearchDto = new AllergySearchDto(allergen, severity);
 
         const allergies = await AllergyService.searchAllergies(allergySearchDto);
@@ -57,6 +74,12 @@ exports.searchAllergies = async (req, res) => {
     }
 };
 
+/**
+ * Retrieves details of all allergies in the system
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @returns {Object} JSON response with all allergies or error message
+ */
 exports.getAllergyDetails = async (req, res) => {
     try {
         const allergies = await AllergyService.getAllAllergies();
@@ -67,13 +90,19 @@ exports.getAllergyDetails = async (req, res) => {
     }
 };
 
+/**
+ * Updates an existing allergy in the system
+ * Restricted to admin users only
+ * @param {Object} req - Request object containing updated allergy details
+ * @param {Object} res - Response object
+ * @returns {Object} JSON response with success message or error
+ */
 exports.updateAllergy = async (req, res) => {
     try {
         const { id } = req.params;
         const { allergen, severity, description } = req.body;
 
         const updateDate = new Date();
-
 
         const allergyDto = new UpdateAllergyDto(allergen, severity, description, updateDate);
         console.log(allergyDto);
@@ -86,6 +115,13 @@ exports.updateAllergy = async (req, res) => {
     }
 }
 
+/**
+ * Deletes an allergy from the system
+ * Restricted to admin users only
+ * @param {Object} req - Request object containing allergy ID
+ * @param {Object} res - Response object
+ * @returns {Object} JSON response with success message or error
+ */
 exports.deleteAllergy = async (req, res) => {
     try {
         const { id } = req.params;

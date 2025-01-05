@@ -1,4 +1,21 @@
+// Author: Pedro Azevedo
+
+/**
+ * Data Transfer Object for surgery appointments
+ * Used to transfer surgery appointment data between layers of the application
+ * Contains information about the operation, room, schedule, staff and other details
+ */
 class SurgeryAppointmentDto {
+    /**
+     * Creates a new SurgeryAppointmentDto instance
+     * @param {Object} data - The surgery appointment data
+     * @param {string} data.operationRequestId - ID of the operation request
+     * @param {string} data.surgeryRoomId - ID of the surgery room
+     * @param {Date} data.scheduledDateTime - Scheduled date and time
+     * @param {number} data.estimatedDuration - Estimated duration in minutes
+     * @param {Array} data.staffAssignments - Array of assigned staff members
+     * @param {string} data.description - Description of the surgery
+     */
     constructor(data) {
         this.operationRequestId = data.operationRequestId;
         this.surgeryRoomId = data.surgeryRoomId;
@@ -11,6 +28,11 @@ class SurgeryAppointmentDto {
         this.description = data.description;
     }
 
+    /**
+     * Validates the surgery appointment data
+     * Checks for required fields and proper formats
+     * @throws {Error} If any validation fails
+     */
     validate() {
         if (!this.operationRequestId) throw new Error('Missing operationRequestId');
         if (!this.surgeryRoomId) throw new Error('Missing surgeryRoomId');
@@ -30,6 +52,10 @@ class SurgeryAppointmentDto {
         });
     }
 
+    /**
+     * Converts the DTO to a response object
+     * @returns {Object} The surgery appointment data in response format
+     */
     toResponse() {
         return {
             operationRequestId: this.operationRequestId,

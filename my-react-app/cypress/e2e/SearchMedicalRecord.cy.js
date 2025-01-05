@@ -54,7 +54,10 @@ describe('Search Medical Record', () => {
 
   it('should search by patient ID only', () => {
     cy.get('#patientId').type(testPatientId);
-    cy.get('button').contains('Search').click();
+    cy.get('button.search-button')
+        .should('be.visible')
+        .and('not.be.disabled')
+        .click({ force: true });
 
     cy.get('.medical-record-details', { timeout: 10000 }).should('be.visible');
     cy.contains('Asthma - Severity: High').should('be.visible');
@@ -66,7 +69,10 @@ describe('Search Medical Record', () => {
   it('should search by patient ID and condition', () => {
     cy.get('#patientId').type(testPatientId);
     cy.get('#conditionName').type('Asthma');
-    cy.get('button').contains('Search').click();
+    cy.get('button.search-button')
+        .should('be.visible')
+        .and('not.be.disabled')
+        .click({ force: true });
 
     cy.get('.medical-record-details').should('be.visible');
     cy.contains('Asthma - Severity: High').should('be.visible');
@@ -76,7 +82,10 @@ describe('Search Medical Record', () => {
   it('should search by patient ID and allergy', () => {
     cy.get('#patientId').type(testPatientId);
     cy.get('#allergyName').type('Peanuts');
-    cy.get('button').contains('Search').click();
+    cy.get('button.search-button')
+        .should('be.visible')
+        .and('not.be.disabled')
+        .click({ force: true });
 
     cy.get('.medical-record-details').should('be.visible');
     cy.contains('Peanuts - Severity: High').should('be.visible');
@@ -87,7 +96,10 @@ describe('Search Medical Record', () => {
     cy.get('#patientId').type(testPatientId);
     cy.get('#conditionName').type('Asthma');
     cy.get('#allergyName').type('Peanuts');
-    cy.get('button').contains('Search').click();
+    cy.get('button.search-button')
+        .should('be.visible')
+        .and('not.be.disabled')
+        .click({ force: true });
 
     cy.get('.medical-record-details').should('be.visible');
     cy.contains('Asthma - Severity: High').should('be.visible');
@@ -98,26 +110,32 @@ describe('Search Medical Record', () => {
 
   it('should handle non-existent patient ID', () => {
     cy.get('#patientId').type('nonexistent');
-    cy.get('button').contains('Search').click();
+    cy.get('button.search-button')
+        .should('be.visible')
+        .and('not.be.disabled')
+        .click({ force: true });
 
     cy.get('[role="alert"]')
-      .should('have.class', 'error-message')
-      .and('contain', 'Medical record not found');
+        .should('have.class', 'error-message')
+        .and('contain', 'Medical record not found');
   });
 
   it('should handle server errors gracefully', () => {
     cy.intercept('GET', '**/medical-records/search*', {
-      statusCode: 500,
-      body: { message: 'Server error' }
+        statusCode: 500,
+        body: { message: 'Server error' }
     }).as('searchError');
 
     cy.get('#patientId').type(testPatientId);
-    cy.get('button').contains('Search').click();
+    cy.get('button.search-button')
+        .should('be.visible')
+        .and('not.be.disabled')
+        .click({ force: true });
 
     cy.wait('@searchError');
     cy.get('[role="alert"]')
-      .should('have.class', 'error-message')
-      .and('contain', 'Medical record not found');
+        .should('have.class', 'error-message')
+        .and('contain', 'Medical record not found');
   });
 
   after(() => {

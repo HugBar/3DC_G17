@@ -4,6 +4,8 @@
  * This module provides API endpoints for managing medical records.
  * It handles the creation, retrieval and updating of patient medical records.
  * Only authorized healthcare providers can access and modify these records.
+ * The module includes functionality for creating blank records, searching records,
+ * and updating conditions and allergies for patients.
  */
 
 const MedicalRecordRepository = require('../repositories/MedicalRecordRepository');
@@ -12,7 +14,7 @@ const MedicalRecordService = require('../services/MedicalRecordService');
 const SearchMedicalRecordDto = require('../dtos/SearchMedicalRecordDto');
 
 /**
- * Creates a new medical record for a patient
+ * Creates a new medical record for a patient with the provided data
  * @param {Object} req - Request object containing the medical record data
  * @param {Object} res - Response object
  * @returns {Object} JSON response with created record or error message
@@ -28,6 +30,7 @@ exports.createMedicalRecord = async (req, res) => {
 
 /**
  * Retrieves all medical records from the system
+ * This endpoint allows healthcare providers to view all records in the database
  * @param {Object} req - Request object
  * @param {Object} res - Response object
  * @returns {Object} JSON response with array of medical records or error message
@@ -43,6 +46,7 @@ exports.getAllMedicalRecords = async (req, res) => {
 
 /**
  * Retrieves a specific medical record by patient ID
+ * Allows healthcare providers to access a single patient's record
  * @param {Object} req - Request object containing patientId parameter
  * @param {Object} res - Response object
  * @returns {Object} JSON response with medical record or error message
@@ -61,6 +65,7 @@ exports.getMedicalRecordByPatientId = async (req, res) => {
 
 /**
  * Updates or creates a patient's medical record with new conditions and allergies
+ * This endpoint handles both adding new conditions/allergies and updating existing ones
  * @param {Object} req - Request object containing patientId and update data
  * @param {Object} res - Response object
  * @returns {Object} JSON response with updated record or error message
@@ -105,7 +110,8 @@ exports.updatePatientConditionsAndAllergies = async (req, res) => {
 };
 
 /**
- * Searches for a medical record with the specified filters
+ * Searches for medical records based on provided filters
+ * Allows searching by patient ID, condition name, or allergy name
  * @param {Object} req - Request object containing query parameters
  * @param {Object} res - Response object
  * @returns {Object} JSON response with the searched medical record or error message
@@ -128,6 +134,13 @@ exports.searchMedicalRecord = async (req, res) => {
     }
 };
 
+/**
+ * Creates a new blank medical record for a patient
+ * Useful when initializing records for new patients
+ * @param {Object} req - Request object containing patient ID
+ * @param {Object} res - Response object
+ * @returns {Object} JSON response with the created blank record or error message
+ */
 exports.createBlankMedicalRecord = async (req, res) => {
     try {
         const { patientId } = req.params;

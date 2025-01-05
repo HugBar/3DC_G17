@@ -4,6 +4,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
 import SearchAllergy from './SearchAllergy';
 import allergyService from '../../../api/Allergy/allergyService';
+import { AuthProvider } from '../../../context/AuthContext';
 
 // Mock the dependencies
 jest.mock('../../../api/Allergy/allergyService');
@@ -11,6 +12,13 @@ jest.mock('react-router-dom', () => ({
     ...jest.requireActual('react-router-dom'),
     useNavigate: jest.fn(),
     useLocation: jest.fn()
+}));
+jest.mock('../../../context/AuthContext', () => ({
+    AuthProvider: ({ children }) => children,
+    useAuth: () => ({
+        isAdmin: false,
+        user: { id: '1', name: 'Test User' }
+    })
 }));
 
 describe('SearchAllergy Component', () => {
@@ -37,9 +45,11 @@ describe('SearchAllergy Component', () => {
 
     const renderSearchAllergy = () => {
         return render(
-            <BrowserRouter>
-                <SearchAllergy />
-            </BrowserRouter>
+            <AuthProvider>
+                <BrowserRouter>
+                    <SearchAllergy />
+                </BrowserRouter>
+            </AuthProvider>
         );
     };
 

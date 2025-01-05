@@ -65,7 +65,7 @@ describe('Update Medical Record', () => {
 
     // Add allergy
     cy.get('select').last()
-      .select('peanut - High');
+      .select('peanut - Low');
     cy.get('.current-list').contains('peanut').should('be.visible');
   });
 
@@ -74,7 +74,7 @@ describe('Update Medical Record', () => {
     cy.get('#conditionSelect')
       .select('Asthma - High');
     cy.get('select').last()
-      .select('peanut - High');
+      .select('peanut - Low');
 
     // Update record
     cy.get('.update-button').click();

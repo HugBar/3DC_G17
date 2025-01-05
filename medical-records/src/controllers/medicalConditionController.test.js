@@ -1,4 +1,4 @@
-// Author: João Morais
+// Author: Matias Vitorino
 
 /**
  * Test suite for MedicalConditionController

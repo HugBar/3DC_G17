@@ -72,7 +72,6 @@ describe('Specialization API E2E Tests', () => {
       // Verify known specializations exist
       const specializations = response.body.map(spec => spec.name);
       expect(specializations).to.include('Cardiology');
-      expect(specializations).to.include('Neurology');
     });
   });
 

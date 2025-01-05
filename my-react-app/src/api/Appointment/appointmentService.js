@@ -1,7 +1,20 @@
+/**
+ * Author: Hugo Barros
+ * Frontend service for interacting with the surgery appointments API endpoints
+ * Handles API calls for appointment management including creating, updating, searching
+ * and checking availability of surgery appointments
+ */
+
 import axios from 'axios';
 
+// Set API base URL from environment variable or default to localhost
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
+/**
+ * Retrieves authentication token from local storage
+ * @returns {string} The JWT auth token
+ * @throws {Error} If no token is found
+ */
 const getAuthToken = () => {
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -10,7 +23,15 @@ const getAuthToken = () => {
     return token;
 };
 
+/**
+ * Service object containing methods for managing surgery appointments
+ */
 const appointmentService = {
+    /**
+     * Creates a new surgery appointment
+     * @param {Object} appointmentData - The appointment details
+     * @returns {Promise<Object>} The created appointment data
+     */
     createSurgeryAppointment: async (appointmentData) => {
         const token = getAuthToken();
         try {
@@ -31,6 +52,11 @@ const appointmentService = {
         }
     },
 
+    /**
+     * Retrieves an appointment by its ID
+     * @param {string} appointmentId - ID of the appointment to fetch
+     * @returns {Promise<Object>} The appointment data
+     */
     getAppointmentById: async (appointmentId) => {
         const token = getAuthToken();
         try {
@@ -49,6 +75,12 @@ const appointmentService = {
         }
     },
 
+    /**
+     * Updates a surgery appointment by operation request ID
+     * @param {string} operationRequestId - ID of the operation request
+     * @param {Object} updateData - New appointment data
+     * @returns {Promise<Object>} The updated appointment data
+     */
     updateSurgeryAppointment: async (operationRequestId, updateData) => {
         const token = getAuthToken();
         try {
@@ -69,6 +101,11 @@ const appointmentService = {
         }
     },
 
+    /**
+     * Gets all appointments for a specific doctor
+     * @param {string} doctorId - ID of the doctor
+     * @returns {Promise<Array>} Array of appointments
+     */
     getDoctorAppointments: async (doctorId) => {
         const token = getAuthToken();
         try {
@@ -87,6 +124,11 @@ const appointmentService = {
         }
     },
 
+    /**
+     * Searches for appointments based on provided criteria
+     * @param {Object} searchParams - Search parameters
+     * @returns {Promise<Array>} Array of matching appointments
+     */
     searchAppointments: async (searchParams) => {
         const token = getAuthToken();
         try {
@@ -106,6 +148,12 @@ const appointmentService = {
         }
     },
 
+    /**
+     * Updates the status of an appointment
+     * @param {string} appointmentId - ID of the appointment
+     * @param {string} status - New status value
+     * @returns {Promise<Object>} The updated appointment data
+     */
     updateAppointmentStatus: async (appointmentId, status) => {
         const token = getAuthToken();
         try {
@@ -126,6 +174,14 @@ const appointmentService = {
         }
     },
 
+    /**
+     * Checks if a room is available for a given time period
+     * @param {string} roomId - ID of the room to check
+     * @param {string} startTime - Start time of the period
+     * @param {string} endTime - End time of the period
+     * @param {string|null} excludeAppointmentId - Optional appointment ID to exclude from check
+     * @returns {Promise<Object>} Room availability status
+     */
     checkRoomAvailability: async (roomId, startTime, endTime, excludeAppointmentId = null) => {
         const token = getAuthToken();
         try {
@@ -150,6 +206,11 @@ const appointmentService = {
         }
     },
 
+    /**
+     * Gets an appointment by its operation request ID
+     * @param {string} operationRequestId - ID of the operation request
+     * @returns {Promise<Object>} The appointment data
+     */
     getAppointmentByOperationRequestId: async (operationRequestId) => {
         const token = getAuthToken();
         try {

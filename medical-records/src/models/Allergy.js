@@ -1,20 +1,24 @@
-// Author: [Your Name]
+// Author: Hugo Barros
 
 /**
- * This module defines the Mongoose schema and model for the Allergy entity.
- * It represents allergies in the system with fields for:
- * - allergen: The unique identifier name of the allergy
- * - severity: The severity level of the allergy (Low, Medium, High)
- * - description: Optional details about the allergy
- * - createdDate: Timestamp of when the record was created
- * - updatedDate: Timestamp of the last update
+ * This module defines the Mongoose schema and model for managing patient allergies in the medical records system.
+ * It provides the data structure and validation rules for storing allergy information, including the allergen name,
+ * severity level, and additional details. The schema ensures data consistency and proper formatting of allergy records.
  */
 
 const mongoose = require('mongoose');
 
 /**
  * Mongoose schema definition for Allergy
- * Includes validation and default values for each field
+ * Defines the structure and validation rules for allergy documents
+ * 
+ * Methods available through the model:
+ * - create(): Creates a new allergy record
+ * - find(): Retrieves allergy records matching query criteria
+ * - findOne(): Finds a single allergy record
+ * - findById(): Retrieves an allergy by its ID
+ * - updateOne(): Updates a single allergy record
+ * - deleteOne(): Removes a single allergy record
  */
 const allergySchema = new mongoose.Schema({
     allergen: {
@@ -42,7 +46,9 @@ const allergySchema = new mongoose.Schema({
 });
 
 /**
- * Export the Allergy model based on the schema
- * This model provides an interface for database operations
+ * Creates and exports the Allergy model
+ * This model provides an interface for performing CRUD operations on allergy records
+ * Inherits all Mongoose model methods for database interactions
+ * @returns {Model} Mongoose model for Allergy documents
  */
 module.exports = mongoose.model('Allergy', allergySchema);

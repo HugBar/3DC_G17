@@ -1,3 +1,15 @@
+// Author: Pedro Azevedo
+
+/**
+ * Repository layer for surgery appointment data operations.
+ * Handles all database interactions for surgery appointments including:
+ * - Creating new appointments
+ * - Finding appointments by various criteria
+ * - Checking room availability
+ * - Updating appointment status and details
+ * - Searching appointments with filters
+ */
+
 const SurgeryAppointment = require('../models/SurgeryAppointment');
 
 class SurgeryAppointmentRepository {
@@ -8,6 +20,11 @@ class SurgeryAppointmentRepository {
         SurgeryAppointmentRepository.instance = this;
     }
 
+    /**
+     * Creates a new surgery appointment
+     * @param {Object} appointmentData - The appointment data to create
+     * @returns {Promise<Object>} The created appointment
+     */
     async create(appointmentData) {
         try {
             const appointment = new SurgeryAppointment(appointmentData);
@@ -17,6 +34,11 @@ class SurgeryAppointmentRepository {
         }
     }
 
+    /**
+     * Finds an appointment by its ID
+     * @param {string} id - The ID of the appointment
+     * @returns {Promise<Object>} The found appointment
+     */
     async findById(id) {
         try {
             return await SurgeryAppointment.findById(id);
@@ -25,6 +47,11 @@ class SurgeryAppointmentRepository {
         }
     }
 
+    /**
+     * Finds all appointments for a specific doctor
+     * @param {string} doctorId - The ID of the doctor
+     * @returns {Promise<Array>} Array of appointments
+     */
     async findByDoctorId(doctorId) {
         try {
             return await SurgeryAppointment.find({ doctorId });
@@ -33,6 +60,14 @@ class SurgeryAppointmentRepository {
         }
     }
 
+    /**
+     * Checks if a surgery room is available for a given time slot
+     * @param {string} roomId - The ID of the surgery room
+     * @param {Date} startTime - The start time of the slot
+     * @param {Date} endTime - The end time of the slot
+     * @param {string} excludeAppointmentId - Optional ID of appointment to exclude from check
+     * @returns {Promise<boolean>} True if room is available
+     */
     async checkRoomAvailability(roomId, startTime, endTime, excludeAppointmentId = null) {
         try {
             const query = {
@@ -57,6 +92,12 @@ class SurgeryAppointmentRepository {
         }
     }
 
+    /**
+     * Updates the status of an appointment
+     * @param {string} id - The ID of the appointment
+     * @param {string} status - The new status
+     * @returns {Promise<Object>} The updated appointment
+     */
     async updateStatus(id, status) {
         try {
             return await SurgeryAppointment.findByIdAndUpdate(
@@ -69,6 +110,11 @@ class SurgeryAppointmentRepository {
         }
     }
 
+    /**
+     * Searches appointments using provided filters
+     * @param {Object} filters - Search criteria including doctorId, patientId, status, startDate, endDate
+     * @returns {Promise<Array>} Array of matching appointments
+     */
     async search(filters) {
         try {
             const query = {};
@@ -88,6 +134,12 @@ class SurgeryAppointmentRepository {
         }
     }
 
+    /**
+     * Updates an appointment by ID
+     * @param {string} id - The ID of the appointment
+     * @param {Object} updateData - The data to update
+     * @returns {Promise<Object>} The updated appointment
+     */
     async update(id, updateData) {
         try {
             return await SurgeryAppointment.findByIdAndUpdate(
@@ -100,6 +152,11 @@ class SurgeryAppointmentRepository {
         }
     }
 
+    /**
+     * Finds an appointment by operation request ID
+     * @param {string} operationRequestId - The ID of the operation request
+     * @returns {Promise<Object>} The found appointment
+     */
     async findByOperationRequestId(operationRequestId) {
         try {
             return await SurgeryAppointment.findOne({ operationRequestId });
@@ -108,6 +165,12 @@ class SurgeryAppointmentRepository {
         }
     }
 
+    /**
+     * Updates an appointment by operation request ID
+     * @param {string} operationRequestId - The ID of the operation request
+     * @param {Object} updateData - The data to update
+     * @returns {Promise<Object>} The updated appointment
+     */
     async update(operationRequestId, updateData) {
         try {
             const appointment = await SurgeryAppointment.findOne({ operationRequestId });

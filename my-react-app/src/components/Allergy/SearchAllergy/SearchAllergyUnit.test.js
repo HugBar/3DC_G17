@@ -4,22 +4,36 @@ import { MemoryRouter } from 'react-router-dom';
 import SearchAllergy from './SearchAllergy';
 import allergyService from '../../../api/Allergy/allergyService';
 import { AllergyDTO } from '../../../dtos/AllergyDTO';
+import { AuthProvider } from '../../../context/AuthContext';
 
-// Mock the API service and DTO
+// Mock the API service, DTO and Auth context
 jest.mock('../../../api/Allergy/allergyService');
 jest.mock('../../../dtos/AllergyDTO');
+jest.mock('../../../context/AuthContext', () => ({
+  AuthProvider: ({ children }) => children,
+  useAuth: () => ({
+    isAdmin: false,
+    user: { id: '1', name: 'Test User' }
+  })
+}));
 
 describe('SearchAllergy Component', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    test('renders the component with initial state', () => {
-        render(
-            <MemoryRouter>
-                <SearchAllergy />
-            </MemoryRouter>
+    const renderWithProviders = (component) => {
+        return render(
+            <AuthProvider>
+                <MemoryRouter>
+                    {component}
+                </MemoryRouter>
+            </AuthProvider>
         );
+    };
+
+    test('renders the component with initial state', () => {
+        renderWithProviders(<SearchAllergy />);
 
         expect(screen.getByText('Search Allergies')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('Allergen Name')).toBeInTheDocument();
@@ -35,11 +49,7 @@ describe('SearchAllergy Component', () => {
         allergyService.searchAllergies.mockResolvedValue(mockResponse);
         AllergyDTO.fromResponse.mockImplementation((data) => data);
 
-        render(
-            <MemoryRouter>
-                <SearchAllergy />
-            </MemoryRouter>
-        );
+        renderWithProviders(<SearchAllergy />);
 
         expect(allergyService.searchAllergies).toHaveBeenCalledWith({});
         await waitFor(() => expect(screen.getByText('Peanuts')).toBeInTheDocument());
@@ -49,21 +59,13 @@ describe('SearchAllergy Component', () => {
     test('displays an error message if the API call fails', async () => {
         allergyService.searchAllergies.mockRejectedValue(new Error('API Error'));
 
-        render(
-            <MemoryRouter>
-                <SearchAllergy />
-            </MemoryRouter>
-        );
+        renderWithProviders(<SearchAllergy />);
 
         await waitFor(() => expect(screen.getByText('Error loading allergies')).toBeInTheDocument());
     });
 
     test('updates filters and URL on filter change', async () => {
-        render(
-            <MemoryRouter>
-                <SearchAllergy />
-            </MemoryRouter>
-        );
+        renderWithProviders(<SearchAllergy />);
 
         const allergenInput = screen.getByPlaceholderText('Allergen Name');
         const severitySelect = screen.getByTestId('severity-select');
@@ -82,11 +84,7 @@ describe('SearchAllergy Component', () => {
         allergyService.searchAllergies.mockResolvedValue(mockResponse);
         AllergyDTO.fromResponse.mockImplementation((data) => data);
 
-        render(
-            <MemoryRouter>
-                <SearchAllergy />
-            </MemoryRouter>
-        );
+        renderWithProviders(<SearchAllergy />);
 
         const allergenInput = screen.getByPlaceholderText('Allergen Name');
         const searchButton = screen.getByText('Search');
@@ -102,11 +100,7 @@ describe('SearchAllergy Component', () => {
     });
 
     test('clears filters and resets state', () => {
-        render(
-            <MemoryRouter>
-                <SearchAllergy />
-            </MemoryRouter>
-        );
+        renderWithProviders(<SearchAllergy />);
 
         const allergenInput = screen.getByPlaceholderText('Allergen Name');
         const clearButton = screen.getByText('Clear Filters');
@@ -125,11 +119,7 @@ describe('SearchAllergy Component', () => {
         allergyService.searchAllergies.mockResolvedValue(mockResponse);
         AllergyDTO.fromResponse.mockImplementation((data) => data);
 
-        render(
-            <MemoryRouter>
-                <SearchAllergy />
-            </MemoryRouter>
-        );
+        renderWithProviders(<SearchAllergy />);
 
         await waitFor(() => screen.getByText('Peanuts'));
         fireEvent.click(screen.getByText('Peanuts'));

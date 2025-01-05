@@ -2,7 +2,12 @@
 
 /**
  * Test suite for MedicalRecordController
- * Tests the API endpoints for managing medical records
+ * Contains unit tests for medical record management functionality including:
+ * - Creating new medical records
+ * - Retrieving records (all and by patient ID)
+ * - Updating conditions and allergies
+ * - Searching records with filters
+ * Tests verify proper handling of successful operations and error cases.
  */
 
 const MedicalRecordController = require('./medicalRecordController');
@@ -18,6 +23,7 @@ describe('MedicalRecordController', () => {
     let mockReq;
     let mockRes;
 
+    // Set up mock response object before each test
     beforeEach(() => {
         mockRes = {
             status: jest.fn().mockReturnThis(),
@@ -27,10 +33,15 @@ describe('MedicalRecordController', () => {
         jest.spyOn(console, 'error').mockImplementation(() => {});
     });
 
+    // Clean up mocks after each test
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
+    /**
+     * Tests for createMedicalRecord method
+     * Verifies creation of new medical records with patient data
+     */
     describe('createMedicalRecord', () => {
         beforeEach(() => {
             mockReq = {
@@ -61,6 +72,10 @@ describe('MedicalRecordController', () => {
         });
     });
 
+    /**
+     * Tests for getAllMedicalRecords method
+     * Verifies retrieval of all medical records and error handling
+     */
     describe('getAllMedicalRecords', () => {
         test('should return all medical records', async () => {
             const mockRecords = [
@@ -100,6 +115,10 @@ describe('MedicalRecordController', () => {
         });
     });
 
+    /**
+     * Tests for getMedicalRecordByPatientId method
+     * Verifies retrieval of specific patient records and error handling
+     */
     describe('getMedicalRecordByPatientId', () => {
         beforeEach(() => {
             mockReq = {
@@ -135,6 +154,10 @@ describe('MedicalRecordController', () => {
         });
     });
 
+    /**
+     * Tests for updatePatientConditionsAndAllergies method
+     * Verifies updating of existing records with new conditions/allergies
+     */
     describe('updatePatientConditionsAndAllergies', () => {
         beforeEach(() => {
             mockReq = {
@@ -194,6 +217,10 @@ describe('MedicalRecordController', () => {
         });
     });
 
+    /**
+     * Tests for searchMedicalRecord method
+     * Verifies searching records with filters for conditions and allergies
+     */
     describe('searchMedicalRecord', () => {
         beforeEach(() => {
             mockReq = {

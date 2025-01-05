@@ -43,7 +43,7 @@ POST http://localhost:3001/medical-conditions/add-medical-condition
 Content-Type: application/json
 
     {
-        "name": "teste5",
+        "name": "teste13",
         "severity": "High",
         "description": "teste para o sistema."
     }

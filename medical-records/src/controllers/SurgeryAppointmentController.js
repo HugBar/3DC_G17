@@ -1,15 +1,24 @@
-// Author: [Pedro Azevedo]
+// Author: Pedro Azevedo
 
 /**
  * This module provides API endpoints for managing surgery appointments.
  * It handles the creation, retrieval, and management of surgery appointments.
  * Only authorized doctors can create and manage appointments.
+ * The controller provides methods for creating appointments, searching, updating status,
+ * and retrieving appointments by doctor or operation request.
  */
 
 const SurgeryAppointmentService = require('../services/SurgeryAppointmentService');
 const SurgeryAppointmentDto = require('../dtos/SurgeryAppointmentDto');
 
 class SurgeryAppointmentController {
+    /**
+     * Creates a new surgery appointment
+     * Validates staff assignments and creates appointment through service layer
+     * @param {Object} req - Request containing appointment data in body
+     * @param {Object} res - Response object
+     * @returns {Object} Created appointment or error message
+     */
     static async createSurgeryAppointment(req, res) {
         try {
             const appointmentData = req.body;
@@ -34,6 +43,12 @@ class SurgeryAppointmentController {
         }
     }
 
+    /**
+     * Retrieves all appointments for a specific doctor
+     * @param {Object} req - Request containing doctorId parameter
+     * @param {Object} res - Response object
+     * @returns {Object} List of doctor's appointments or error message
+     */
     static async getDoctorAppointments(req, res) {
         try {
             const { doctorId } = req.params;
@@ -45,6 +60,12 @@ class SurgeryAppointmentController {
         }
     }
 
+    /**
+     * Updates the status of an existing appointment
+     * @param {Object} req - Request containing appointmentId parameter and status in body
+     * @param {Object} res - Response object
+     * @returns {Object} Updated appointment or error message
+     */
     static async updateAppointmentStatus(req, res) {
         try {
             const { appointmentId } = req.params;
@@ -68,6 +89,12 @@ class SurgeryAppointmentController {
         }
     }
 
+    /**
+     * Searches appointments based on multiple criteria
+     * @param {Object} req - Request containing search parameters in query
+     * @param {Object} res - Response object
+     * @returns {Object} List of matching appointments or error message
+     */
     static async searchAppointments(req, res) {
         try {
             const searchDto = {
@@ -86,6 +113,12 @@ class SurgeryAppointmentController {
         }
     }
 
+    /**
+     * Updates details of an existing surgery appointment
+     * @param {Object} req - Request containing operationRequestId parameter and update data in body
+     * @param {Object} res - Response object
+     * @returns {Object} Updated appointment or error message
+     */
     static async updateSurgeryAppointment(req, res) {
         try {
             const { operationRequestId } = req.params;
@@ -108,6 +141,12 @@ class SurgeryAppointmentController {
         }
     }
 
+    /**
+     * Retrieves an appointment by its operation request ID
+     * @param {Object} req - Request containing operationRequestId parameter
+     * @param {Object} res - Response object
+     * @returns {Object} Matching appointment or error message
+     */
     static async getByOperationRequestId(req, res) {
         try {
             const { operationRequestId } = req.params;

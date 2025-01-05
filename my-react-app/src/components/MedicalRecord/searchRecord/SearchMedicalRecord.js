@@ -69,8 +69,10 @@ const SearchMedicalRecord = () => {
                 </div>
                 <button 
                     className="search-button"
+                    data-testid="search-medical-record-button"
                     onClick={handleSearch}
                     disabled={loading || !patientId}
+                    style={{ position: 'relative', zIndex: 10 }}
                 >
                     Search
                 </button>
