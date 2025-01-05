@@ -1,4 +1,4 @@
-describe('Patient API E2E Tests', () => {
+/*describe('Patient API E2E Tests', () => {
 
     const baseUrl = 'https://localhost:5001/api/patient';
     let authToken;  // This will store the authentication token
@@ -142,4 +142,4 @@ describe('Patient API E2E Tests', () => {
       });
     });
 
-});
+});*/

@@ -5,8 +5,8 @@ import patientService from '../../../api/patientService';
 import './DeleteAccount.css';
 
 const DeleteAccount = () => {
-  const [showTokenModal, setShowTokenModal] = useState(false);
-  const [token, setToken] = useState('');
+  const [showCodeModal, setShowCodeModal] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isDeleted, setIsDeleted] = useState(false);
@@ -16,22 +16,22 @@ const DeleteAccount = () => {
   const handleDeleteClick = async () => {
     try {
       await patientService.requestAccountDeletion(userEmail);
-      setShowTokenModal(true);
-      setSuccessMessage('Confirmation email sent. Please check your inbox.');
+      setShowCodeModal(true);
+      setSuccessMessage('Verification code sent. Please check your inbox.');
     } catch (error) {
-      setError('Failed to send confirmation email. Please try again.');
+      setError('Failed to send verification code. Please try again.');
     }
   };
 
   const handleConfirmDeletion = async (e) => {
     e.preventDefault();
-    if (!token) {
-      setError('Please enter the confirmation token from your email.');
+    if (!verificationCode || verificationCode.length !== 6) {
+      setError('Please enter the 6-digit verification code from your email.');
       return;
     }
 
     try {
-      await patientService.confirmAccountDeletion(token);
+      await patientService.confirmAccountDeletion(verificationCode);
       setIsDeleted(true);
       setSuccessMessage('Account successfully deleted.');
       setTimeout(() => {
@@ -39,26 +39,45 @@ const DeleteAccount = () => {
         navigate('/login');
       }, 3000);
     } catch (error) {
-      setError('Invalid token or deletion failed. Please try again.');
+      setError('Invalid verification code or deletion failed. Please try again.');
     }
   };
 
   return (
     <div className="delete-account-container">
       <h2 className="delete-account-title">Delete Account</h2>
-      <p className="warning-text">
-        Warning: This action cannot be undone. All your personal data will be permanently deleted.
-      </p>
       
+      <div className="warning-section">
+        <p className="warning-text">
+          ⚠️ <strong>Warning:</strong> This action is irreversible. Your personal identifiable information will be permanently deleted.
+        </p>
+      </div>
+  
+      <div className="data-retention-info">
+        <h3 className="retention-title">🔒 Important Information About Data Retention:</h3>
+        <p className="retention-intro">
+          For legal and medical purposes, the following information will be preserved:
+        </p>
+        <ul className="retention-list">
+          <li>📋 Medical History Records</li>
+          <li>📅 Appointment History</li>
+          <li>📊 Age Range (anonymized)</li>
+          <li>⚧ Gender</li>
+        </ul>
+        <p className="retention-reason">
+          This data is retained in compliance with healthcare regulations to ensure the integrity of medical records. 
+          <strong>All personal identifiable information will be anonymized.</strong>
+        </p>
+      </div>
+  
       <button 
-        className="delete-button"
+        className="delete-button" 
         onClick={handleDeleteClick}
       >
         Delete My Account
       </button>
 
-      {/* Token Input Modal */}
-      {showTokenModal && (
+      {showCodeModal && (
         <div className="delete-account-modal-overlay">
           <div className="delete-account-modal">
             {isDeleted ? (
@@ -69,21 +88,30 @@ const DeleteAccount = () => {
               </div>
             ) : (
               <>
-                <h3 className="modal-title">Enter Confirmation Token</h3>
-                <p className="modal-message">A confirmation token has been sent to your email.</p>
-                <p className="modal-instruction">Please enter the token to complete the account deletion.</p>
+                <h3 className="modal-title">Enter Verification Code</h3>
+                <p className="modal-message">A 6-digit verification code has been sent to your email.</p>
+                <p className="modal-instruction">Please enter the code to complete the account deletion.</p>
                 <form onSubmit={handleConfirmDeletion} className="token-form">
                   <input
                     type="text"
-                    value={token}
-                    onChange={(e) => setToken(e.target.value)}
-                    placeholder="Enter token"
+                    value={verificationCode}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      if (value.length <= 6) {
+                        setVerificationCode(value);
+                      }
+                    }}
+                    placeholder="000000"
                     className="token-input"
+                    maxLength={6}
+                    pattern="\d{6}"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
                   />
                   {error && <div className="modal-error-message">{error}</div>}
                   <div className="modal-buttons">
                     <button type="submit">Confirm Deletion</button>
-                    <button type="button" onClick={() => setShowTokenModal(false)}>Cancel</button>
+                    <button type="button" onClick={() => setShowCodeModal(false)}>Cancel</button>
                   </div>
                 </form>
               </>
@@ -92,8 +120,8 @@ const DeleteAccount = () => {
         </div>
       )}
 
-      {!showTokenModal && error && <div className="error-message">{error}</div>}
-      {!showTokenModal && successMessage && <div className="success-message">{successMessage}</div>}
+      {!showCodeModal && error && <div className="error-message">{error}</div>}
+      {!showCodeModal && successMessage && <div className="success-message">{successMessage}</div>}
     </div>
   );
 };

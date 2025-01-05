@@ -340,29 +340,16 @@ namespace DDDSample1.Domain.PatientData
 
             );
         }
-        public string GenerateToken(string email)
+        public async Task<string> GenerateVerificationCode()
+{
+        return await Task.Run(() =>
         {
-            var claims = new List<Claim>
-    {
-        new Claim(JwtRegisteredClaimNames.Email, email),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        new Claim("tokenPurpose", "accountDeletion") // Propósito específico para exclusão de conta
-    };
+            Random random = new Random();
+            return random.Next(100000, 999999).ToString();
+        });
+}
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-very-long-secret-key-with-32-characters-at-least"));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            // O token vai expirar em 1 hora
-            var token = new JwtSecurityToken(
-                issuer: "YourIssuer",
-                audience: "YourAudience",
-                claims: claims,
-                expires: DateTime.Now.AddHours(1),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        private static readonly Dictionary<string, (string code, DateTime expiry)> _verificationCodes = new();
 
         public async Task RequestAccountDeletionAsync(string email)
         {
@@ -372,55 +359,38 @@ namespace DDDSample1.Domain.PatientData
                 throw new Exception("Patient not found.");
             }
 
-            // Gera o token JWT para confirmar a exclusão da conta
-            string token = GenerateToken(patient.Email);
-            string confirmationLink = $"https://localhost:5001/api/patient/account-deletion?token={token}";
+            string verificationCode = await GenerateVerificationCode();
+            _verificationCodes[email] = (verificationCode, DateTime.UtcNow.AddMinutes(30));
 
             string subject = "Confirm Account Deletion";
             string body = $"Dear {patient.FirstName} {patient.LastName},\n\n" +
-                          $"We received a request to delete your account. Please confirm your request by clicking the link below:\n" +
-                          $"{confirmationLink}\n\n" +
-                          $"If you did not request this, please ignore this email.";
+                        $"We received a request to delete your account. Your verification code is:\n\n" +
+                        $"{verificationCode}\n\n" +
+                        $"This code will expire in 30 minutes.\n" +
+                        $"If you did not request this, please ignore this email.";
 
             await _emailService.SendEmailAsync(patient.Email, subject, body);
         }
 
-        public string ValidateTokenAndGetEmail(string token)
-        {
-            // Decodificar o token
-            var decodedToken = Uri.UnescapeDataString(token);
+        public async Task<string> ValidateVerificationCode(string email, string code)
+{
+    return await Task.Run(() =>
+    {
+        if (!_verificationCodes.ContainsKey(email))
+            throw new Exception("No verification code requested.");
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("your-very-long-secret-key-with-32-characters-at-least");
+        var (storedCode, expiry) = _verificationCodes[email];
+        
+        if (expiry < DateTime.UtcNow)
+            throw new Exception("Verification code has expired.");
 
-            try
-            {
-                tokenHandler.ValidateToken(decodedToken, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ClockSkew = TimeSpan.FromMinutes(10)
-                }, out SecurityToken validatedToken);
+        if (storedCode != code)
+            throw new Exception("Invalid verification code.");
 
-                var jwtToken = (JwtSecurityToken)validatedToken;
-
-                var email = jwtToken.Claims.First(x => x.Type == JwtRegisteredClaimNames.Email).Value;
-                var purpose = jwtToken.Claims.FirstOrDefault(x => x.Type == "tokenPurpose")?.Value;
-
-                if (purpose != "accountDeletion")
-                {
-                    throw new SecurityTokenException("Invalid token purpose.");
-                }
-
-                return email;
-            }
-            catch
-            {
-                throw new SecurityTokenException("Invalid token.");
-            }
-        }
+        _verificationCodes.Remove(email);
+        return email;
+    });
+}
 
         public async Task<bool> ConfirmAccountDeletionAsync(string email)
         {

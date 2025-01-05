@@ -226,41 +226,37 @@ namespace DDDSample1.Controllers
         }
 
         [HttpDelete("confirm-account-deletion")]
-        [Authorize(Roles = "Patient")]
-        public async Task<IActionResult> ConfirmAccountDeletion([FromBody] DeleteConfirmationDto dto)
+[Authorize(Roles = "Patient")]
+public async Task<IActionResult> ConfirmAccountDeletion([FromBody] DeleteConfirmationDto dto)
+{
+    if (string.IsNullOrEmpty(dto.Code))
+    {
+        return BadRequest("Verification code is required.");
+    }
+
+    var userEmail = User.FindFirstValue(ClaimTypes.Email);
+    if (string.IsNullOrEmpty(userEmail))
+    {
+        return Unauthorized("User email not found.");
+    }
+
+    try
+    {
+        await _service.ValidateVerificationCode(userEmail, dto.Code);
+        var result = await _service.ConfirmAccountDeletionAsync(userEmail);
+        
+        if (!result)
         {
-            if (string.IsNullOrEmpty(dto.Token))
-            {
-                return BadRequest("Token is required.");
-            }
-
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            if (string.IsNullOrEmpty(userEmail))
-            {
-                return Unauthorized("User email not found.");
-            }
-
-            try
-            {
-                var emailFromToken = _service.ValidateTokenAndGetEmail(dto.Token);
-                if (emailFromToken != userEmail)
-                {
-                    return Unauthorized("Invalid token or email mismatch.");
-                }
-
-                var result = await _service.ConfirmAccountDeletionAsync(emailFromToken);
-                if (!result)
-                {
-                    return NotFound("Patient not found.");
-                }
-
-                return Ok("Account deletion confirmed and completed.");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return NotFound("Patient not found.");
         }
+
+        return Ok("Account deletion confirmed and completed.");
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(ex.Message);
+    }
+}
 
         [HttpGet("verify/{medicalNumber}")]
         [AllowAnonymous]

@@ -1,7 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace DDDSample1.Domain.PatientData
 {
     public class DeleteConfirmationDto
-    {
-        public string Token { get; set; }
-    }
+{
+    [Required]
+    [StringLength(6, MinimumLength = 6)]
+    public string Code { get; set; }
+}
 }
