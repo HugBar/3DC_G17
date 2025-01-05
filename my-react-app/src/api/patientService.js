@@ -291,6 +291,22 @@ registerPatientItself: async (patientData) => {
   }
 },
 
+requestMedicalHistoryDownload: async () => {
+  const token = getAuthToken();
+  try {
+      const response = await axios.get(`${API_URL}/medical-history/download`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
+      return response.data;
+  } catch (error) {
+      console.error('Error requesting medical history:', error);
+      throw error;
+  }
+},
+
+
 };
 
 export default patientService;
