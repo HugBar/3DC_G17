@@ -2,13 +2,29 @@
 :-dynamic population/1.
 :-dynamic prob_crossover/1.
 :-dynamic prob_mutation/1.
+:-dynamic genetic_solution/2.  % genetic_solution(Solution, Value)
+:-dynamic best_solution/2. 
+:-dynamic tasks/1.
+:-dynamic time_limit/1.
+:-dynamic stop_condition/1.
+:- consult('schedule.pl').
+
+% room(id, surgeries).
+% Define rooms and their surgeries
+room(or1, [so100001, so100002, so100004,so100003,so100005]).
+% room(or2, [so100006, so100007, so100008,so100009,so100010]).
 
 % task(Id,PreparationTime,SurgeryTime,CleaningTime,Priority).
-task(s1, 30, 120, 30, 3).
-task(s2, 45, 180, 45, 5).
-task(s3, 20, 60, 20, 1).
-task(s4, 35, 150, 35, 4).
-task(s5, 25, 90, 25, 2).
+task(so100001, 45, 60, 45, 3).
+task(so100002, 45, 60, 30, 5).
+task(so100003, 45,50,30, 1).
+task(so100004, 45, 60, 45, 4).
+task(so100005, 45,50,30, 2).
+task(so100006, 45, 60, 45, 3).
+task(so100007, 45, 60, 30, 5).
+task(so100008, 45,50,30, 1).
+task(so100009, 45, 60, 45, 4).
+task(so100010, 45,50,30, 2).
 
 % tasks(NTasks).
 tasks(5).
@@ -35,10 +51,13 @@ initialize:-
 	(retract(prob_mutation(_));true), asserta(prob_mutation(PM)).
 
 generate:-
+    retractall(genetic_solution(_,_)),  % Clear previous solutions
+    retractall(best_solution(_,_)),     % Clear previous best
     initialize,
     generate_population(Pop),
     evaluate_population(Pop,PopValue),
     order_population(PopValue,PopOrd),
+    store_initial_solutions(PopOrd),    % Store initial solutions
     get_time(StartTime),
     stop_condition(Condition),
     (Condition = generations -> 
@@ -49,9 +68,42 @@ generate:-
         generate_generation_time(0, StartTime, TimeLimit, PopOrd)
     ).
 
+% Helper to clean up state between rooms
+cleanup_room_state :-
+    retractall(scheduled_surgery(_)),
+    retractall(failed_surgery(_)),
+    % Keep agenda_staff1 to maintain staff availability between rooms
+    retractall(agenda_operation_room1(_, _, _)),
+    retractall(better_sol(_, _, _, _, _)).
+
+% 3. Add solution storage predicates
+store_initial_solutions([]).
+store_initial_solutions([Solution*Value|Rest]):-
+    assertz(genetic_solution(Solution, Value)),
+    (best_solution(_,BestValue) ->
+        (Value < BestValue ->
+            retract(best_solution(_,_)),
+            assertz(best_solution(Solution,Value))
+        ; true)
+    ;
+        assertz(best_solution(Solution,Value))
+    ),
+    store_initial_solutions(Rest).
+
+% Modified population generation for specific room surgeries
+generate_population_for_room(Pop, Surgeries) :-
+    population(PopSize),
+    write('Generating population for room...'), nl,
+    length(Surgeries, NumT),
+    write('Room surgeries: '), write(Surgeries), nl,
+    write('Number of tasks: '), write(NumT), nl,
+    generate_population(PopSize, Surgeries, NumT, Pop).
+
 generate_population(Pop):-
     population(PopSize),
+    write('Generating population...'), nl,
     tasks(NumT),
+    write('Number of tasks: '), write(NumT), nl,
     findall(Task,task(Task,_,_,_,_),TasksList),
     generate_population(PopSize,TasksList,NumT,Pop).
 
@@ -77,24 +129,71 @@ remove(1,[G|Rest],G,Rest).
 remove(N,[G1|Rest],G,[G1|Rest1]):- N1 is N-1,
             remove(N1,Rest,G,Rest1).
 
+% Modified evaluation for specific room
+evaluate_population_for_room([], _, []).
+evaluate_population_for_room([Ind|Rest], Room, [Ind*V|Rest1]) :-
+    evaluate_for_room(Ind, Room, V),
+    evaluate_population_for_room(Rest, Room, Rest1).
+
+evaluate_for_room(Seq, Room, V) :-   
+    % Try to schedule the sequence for this specific room
+    schedule_surgeries_list(Seq, Room, 20241028),
+    calculate_priority_score(Seq, PriorityScore),
+    calculate_schedule_score(ScheduleScore),
+    calculate_makespan_score(MakespanScore),
+    V is PriorityScore + ScheduleScore + MakespanScore.
+
 
 evaluate_population([],[]).
 evaluate_population([Ind|Rest],[Ind*V|Rest1]):-
     evaluate(Ind,V),
     evaluate_population(Rest,Rest1).
 
-evaluate(Seq,V):- evaluate(Seq,0,V).
+evaluate(Seq, V):-   
+    % Try to schedule the sequence
+    schedule_surgeries_list(Seq, Room, 20241028),
+    
+    % Calculate components
+    calculate_priority_score(Seq, PriorityScore),
+    calculate_schedule_score(ScheduleScore),
+    calculate_makespan_score(MakespanScore),
+    
+    % Combine scores (lower is better)
+    V is PriorityScore + ScheduleScore + MakespanScore.
 
-evaluate([],_,0).
-evaluate([S|Rest], StartTime, V):-
-    task(S, Prep, Surg, Clean, Priority),
-    ProcedureTime is Prep + Surg + Clean,
-    FinishTime is StartTime + ProcedureTime,
-    % Calculate waiting cost based on priority
-    WaitingCost is StartTime * Priority,
-    evaluate(Rest, FinishTime, VRest),
-    % Combine makespan and priority-weighted waiting time
-    V is VRest + WaitingCost + ProcedureTime.
+% Priority score based on scheduled/failed surgeries
+calculate_priority_score([], 0).
+calculate_priority_score([Surgery|Rest], Score) :-
+    calculate_priority_score(Rest, RestScore),
+    task(Surgery, _, _, _, Priority),
+    (scheduled_surgery(Surgery) -> 
+        % Lower score (better) for scheduled high priority
+        Score is RestScore + 0
+    ;   
+        % Higher score (worse) for failed high priority
+        Score is RestScore + Priority * 100
+    ).
+
+% Schedule success/failure score
+calculate_schedule_score(Score) :-
+    findall(1, scheduled_surgery(_), Successes),
+    findall(1, failed_surgery(_), Failures),
+    length(Successes, NumSuccess),
+    length(Failures, NumFailures),
+    Score is NumFailures * 200 - NumSuccess * 10.
+
+% Makespan score
+calculate_makespan_score(Score) :-
+    findall(EndTime, (
+        agenda_operation_room1(_, _, Agenda),
+        member((_, EndTime, _), Agenda)
+    ), EndTimes),
+    (EndTimes = [] -> 
+        Score = 1000  % Penalty if nothing scheduled
+    ;   
+        max_list(EndTimes, MaxEnd),
+        Score is MaxEnd
+    ).
 
 order_population(PopValue,PopValueOrd):-
     bsort(PopValue,PopValueOrd).
@@ -113,79 +212,32 @@ bchange([X*VX,Y*VY|L1],[Y*VY|L2]):-
 
 bchange([X|L1],[X|L2]):-bchange(L1,L2).
 
-% Time-based generation
-generate_generation_time(_,StartTime,TimeLimit,Pop):-
-    get_time(CurrentTime),
-    ElapsedTime is CurrentTime - StartTime,
-    ElapsedTime >= TimeLimit,!,
-    write('Time limit reached. Best solution:'),nl,
-    Pop = [Best*Value|_],
-    write(Best), write(' with value '), write(Value),nl.
 
-generate_generation_time(N,StartTime,TimeLimit,Pop):-
-    get_time(CurrentTime),
-    ElapsedTime is CurrentTime - StartTime,
-    ElapsedTime < TimeLimit,
-    write('Generation '), write(N), write(':'), nl, write(Pop), nl,
-    % Get best individual from current population
-    crossover(Pop,NPop1),
-    mutation(NPop1,NPop),
-    evaluate_population(NPop,NPopValue),
-    append(Pop,NPopValue,AllPop),
-    
-    remove_duplicates(AllPop,AllPop1),
 
-    order_population(AllPop1,TempPopOrd),
+% 5. Add helper predicate to store new solutions
+store_new_solutions([]).
+store_new_solutions([Solution*Value|Rest]):-
+    assertz(genetic_solution(Solution, Value)),
+    (best_solution(_,BestValue) ->
+        (Value < BestValue ->
+            retract(best_solution(_,_)),
+            assertz(best_solution(Solution,Value))
+        ; true)
+    ;
+        assertz(best_solution(Solution,Value))
+    ),
+    store_new_solutions(Rest).
 
-    select_top_p(TempPopOrd, TopP, Remaining),
+get_all_solutions(Solutions) :-
+    findall(Solution-Value, genetic_solution(Solution, Value), Solutions).
 
-    add_random_weights(Remaining, Randomized),
-    sort_by_randomized(Randomized, Sorted),
+get_best_solution(Solution, Value) :-
+    best_solution(Solution, Value).
 
-    length(TopP, P),
-    population(PopSize),
-    
-    NP is PopSize - P,
-
-    take_n(NP, Sorted, NewPop),
-    append(TopP, NewPop, NPopOrd),
-    
-    order_population(NPopOrd, NPopOrdSorted),
-
-    N1 is N+1,
-    generate_generation_time(N1,StartTime,TimeLimit,NPopOrdSorted).
-    
-generate_generation(G,G,Pop):-!,
-	write('Generation '), write(G), write(':'), nl, write(Pop), nl.
-generate_generation(N,G,Pop):-
-    write('Generation '), write(N), write(':'), nl, write(Pop), nl,
-    % Get best individual from current population
-    crossover(Pop,NPop1),
-    mutation(NPop1,NPop),
-    evaluate_population(NPop,NPopValue),
-    append(Pop,NPopValue,AllPop),
-    
-    remove_duplicates(AllPop,AllPop1),
-
-    order_population(AllPop1,TempPopOrd),
-
-    select_top_p(TempPopOrd, TopP, Remaining),
-
-    add_random_weights(Remaining, Randomized),
-    sort_by_randomized(Randomized, Sorted),
-
-    length(TopP, P),
-    population(PopSize),
-    
-    NP is PopSize - P,
-
-    take_n(NP, Sorted, NewPop),
-    append(TopP, NewPop, NPopOrd),
-    
-    order_population(NPopOrd, NPopOrdSorted),
-
-    N1 is N+1,
-    generate_generation(N1,G,NPopOrdSorted).
+get_top_n_solutions(N, Solutions) :-
+    findall(Solution-Value, genetic_solution(Solution, Value), AllSolutions),
+    sort(2, @=<, AllSolutions, SortedSolutions),
+    take_n(N, SortedSolutions, Solutions).
 
 select_top_p(SortedList, TopP, Remaining):-
     SortedList = [BestCurrent*_|_],
@@ -368,3 +420,167 @@ mutacao23(G1,1,[G2|Ind],G2,[G1|Ind]):-!.
 mutacao23(G1,P,[G|Ind],G2,[G|NInd]):-
 	P1 is P-1,
 	mutacao23(G1,P1,Ind,G2,NInd).
+
+format_time(Minutes, TimeStr) :-
+    Hours is Minutes div 60,
+    Mins is Minutes mod 60,
+    format(atom(TimeStr), '~|~`0t~d~2+:~|~`0t~d~2+', [Hours, Mins]).
+
+% Display complete schedule
+display_final_schedule(BestSolution, Room) :-
+    writeln('\n====== FINAL SCHEDULE ======\n'),
+    
+    % Schedule best solution
+    schedule_surgeries_list(BestSolution, Room, 20241028),
+    
+    % Show surgeries status
+    writeln('=== SURGERIES STATUS ==='),
+    writeln('\nSuccessfully Scheduled:'),
+    forall(scheduled_surgery(S), 
+           (task(S, P, Su, C, Pr),
+            Total is P + Su + C,
+            format('  ~w (Priority: ~w, Duration: ~w min)\n', [S, Pr, Total]))),
+    
+    writeln('\nFailed to Schedule:'),
+    forall(failed_surgery(F), 
+           (task(F, _, _, _, Pr),
+            format('  ~w (Priority: ~w)\n', [F, Pr]))),
+    
+    % Show room schedule
+    writeln('\n=== OPERATION ROOM SCHEDULE ==='),
+    agenda_operation_room1(or1, 20241028, RoomAgenda),
+    format_room_schedule(RoomAgenda),
+    
+    % Show staff schedules
+    writeln('\n=== STAFF SCHEDULES ==='),
+    forall(agenda_staff1(Staff, 20241028, Agenda),
+           (format('\n~w:\n', [Staff]),
+            format_staff_schedule(Agenda))).
+
+% Format room schedule
+format_room_schedule([]).
+format_room_schedule([(Start, End, Op)|Rest]) :-
+    format_time(Start, StartTime),
+    format_time(End, EndTime),
+    format('  ~w - ~w : ~w\n', [StartTime, EndTime, Op]),
+    format_room_schedule(Rest).
+
+% Format staff schedule
+format_staff_schedule([]).
+format_staff_schedule([(Start, End, Op)|Rest]) :-
+    format_time(Start, StartTime),
+    format_time(End, EndTime),
+    format('  ~w - ~w : ~w\n', [StartTime, EndTime, Op]),
+    format_staff_schedule(Rest).
+
+% Main predicate to run genetic algorithm for all rooms
+schedule_all_rooms :-
+    retractall(time_limit(_)),
+    retractall(stop_condition(_)),
+    % Get all rooms and their surgeries
+    initialize,
+    findall(Room-Surgeries, room(Room, Surgeries), RoomSurgeries),
+    write('Rooms and surgeries: '), write(RoomSurgeries), nl,
+    % Process each room sequentially
+    process_rooms(RoomSurgeries).
+
+% Base case - no more rooms to process
+process_rooms([]):-!.
+% Recursive case - process one room at a time
+process_rooms([Room-Surgeries|Rest]) :-
+    format('~nProcessing room ~w~n', [Room]),
+    % Initialize genetic algorithm parameters for this room
+    retractall(tasks(_)),
+    length(Surgeries, NumTasks),
+    assertz(tasks(NumTasks)),
+    % Run genetic algorithm for current room
+    generate_for_room(Room, Surgeries),
+    % Continue with next room
+    !,
+    process_rooms(Rest).
+
+% Run genetic algorithm for a specific room
+generate_for_room(Room, Surgeries) :-
+    cleanup_room_state,
+    retractall(genetic_solution(_, _)),
+    retractall(best_solution(_, _)),
+    % Generate initial population based on rooms surgeries
+    generate_population_for_room(Pop, Surgeries),
+    write('Initial population: '), write(Pop), nl,
+    evaluate_population_for_room(Pop, Room, PopValue),
+    write('Initial population with values: '), write(PopValue), nl,
+    order_population(PopValue, PopOrd),
+    store_initial_solutions(PopOrd),
+    get_time(StartTime),
+    stop_condition(Condition),
+    (Condition = generations -> 
+        generations(G),
+        generate_generation_for_room(0, G, PopOrd, Room)
+    ;   
+        time_limit(TimeLimit),
+        generate_generation_time_for_room(0, StartTime, TimeLimit, PopOrd, Room)
+    ).
+
+% filepath: /c:/Users/User/Universidade/3º Ano Licenciatura/Projeto/3dc_17/3DC_G17/Planning/Sprint3/US_7.3.2/genetic_algorithm.pl
+
+% Step 3: Add generation predicates
+generate_generation_for_room(G, G, Pop, Room):-!,
+    write('Room '), write(Room), write(' - Final Generation '), write(G), write(':'), nl,
+    Pop = [Best*Value|_],
+    format('Best solution for ~w: ~w with value ~w~n', [Room, Best, Value]),
+    schedule_surgeries_list(Best, Room, 20241028).
+
+generate_generation_for_room(N, G, Pop, Room):-
+    write('Room '), write(Room), write(' - Generation '), write(N), write(':'), write(Pop), nl,
+    crossover(Pop, NPop1),
+    mutation(NPop1, NPop),
+    evaluate_population_for_room(NPop, Room, NPopValue),
+    store_new_solutions(NPopValue),
+    append(Pop, NPopValue, AllPop),
+    remove_duplicates(AllPop, AllPop1),
+    order_population(AllPop1, TempPopOrd),
+    select_top_p(TempPopOrd, TopP, Remaining),
+    add_random_weights(Remaining, Randomized),
+    sort_by_randomized(Randomized, Sorted),
+    population(PopSize),
+    length(TopP, P),
+    NP is PopSize - P,
+    take_n(NP, Sorted, NewPop),
+    append(TopP, NewPop, NPopOrd),
+    order_population(NPopOrd, NPopOrdSorted),
+    N1 is N+1,
+    generate_generation_for_room(N1, G, NPopOrdSorted, Room).
+
+% Step 4: Add time-based generation
+generate_generation_time_for_room(_, StartTime, TimeLimit, Pop, Room):-
+    get_time(CurrentTime),
+    ElapsedTime is CurrentTime - StartTime,
+    ElapsedTime >= TimeLimit,!,
+    Pop = [Best*Value|_],
+    format('Time limit reached for ~w. Best: ~w Value: ~w~n', [Room, Best, Value]),
+    schedule_surgeries_list(Best, Room, 20241028),
+    display_final_schedule(Best, Room).
+
+generate_generation_time_for_room(N, StartTime, TimeLimit, Pop, Room):-
+    get_time(CurrentTime),
+    ElapsedTime is CurrentTime - StartTime,
+    ElapsedTime < TimeLimit,
+    write('Room '), write(Room), write(' - Generation '), write(N), write(':'), write(Pop), nl,nl,
+    crossover(Pop, NPop1),
+    mutation(NPop1, NPop),
+    evaluate_population_for_room(NPop, Room, NPopValue),
+    store_new_solutions(NPopValue),
+    append(Pop, NPopValue, AllPop),
+    remove_duplicates(AllPop, AllPop1),
+    order_population(AllPop1, TempPopOrd),
+    select_top_p(TempPopOrd, TopP, Remaining),
+    add_random_weights(Remaining, Randomized),
+    sort_by_randomized(Randomized, Sorted),
+    population(PopSize),
+    length(TopP, P),
+    NP is PopSize - P,
+    take_n(NP, Sorted, NewPop),
+    append(TopP, NewPop, NPopOrd),
+    order_population(NPopOrd, NPopOrdSorted),
+    N1 is N+1,
+    generate_generation_time_for_room(N1, StartTime, TimeLimit, NPopOrdSorted, Room).
