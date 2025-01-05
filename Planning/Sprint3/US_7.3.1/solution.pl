@@ -50,55 +50,102 @@ surgery_id(so100036,so2).  % Joelho
 %-------------------------------------------------------------------------
 % AGENDAS DAS SALAS DE OPERAÇÃO
 %-------------------------------------------------------------------------
-agenda_operation_room(or1,20241028,[]).
-agenda_operation_room(or2,20241028,[]).
-agenda_operation_room(or3,20241028,[]).
+% Pre-scheduled surgeries in or1
+agenda_operation_room(or1, 20241028, [
+    (0,179,so100001), 
+    (250,379,so100002), 
+    (400,579,so100003)
+]).
+agenda_operation_room(or2, 20241028, []).
+agenda_operation_room(or3, 20241028, []).
 
-% -------------------------------------------------------------------------
-% 2) AUXILIARY PREDICATES (free_agenda0, insert_agenda, etc.)
-% -------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------
+% AUXILIARY PREDICATES (free_agenda0, insert_agenda, etc.)
+%-------------------------------------------------------------------------
 
 % free_agenda0/2: Determine free slots from an agenda
-free_agenda0([],[(0,1440)]).
-free_agenda0([(0,Tfin,_)|LT],LT1):- !, free_agenda1([(0,Tfin,_)|LT],LT1).
-free_agenda0([(Tin,Tfin,_)|LT],[(0,T1)|LT1]):-
+free_agenda0([], [(0,1440)]).
+free_agenda0([(0,Tfin,_)|LT], LT1) :- 
+    !, free_agenda1([(0,Tfin,_)|LT], LT1).
+free_agenda0([(Tin,Tfin,_)|LT], [(0,T1)|LT1]) :-
     T1 is Tin-1,
-    free_agenda1([(Tin,Tfin,_)|LT],LT1).
+    free_agenda1([(Tin,Tfin,_)|LT], LT1).
 
-free_agenda1([(_,Tfin,_)],[(T1,1440)]):- Tfin \== 1440, !, T1 is Tfin+1.
-free_agenda1([(_,_,_)],[]).
-free_agenda1([(_,T,_),(T1,Tfin2,_)|LT],LT1):- Tx is T+1, T1==Tx, !,
-    free_agenda1([(T1,Tfin2,_)|LT],LT1).
-free_agenda1([(_,Tfin1,_),(Tin2,Tfin2,_)|LT],[(T1,T2)|LT1]):- 
+free_agenda1([(_,Tfin,_)], [(T1,1440)]) :- 
+    Tfin \== 1440, !, T1 is Tfin+1.
+free_agenda1([(_,_,_)], []).
+free_agenda1([(_,T,_),(T1,Tfin2,_)|LT], LT1) :-
+    Tx is T+1, T1==Tx, !,
+    free_agenda1([(T1,Tfin2,_)|LT], LT1).
+free_agenda1([(_,Tfin1,_),(Tin2,Tfin2,_)|LT], [(T1,T2)|LT1]) :-
     T1 is Tfin1+1,
     T2 is Tin2-1,
-    free_agenda1([(Tin2,Tfin2,_)|LT],LT1).
+    free_agenda1([(Tin2,Tfin2,_)|LT], LT1).
 
-% insert_agenda/3: Insert a new interval (Start,End,OpCode) 
-% while respecting chronological order (no overlap).
-insert_agenda((TinS,TfinS,OpCode),[],[(TinS,TfinS,OpCode)]).
+% insert_agenda/3: Insert a new interval (Start,End,OpCode)
+insert_agenda((TinS,TfinS,OpCode), [], [(TinS,TfinS,OpCode)]).
 insert_agenda((TinS,TfinS,OpCode),
               [(Tin,Tfin,OpCode1)|LA],
               [(TinS,TfinS,OpCode),(Tin,Tfin,OpCode1)|LA]) :-
-    TfinS < Tin, !.  % place before the existing block
+    TfinS < Tin, !.  
 insert_agenda((TinS,TfinS,OpCode),
               [(Tin,Tfin,OpCode1)|LA],
               [(Tin,Tfin,OpCode1)|LA1]) :-
     insert_agenda((TinS,TfinS,OpCode), LA, LA1).
 
-% -------------------------------------------------------------------------
-% 3) MAIN US 7.3.1 LOGIC
-%    (assign_surgeries_to_rooms/1) + new "best fit" slot finder
-% -------------------------------------------------------------------------
+%-------------------------------------------------------------------------
+% Conflict Detection
+%-------------------------------------------------------------------------
 
-% Main predicate for room assignment
+% surgery_conflicts/4: Check if a surgery conflicts with existing ones
+surgery_conflicts(Room, Day, Start, End) :-
+    agenda_operation_room1(Room, Day, Agenda),
+    member((ExistingStart, ExistingEnd, _), Agenda),
+    Start =< ExistingEnd,
+    End >= ExistingStart, !.
+
+
+%-------------------------------------------------------------------------
+% Improved Room Selection Logic
+%-------------------------------------------------------------------------
+
+find_best_room_slot(TotalTime, Rooms, Day, ChosenRoom, ChosenStart) :-
+    % Calculate total occupied time for each room
+    findall(OccupiedTime-(R,SlotStart), (
+        member(R, Rooms),
+        agenda_operation_room1(R, Day, RoomAgenda),
+        % Calculate total occupied time
+        findall(Duration, (
+            member((Start, End, _), RoomAgenda),
+            Duration is End - Start + 1
+        ), Durations),
+        sum_list(Durations, OccupiedTime),
+        % Get the first valid slot for the surgery
+        free_agenda0(RoomAgenda, FreeSlots),
+        member((SlotStart, SlotEnd), FreeSlots),
+        SlotDur is SlotEnd - SlotStart + 1,
+        SlotDur >= TotalTime
+    ), Candidates),
+    % Ensure there are valid slots
+    Candidates \= [],
+    % Sort by total occupied time (ascending order: least occupied first)
+    keysort(Candidates, SortedCandidates),
+    SortedCandidates = [ OccupiedTime-(ChosenRoom, ChosenStart) | _ ],
+    format('Choosing Room ~w (Occupied Time: ~w) for Surgery~n', [ChosenRoom, OccupiedTime]).
+
+
+
+%-------------------------------------------------------------------------
+% Main Logic for Assignment
+%-------------------------------------------------------------------------
+
 assign_surgeries_to_rooms(Day) :-
-    % 1) Initialize rooms
     findall(Room, agenda_operation_room(Room, Day, _), Rooms),
-    % create empty "working" agendas
-    forall(member(R, Rooms), assertz(agenda_operation_room1(R,Day,[]))),
-
-    % 2) Collect surgeries sorted by descending duration
+    forall(member(R, Rooms), (
+    agenda_operation_room(R, Day, Agenda),
+    assertz(agenda_operation_room1(R, Day, Agenda))
+    )),
     findall(Dur-OpCode, (
         surgery_id(OpCode,Type),
         surgery(Type,Anest,Surg,Clean),
@@ -107,74 +154,45 @@ assign_surgeries_to_rooms(Day) :-
     keysort(Pairs, SortedAsc),
     reverse(SortedAsc, SortedDesc),
     findall(SurgID, member(_-SurgID, SortedDesc), OrderedSurgeries),
-
-    % 3) Assign surgeries one by one
     assign_surgeries(OrderedSurgeries, Rooms, Day),
-
-    % 4) Report results
     report_assignments(Day).
 
-% Recursively assign each surgery
-assign_surgeries([], _, _).
-assign_surgeries([CurrSurg|Rest], Rooms, Day) :-
-    % Extra check: If surgery already scheduled, skip
-    ( surgery_already_scheduled(CurrSurg, Rooms, Day) ->
-        format('~n** Surgery ~w is already scheduled. Skipping. **~n', [CurrSurg])
-    ;
-        % 1) Compute needed time
-        surgery_id(CurrSurg, Type),
-        surgery(Type, A,S,C),
-        Needed is A + S + C,
-
-        % 2) Attempt to find the "best" slot among all rooms
-        ( find_best_room_slot(Needed, Rooms, Day, BestRoom, BestStart) ->
-            End is BestStart + Needed - 1,
-            schedule_in_room(CurrSurg, BestRoom, Day, BestStart, End),
-            format('Scheduled ~w in ~w from ~w to ~w~n', [CurrSurg, BestRoom, BestStart, End])
-        ;
-            format('Unable to schedule ~w (no valid slots).~n', [CurrSurg])
-        )
-    ),
-    assign_surgeries(Rest, Rooms, Day).
-
-% Helper to check if a surgery is already in some room's agenda
+% Check if a surgery has already been scheduled
 surgery_already_scheduled(Surgery, Rooms, Day) :-
     member(Room, Rooms),
     agenda_operation_room1(Room, Day, Agenda),
     member((_Start, _End, Surgery), Agenda), !.
 
-% -------------------------------------------------------------------------
-% find_best_room_slot/5
-%   Gathers all possible (Room, Start) pairs, picks minimal leftover 
-%   among them (i.e., "best fit").
-% -------------------------------------------------------------------------
-find_best_room_slot(TotalTime, Rooms, Day, ChosenRoom, ChosenStart) :-
-    findall( Leftover-(R,St), (
-        member(R, Rooms),
-        agenda_operation_room1(R, Day, RoomAgenda),
-        free_agenda0(RoomAgenda, FreeSlots),
-        member((SlotStart, SlotEnd), FreeSlots),
-        SlotDur is SlotEnd - SlotStart + 1,
-        SlotDur >= TotalTime,
-        Leftover is SlotDur - TotalTime,
-        St = SlotStart
-    ), Candidates),
-    Candidates \= [],  % must have at least one candidate
-    keysort(Candidates, [ _-(ChosenRoom,ChosenStart) | _ ]).
+% Main predicate for scheduling surgeries
+assign_surgeries([], _, _).
+assign_surgeries([CurrSurg|Rest], Rooms, Day) :-
+    ( surgery_already_scheduled(CurrSurg, Rooms, Day) ->
+        format('Skipping already scheduled surgery: ~w~n', [CurrSurg])
+    ;
+        surgery_id(CurrSurg, Type),
+        surgery(Type, A, S, C),
+        Needed is A + S + C,
+        ( find_best_room_slot(Needed, Rooms, Day, BestRoom, BestStart),
+          End is BestStart + Needed - 1,
+          \+ surgery_conflicts(BestRoom, Day, BestStart, End) ->
+            schedule_in_room(CurrSurg, BestRoom, Day, BestStart, End),
+            format('Scheduled ~w in ~w from ~w to ~w~n', [CurrSurg, BestRoom, BestStart, End])
+        ;
+            format('Unable to schedule ~w (no valid slots or conflicts).~n', [CurrSurg])
+        )
+    ),
+    assign_surgeries(Rest, Rooms, Day).
 
-% -------------------------------------------------------------------------
-% schedule_in_room/5
-%   Insert the surgery block into the chosen room's agenda.
-%   (no overlap is guaranteed by insert_agenda logic).
-% -------------------------------------------------------------------------
+
 schedule_in_room(Surgery, Room, Day, Start, End) :-
     retract(agenda_operation_room1(Room, Day, OldAgenda)),
     insert_agenda((Start,End,Surgery), OldAgenda, NewAgenda),
     assertz(agenda_operation_room1(Room, Day, NewAgenda)).
 
-% -------------------------------------------------------------------------
-% 4) Reporting
-% -------------------------------------------------------------------------
+%-------------------------------------------------------------------------
+% Reporting
+%-------------------------------------------------------------------------
+
 report_assignments(Day) :-
     format('~n=== Final Room Assignments ===~n'),
     findall(Room, agenda_operation_room1(Room, Day, _), Rooms),
@@ -196,7 +214,16 @@ print_room_schedule([(Start,End,Surg)|Rest]) :-
     format('  ~w: ~w - ~w (type: ~w)~n', [Surg, Start, End, Type]),
     print_room_schedule(Rest).
 
-%--------------------------APRESENTAÇÃO---------------------------------
-% assign_surgeries_to_rooms(20241028).
 
+% print_agenda/2: Print room's agenda for debugging
+print_agenda(Room, Day) :-
+    agenda_operation_room1(Room, Day, Agenda),
+    format('Agenda for Room ~w on Day ~w:~n', [Room, Day]),
+    (   Agenda = [] 
+    ->  format('  (No surgeries scheduled)~n')
+    ;   maplist(print_surgery_entry, Agenda)
+    ).
 
+% Helper predicate to print individual entries
+print_surgery_entry((Start, End, Surg)) :-
+    format('  Surgery: ~w | Start: ~w | End: ~w~n', [Surg, Start, End]).
