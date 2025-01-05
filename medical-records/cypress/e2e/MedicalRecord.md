@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - API de Registros Médicos**
 
-**Módulo:** Gestão de Registros Médicos  
+**Módulo:** BackOffice  
 **Objetivo:** Testar endpoints relacionados com a criação, atualização, leitura e busca de registros médicos.  
 **Método de teste:** E2E Automatizado (Cypress)  
 
