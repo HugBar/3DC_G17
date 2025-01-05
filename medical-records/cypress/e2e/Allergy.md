@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - API de Alergias**
 
-**Módulo:** Gestão de Alergias  
+**Módulo:** BackOffice  
 **Objetivo:** Testar endpoints relacionados com a criação, atualização, pesquisa e exclusão de alergias no sistema.  
 **Método de teste:** E2E Automatizado (Cypress)  
 

@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - API de Especializações**
 
-**Módulo:** Gestão de Especializações  
+**Módulo:** BackOffice  
 **Objetivo:** Testar endpoints relacionados com a criação, leitura, atualização e exclusão de especializações.  
 **Método de teste:** E2E Automatizado (Cypress)  
 

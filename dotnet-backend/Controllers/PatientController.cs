@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
 using Microsoft.AspNetCore.JsonPatch;
 using DDDSample1.Domain.Shared;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 
 
@@ -278,6 +280,51 @@ namespace DDDSample1.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("medical-history/download")]
+        [Authorize(Roles = "Patient")]
+        public async Task<IActionResult> RequestMedicalHistoryDownload()
+        {
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return Unauthorized("User email not found.");
+            }
+
+            try
+            {
+                // Similar to account deletion flow
+                await _service.SendMedicalHistoryRequestEmailAsync(userEmail);
+                return Ok("Please check your email to download your medical history.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+       [HttpGet("medical-history/download-file/{email}")]
+[AllowAnonymous]
+public async Task<IActionResult> DownloadMedicalHistory(string email)
+{
+    try
+    {
+        var decodedEmail = Encoding.UTF8.GetString(Convert.FromBase64String(email));
+
+        var pdfBytes = await _service.GenerateMedicalHistoryPdfAsync(decodedEmail);
+        
+        if (pdfBytes == null || pdfBytes.Length == 0)
+        {
+            return BadRequest("PDF generation failed");
+        }
+
+        return File(pdfBytes, "application/pdf", $"medical_history_{DateTime.Now:yyyyMMdd}.pdf");
+    }
+    catch (Exception ex)
+    {
+        return BadRequest($"Error generating PDF: {ex.Message}");
+    }
+}
 
 
 

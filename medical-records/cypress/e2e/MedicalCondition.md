@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - API de Condições Médicas**
 
-**Módulo:** Gestão de Condições Médicas  
+**Módulo:** BackOffice  
 **Objetivo:** Testar endpoints relacionados com a criação, atualização, pesquisa e associação de condições médicas aos registros de pacientes.  
 **Método de teste:** E2E Automatizado (Cypress)  
 
