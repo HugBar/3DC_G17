@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - Atualizar Especialização (Frontend)**
 
-**Módulo:** Interface de Atualização de Especializações  
+**Módulo:** BackOffice 
 **Objetivo:** Validar o funcionamento da interface de atualização de especializações, incluindo exibição de dados existentes, validação de campos obrigatórios, manipulação de erros e atualização bem-sucedida.  
 **Método de teste:** E2E Automatizado (Cypress)  
 

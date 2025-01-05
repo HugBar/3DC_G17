@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - Buscar Registros Médicos (Frontend)**
 
-**Módulo:** Interface de Busca de Registros Médicos  
+**Módulo:** BackOffice  
 **Objetivo:** Validar o funcionamento da interface de busca de registros médicos, incluindo filtros por ID de paciente, condições, alergias e manipulação de erros.  
 **Método de teste:** E2E Automatizado (Cypress)  
 

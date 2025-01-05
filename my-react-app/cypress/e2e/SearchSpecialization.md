@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - Buscar Especializações (Frontend)**
 
-**Módulo:** Interface de Busca de Especializações  
+**Módulo:** BackOffice  
 **Objetivo:** Validar o funcionamento da interface de busca de especializações, incluindo filtros por nome e descrição, interação com os resultados, tratamento de erros e persistência de filtros após recarregar a página.  
 **Método de teste:** E2E Automatizado (Cypress)  
 

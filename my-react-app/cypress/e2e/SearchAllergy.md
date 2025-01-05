@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - Buscar Alergias (Frontend)**
 
-**Módulo:** Interface de Busca de Alergias  
+**Módulo:** BackOffice  
 **Objetivo:** Validar o funcionamento da interface de busca de alergias, incluindo filtros, manipulação de resultados, tratamento de erros e interação com os resultados da busca.  
 **Método de teste:** E2E Automatizado (Cypress)  
 

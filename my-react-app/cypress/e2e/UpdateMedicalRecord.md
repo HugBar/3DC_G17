@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - Atualizar Registro Médico (Frontend)**
 
-**Módulo:** Interface de Atualização de Registros Médicos  
+**Módulo:** BackOffice  
 **Objetivo:** Validar o funcionamento da interface de atualização de registros médicos, incluindo a adição e remoção de condições e alergias, manipulação de erros e confirmação de sucesso na atualização.  
 **Método de teste:** E2E Automatizado (Cypress)  
 

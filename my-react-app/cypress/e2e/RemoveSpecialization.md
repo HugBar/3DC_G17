@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - Remover Especialização (Frontend)**
 
-**Módulo:** Interface de Remoção de Especialização  
+**Módulo:** BackOffice  
 **Objetivo:** Validar o processo de remoção de uma especialização no sistema, incluindo a exibição correta do modal de confirmação, a remoção bem-sucedida e o cancelamento da operação.  
 **Método de teste:** E2E Automatizado (Cypress)  
 

@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - Buscar Condições Médicas (Frontend)**
 
-**Módulo:** Interface de Busca de Condições Médicas  
+**Módulo:** BackOffice 
 **Objetivo:** Validar o funcionamento da interface de busca de condições médicas, incluindo filtros, manipulação de resultados, tratamento de erros e interação com os resultados da busca.  
 **Método de teste:** E2E Automatizado (Cypress)  
 

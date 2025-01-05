@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - Criar Especialização (Frontend)**
 
-**Módulo:** Interface de Criação de Especialização  
+**Módulo:** BackOffice
 **Objetivo:** Validar o funcionamento da interface de criação de especializações, incluindo a exibição correta do formulário, envio bem-sucedido, manipulação de erros e validação de campos obrigatórios.  
 **Método de teste:** E2E Automatizado (Cypress)  
 

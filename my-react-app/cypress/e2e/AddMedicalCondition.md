@@ -1,6 +1,6 @@
 # **Documentação de Testes E2E - Adicionar Condição Médica (Frontend)**
 
-**Módulo:** Interface de Adição de Condição Médica  
+**Módulo:** BackOffice  
 **Objetivo:** Validar o funcionamento da interface de adição de condições médicas, incluindo a exibição correta do formulário, envio bem-sucedido, manipulação de erros e validação de campos obrigatórios.  
 **Método de teste:** E2E Automatizado (Cypress)  
 
