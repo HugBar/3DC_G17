@@ -63,9 +63,9 @@ namespace DDDSample1.Infrastructure.OperationRequestData
             return await operationRequests.ToListAsync();
         }
 
-
-
-
-
+        public async Task<IEnumerable<OperationRequest>> GetAllAsync()
+        {
+            return await _context.OperationRequests.ToListAsync();
+        }
     }
 }
